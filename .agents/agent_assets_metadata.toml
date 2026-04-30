@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "wMy2vfQVAupBFHUWwc_0o"
+uri = "file://artifacts/wemi/public/mentor-1.png"
+type = "image"
+title = "Korean female mentor portrait"
+
+[[generated]]
+id = "05Wx6_p4Ni2os38FjQSE4"
+uri = "file://artifacts/wemi/public/mentor-2.png"
+type = "image"
+title = "Korean male mentor portrait"
+
+[[generated]]
+id = "ZSIRlXoZtgYxw2SYXOzIV"
+uri = "file://artifacts/wemi/public/mentor-3.png"
+type = "image"
+title = "Korean female mentor portrait 2"
+
+[[generated]]
+id = "vrMuLQLfmHb09WnjQjSZE"
+uri = "file://artifacts/wemi/public/mentor-4.png"
+type = "image"
+title = "Korean male mentor portrait 2"
