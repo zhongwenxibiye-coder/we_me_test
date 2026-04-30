@@ -14,3 +14,67 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Submit a new mentoring application
+ */
+
+export const createMentorApplicationBodyMessageMin = 10;
+
+export const CreateMentorApplicationBody = zod.object({
+  mentorId: zod.string().min(1),
+  name: zod.string().min(1),
+  contact: zod.string().min(1),
+  topic: zod.string().min(1),
+  message: zod.string().min(createMentorApplicationBodyMessageMin),
+});
+
+/**
+ * Requires admin password header
+ * @summary List all mentoring applications (admin)
+ */
+export const ListMentorApplicationsHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const ListMentorApplicationsResponseItem = zod.object({
+  id: zod.number(),
+  mentorId: zod.string(),
+  name: zod.string(),
+  contact: zod.string(),
+  topic: zod.string(),
+  message: zod.string(),
+  status: zod.enum(["new", "read"]),
+  createdAt: zod.coerce.date(),
+  readAt: zod.coerce.date().nullable(),
+});
+export const ListMentorApplicationsResponse = zod.array(
+  ListMentorApplicationsResponseItem,
+);
+
+/**
+ * @summary Mark an application as read or new (admin)
+ */
+export const UpdateMentorApplicationStatusParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateMentorApplicationStatusHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateMentorApplicationStatusBody = zod.object({
+  status: zod.enum(["new", "read"]),
+});
+
+export const UpdateMentorApplicationStatusResponse = zod.object({
+  id: zod.number(),
+  mentorId: zod.string(),
+  name: zod.string(),
+  contact: zod.string(),
+  topic: zod.string(),
+  message: zod.string(),
+  status: zod.enum(["new", "read"]),
+  createdAt: zod.coerce.date(),
+  readAt: zod.coerce.date().nullable(),
+});

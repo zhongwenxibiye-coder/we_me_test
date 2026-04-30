@@ -8,6 +8,7 @@ import Jobs from "@/pages/Jobs";
 import JobDetail from "@/pages/JobDetail";
 import Mentors from "@/pages/Mentors";
 import MentorDetail from "@/pages/MentorDetail";
+import Admin from "@/pages/Admin";
 import {
   CareerMatchPage,
   CreativeSpacePage,
@@ -31,6 +32,7 @@ function Router() {
         <Route path="/creative-space" component={CreativeSpacePage} />
         <Route path="/humanities" component={HumanitiesPage} />
         <Route path="/projects" component={ProjectsPage} />
+        <Route path="/admin" component={Admin} />
         <Route component={NotFound} />
       </Switch>
     </WebShell>

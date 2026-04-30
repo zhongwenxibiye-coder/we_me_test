@@ -6,4 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./apiError";
+export * from "./createMentorApplicationBody";
 export * from "./healthStatus";
+export * from "./mentorApplication";
+export * from "./mentorApplicationStatus";
+export * from "./updateMentorApplicationStatusBody";
+export * from "./updateMentorApplicationStatusBodyStatus";

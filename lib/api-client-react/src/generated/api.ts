@@ -5,18 +5,27 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  ApiError,
+  CreateMentorApplicationBody,
+  HealthStatus,
+  MentorApplication,
+  UpdateMentorApplicationStatusBody,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +108,258 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Submit a new mentoring application
+ */
+export const getCreateMentorApplicationUrl = () => {
+  return `/api/mentor-applications`;
+};
+
+export const createMentorApplication = async (
+  createMentorApplicationBody: CreateMentorApplicationBody,
+  options?: RequestInit,
+): Promise<MentorApplication> => {
+  return customFetch<MentorApplication>(getCreateMentorApplicationUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createMentorApplicationBody),
+  });
+};
+
+export const getCreateMentorApplicationMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createMentorApplication>>,
+    TError,
+    { data: BodyType<CreateMentorApplicationBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createMentorApplication>>,
+  TError,
+  { data: BodyType<CreateMentorApplicationBody> },
+  TContext
+> => {
+  const mutationKey = ["createMentorApplication"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createMentorApplication>>,
+    { data: BodyType<CreateMentorApplicationBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createMentorApplication(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateMentorApplicationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createMentorApplication>>
+>;
+export type CreateMentorApplicationMutationBody =
+  BodyType<CreateMentorApplicationBody>;
+export type CreateMentorApplicationMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Submit a new mentoring application
+ */
+export const useCreateMentorApplication = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createMentorApplication>>,
+    TError,
+    { data: BodyType<CreateMentorApplicationBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createMentorApplication>>,
+  TError,
+  { data: BodyType<CreateMentorApplicationBody> },
+  TContext
+> => {
+  return useMutation(getCreateMentorApplicationMutationOptions(options));
+};
+
+/**
+ * Requires admin password header
+ * @summary List all mentoring applications (admin)
+ */
+export const getListMentorApplicationsUrl = () => {
+  return `/api/mentor-applications`;
+};
+
+export const listMentorApplications = async (
+  options?: RequestInit,
+): Promise<MentorApplication[]> => {
+  return customFetch<MentorApplication[]>(getListMentorApplicationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListMentorApplicationsQueryKey = () => {
+  return [`/api/mentor-applications`] as const;
+};
+
+export const getListMentorApplicationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMentorApplications>>,
+  TError = ErrorType<ApiError>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listMentorApplications>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListMentorApplicationsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listMentorApplications>>
+  > = ({ signal }) => listMentorApplications({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMentorApplications>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListMentorApplicationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listMentorApplications>>
+>;
+export type ListMentorApplicationsQueryError = ErrorType<ApiError>;
+
+/**
+ * @summary List all mentoring applications (admin)
+ */
+
+export function useListMentorApplications<
+  TData = Awaited<ReturnType<typeof listMentorApplications>>,
+  TError = ErrorType<ApiError>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listMentorApplications>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListMentorApplicationsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Mark an application as read or new (admin)
+ */
+export const getUpdateMentorApplicationStatusUrl = (id: number) => {
+  return `/api/mentor-applications/${id}/status`;
+};
+
+export const updateMentorApplicationStatus = async (
+  id: number,
+  updateMentorApplicationStatusBody: UpdateMentorApplicationStatusBody,
+  options?: RequestInit,
+): Promise<MentorApplication> => {
+  return customFetch<MentorApplication>(
+    getUpdateMentorApplicationStatusUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateMentorApplicationStatusBody),
+    },
+  );
+};
+
+export const getUpdateMentorApplicationStatusMutationOptions = <
+  TError = ErrorType<ApiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMentorApplicationStatus>>,
+    TError,
+    { id: number; data: BodyType<UpdateMentorApplicationStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMentorApplicationStatus>>,
+  TError,
+  { id: number; data: BodyType<UpdateMentorApplicationStatusBody> },
+  TContext
+> => {
+  const mutationKey = ["updateMentorApplicationStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateMentorApplicationStatus>>,
+    { id: number; data: BodyType<UpdateMentorApplicationStatusBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateMentorApplicationStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateMentorApplicationStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateMentorApplicationStatus>>
+>;
+export type UpdateMentorApplicationStatusMutationBody =
+  BodyType<UpdateMentorApplicationStatusBody>;
+export type UpdateMentorApplicationStatusMutationError = ErrorType<ApiError>;
+
+/**
+ * @summary Mark an application as read or new (admin)
+ */
+export const useUpdateMentorApplicationStatus = <
+  TError = ErrorType<ApiError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMentorApplicationStatus>>,
+    TError,
+    { id: number; data: BodyType<UpdateMentorApplicationStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateMentorApplicationStatus>>,
+  TError,
+  { id: number; data: BodyType<UpdateMentorApplicationStatusBody> },
+  TContext
+> => {
+  return useMutation(getUpdateMentorApplicationStatusMutationOptions(options));
+};

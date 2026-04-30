@@ -8,3 +8,53 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ApiError {
+  error: string;
+}
+
+export type MentorApplicationStatus =
+  (typeof MentorApplicationStatus)[keyof typeof MentorApplicationStatus];
+
+export const MentorApplicationStatus = {
+  new: "new",
+  read: "read",
+} as const;
+
+export interface MentorApplication {
+  id: number;
+  mentorId: string;
+  name: string;
+  contact: string;
+  topic: string;
+  message: string;
+  status: MentorApplicationStatus;
+  createdAt: string;
+  /** @nullable */
+  readAt: string | null;
+}
+
+export type CreateMentorApplicationBody = {
+  /** @minLength 1 */
+  mentorId: string;
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  contact: string;
+  /** @minLength 1 */
+  topic: string;
+  /** @minLength 10 */
+  message: string;
+};
+
+export type UpdateMentorApplicationStatusBodyStatus =
+  (typeof UpdateMentorApplicationStatusBodyStatus)[keyof typeof UpdateMentorApplicationStatusBodyStatus];
+
+export const UpdateMentorApplicationStatusBodyStatus = {
+  new: "new",
+  read: "read",
+} as const;
+
+export type UpdateMentorApplicationStatusBody = {
+  status: UpdateMentorApplicationStatusBodyStatus;
+};

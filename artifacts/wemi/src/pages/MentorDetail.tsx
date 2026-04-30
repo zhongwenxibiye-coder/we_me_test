@@ -7,6 +7,7 @@ import {
   Briefcase,
   CheckCircle2,
 } from "lucide-react";
+import { useCreateMentorApplication } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,8 +24,14 @@ export default function MentorDetail() {
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  const createApplication = useCreateMentorApplication();
+
   const canSubmit =
-    name.trim() && contact.trim() && topic.trim() && message.trim().length >= 10;
+    name.trim() &&
+    contact.trim() &&
+    topic.trim() &&
+    message.trim().length >= 10 &&
+    !createApplication.isPending;
 
   if (!mentor) {
     return (
@@ -40,8 +47,21 @@ export default function MentorDetail() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) return;
-    setSubmitted(true);
+    if (!canSubmit || !mentor) return;
+    createApplication.mutate(
+      {
+        data: {
+          mentorId: mentor.id,
+          name: name.trim(),
+          contact: contact.trim(),
+          topic: topic.trim(),
+          message: message.trim(),
+        },
+      },
+      {
+        onSuccess: () => setSubmitted(true),
+      },
+    );
   }
 
   return (
@@ -189,12 +209,18 @@ export default function MentorDetail() {
               </p>
             </div>
 
+            {createApplication.isError && (
+              <p className="text-sm font-medium" style={{ color: "hsl(0 70% 45%)" }}>
+                신청 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.
+              </p>
+            )}
+
             <Button
               type="submit"
               disabled={!canSubmit}
               className="w-full h-12 rounded-xl text-base font-bold"
             >
-              신청하기
+              {createApplication.isPending ? "전송 중..." : "신청하기"}
             </Button>
           </form>
         )}

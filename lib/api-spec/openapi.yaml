@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: mentor-applications
+    description: Mentor application operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,119 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /mentor-applications:
+    post:
+      operationId: createMentorApplication
+      tags: [mentor-applications]
+      summary: Submit a new mentoring application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mentorId:
+                  type: string
+                  minLength: 1
+                name:
+                  type: string
+                  minLength: 1
+                contact:
+                  type: string
+                  minLength: 1
+                topic:
+                  type: string
+                  minLength: 1
+                message:
+                  type: string
+                  minLength: 10
+              required:
+                - mentorId
+                - name
+                - contact
+                - topic
+                - message
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorApplication"
+    get:
+      operationId: listMentorApplications
+      tags: [mentor-applications]
+      summary: List all mentoring applications (admin)
+      description: Requires admin password header
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MentorApplication"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /mentor-applications/{id}/status:
+    patch:
+      operationId: updateMentorApplicationStatus
+      tags: [mentor-applications]
+      summary: Mark an application as read or new (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [new, read]
+              required:
+                - status
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorApplication"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +148,44 @@ components:
           type: string
       required:
         - status
-
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    MentorApplication:
+      type: object
+      properties:
+        id:
+          type: integer
+        mentorId:
+          type: string
+        name:
+          type: string
+        contact:
+          type: string
+        topic:
+          type: string
+        message:
+          type: string
+        status:
+          type: string
+          enum: [new, read]
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - id
+        - mentorId
+        - name
+        - contact
+        - topic
+        - message
+        - status
+        - createdAt
+        - readAt
