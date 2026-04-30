@@ -15,7 +15,25 @@ export function Mascot({ size = 80, className, animate = "none" }: MascotProps) 
       alt="위미 캐릭터"
       width={size}
       height={size}
-      className={cn("inline-block select-none drop-shadow-md", animClass, className)}
+      className={cn("inline-block select-none", animClass, className)}
+      draggable={false}
+    />
+  );
+}
+
+export function WemiWordmark({
+  size = 180,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <img
+      src={`${import.meta.env.BASE_URL}wemi-ci.png`}
+      alt="위미 We Me"
+      width={size}
+      className={cn("inline-block select-none", className)}
       draggable={false}
     />
   );

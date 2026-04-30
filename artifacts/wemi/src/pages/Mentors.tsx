@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Star, GraduationCap, Briefcase } from "lucide-react";
+import { Search, GraduationCap, Briefcase } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Mascot } from "@/components/Mascot";
 import { MENTORS, MENTOR_FIELDS } from "@/data/mentors";
@@ -13,13 +13,12 @@ export default function Mentors() {
   const filtered = useMemo(() => {
     return MENTORS.filter((m) => {
       if (field !== "전체") {
-        const expertiseMatch = m.expertise.some((e) => e.includes(field));
-        const positionMatch = m.position.includes(field);
-        if (!expertiseMatch && !positionMatch) return false;
+        const matched = m.mentoringFields.some((f) => f.includes(field));
+        if (!matched) return false;
       }
       if (query) {
         const q = query.toLowerCase();
-        const blob = `${m.name} ${m.company} ${m.position} ${m.major} ${m.expertise.join(" ")}`.toLowerCase();
+        const blob = `${m.name} ${m.company} ${m.position} ${m.major} ${m.mentoringFields.join(" ")}`.toLowerCase();
         if (!blob.includes(q)) return false;
       }
       return true;
@@ -82,7 +81,6 @@ export default function Mentors() {
         </div>
       </div>
 
-      {/* Results count */}
       <p className="mt-6 text-sm text-muted-foreground">
         총 <span className="font-bold text-foreground">{filtered.length}명</span>의 멘토
       </p>
@@ -105,45 +103,36 @@ export default function Mentors() {
                 {mentor.initial}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-lg font-extrabold tracking-tight truncate">{mentor.name}</h3>
-                  <span className="flex items-center gap-1 text-xs font-semibold shrink-0">
-                    <Star size={13} fill="hsl(45 92% 55%)" stroke="hsl(45 92% 55%)" />
-                    {mentor.rating}
-                  </span>
+                <h3 className="text-lg font-extrabold tracking-tight truncate">{mentor.name}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">멘토링 가능한 직무</p>
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {mentor.mentoringFields.map((f) => (
+                    <span
+                      key={f}
+                      className="text-[11px] px-2 py-0.5 rounded-full bg-primary/15 font-medium"
+                      style={{ color: "hsl(35 60% 25%)" }}
+                    >
+                      {f}
+                    </span>
+                  ))}
                 </div>
-                <p className="text-sm text-muted-foreground mt-0.5 truncate">
-                  {mentor.company} · {mentor.position}
-                </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-[11px] text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-4 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1">
                 <GraduationCap size={12} />
-                {mentor.university} {mentor.major}
+                {mentor.major}
               </span>
               <span className="flex items-center gap-1">
                 <Briefcase size={12} />
-                {mentor.yearsOfExperience}년차
+                {mentor.company} · {mentor.yearsOfExperience}년차
               </span>
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-foreground/85 flex-1">
               "{mentor.bio}"
             </p>
-
-            <div className="flex flex-wrap gap-1.5 mt-4">
-              {mentor.expertise.map((e) => (
-                <span
-                  key={e}
-                  className="text-[11px] px-2 py-0.5 rounded-full bg-secondary/10 border border-secondary/25"
-                  style={{ color: "hsl(88 45% 32%)" }}
-                >
-                  #{e}
-                </span>
-              ))}
-            </div>
 
             <div className="mt-5 pt-4 border-t border-border/60 text-[11px] text-muted-foreground">
               누적 멘토링 {mentor.sessionsCount}회

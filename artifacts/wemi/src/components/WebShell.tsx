@@ -68,10 +68,10 @@ export function WebShell({ children }: WebShellProps) {
             <Mascot size={36} />
             <div>
               <p className="font-bold text-sm">위미</p>
-              <p className="text-xs text-muted-foreground">인문계 진로의 따뜻한 동행</p>
+              <p className="text-xs text-muted-foreground">인문계열을 위한 취업 플랫폼</p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 Wemi. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">© 2026 We me. All rights reserved.</p>
         </div>
       </footer>
     </div>
