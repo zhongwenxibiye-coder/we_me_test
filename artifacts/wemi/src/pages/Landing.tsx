@@ -79,19 +79,18 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.15]">
+            <p className="text-xl lg:text-2xl font-semibold text-foreground/80 leading-snug">
               인문계열을 위한 취업 플랫폼
-              <br />
-              <span
-                className="inline-block mt-2"
-                style={{
-                  background: "linear-gradient(135deg, hsl(45 95% 50%), hsl(35 90% 55%))",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                위미
-              </span>
+            </p>
+            <h1
+              className="mt-3 text-7xl lg:text-8xl xl:text-9xl font-extrabold tracking-tight leading-none"
+              style={{
+                background: "linear-gradient(135deg, hsl(45 95% 50%), hsl(35 90% 55%))",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              위미
             </h1>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl">
               전공에 얽매이지 않고 진로의 폭을 넓혀보세요.
@@ -107,7 +106,7 @@ export default function Landing() {
           >
             <Mascot size={300} animate="float" />
             <div className="mt-2">
-              <WemiWordmark size={220} />
+              <WemiWordmark height={64} />
             </div>
           </motion.div>
         </div>

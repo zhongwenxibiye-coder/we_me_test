@@ -1,24 +1,23 @@
 import { useMemo, useState } from "react";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { Search, GraduationCap, Briefcase } from "lucide-react";
+import { Search, GraduationCap, Briefcase, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { MENTORS, MENTOR_FIELDS } from "@/data/mentors";
 import { cn } from "@/lib/utils";
 
 export default function Mentors() {
   const [query, setQuery] = useState("");
-  const [field, setField] = useState<string>("전체");
+  const [field, setField] = useState<(typeof MENTOR_FIELDS)[number]>("전체");
 
   const filtered = useMemo(() => {
     return MENTORS.filter((m) => {
-      if (field !== "전체") {
-        const matched = m.mentoringFields.some((f) => f.includes(field));
-        if (!matched) return false;
-      }
+      if (field !== "전체" && !m.categories.includes(field)) return false;
       if (query) {
         const q = query.toLowerCase();
-        const blob = `${m.name} ${m.company} ${m.position} ${m.major} ${m.mentoringFields.join(" ")}`.toLowerCase();
+        const blob = `${m.name} ${m.major} ${m.mentoringFields.join(" ")}`.toLowerCase();
         if (!blob.includes(q)) return false;
       }
       return true;
@@ -55,7 +54,7 @@ export default function Mentors() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="이름·회사·전공으로 찾기"
+            placeholder="이름·전공으로 찾기"
             className="h-12 pl-11 rounded-2xl bg-card"
           />
         </div>
@@ -126,7 +125,7 @@ export default function Mentors() {
               </span>
               <span className="flex items-center gap-1">
                 <Briefcase size={12} />
-                {mentor.company} · {mentor.yearsOfExperience}년차
+                {mentor.yearsOfExperience}년차
               </span>
             </div>
 
@@ -134,9 +133,12 @@ export default function Mentors() {
               "{mentor.bio}"
             </p>
 
-            <div className="mt-5 pt-4 border-t border-border/60 text-[11px] text-muted-foreground">
-              누적 멘토링 {mentor.sessionsCount}회
-            </div>
+            <Link href={`/mentors/${mentor.id}`}>
+              <Button className="mt-5 w-full rounded-xl h-10 font-semibold">
+                자세히 보기 · 신청하기
+                <ArrowRight size={14} className="ml-1" />
+              </Button>
+            </Link>
           </motion.article>
         ))}
       </div>

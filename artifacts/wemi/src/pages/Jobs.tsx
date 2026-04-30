@@ -82,14 +82,14 @@ export default function Jobs() {
               </p>
             </div>
           ) : (
-            <div className="mt-5 grid md:grid-cols-2 gap-4">
+            <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {subJobs.map((job) => (
                 <article
                   key={job.id}
-                  className="rounded-2xl border border-border bg-background p-5 hover-elevate"
+                  className="rounded-2xl border border-border bg-background p-4 hover-elevate flex flex-col"
                 >
                   {job.image && (
-                    <div className="rounded-2xl bg-muted/40 mb-4 overflow-hidden flex items-center justify-center aspect-[4/3]">
+                    <div className="rounded-xl bg-muted/40 mb-3 overflow-hidden flex items-center justify-center aspect-[4/3]">
                       <img
                         src={`${import.meta.env.BASE_URL}${job.image}`}
                         alt={job.title}
@@ -99,23 +99,23 @@ export default function Jobs() {
                   )}
                   {job.topRecommended && (
                     <span
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full bg-primary/20 mb-2"
+                      className="inline-flex items-center gap-1 self-start text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/20 mb-1.5"
                       style={{ color: "hsl(35 60% 25%)" }}
                     >
-                      <Sparkles size={11} />
+                      <Sparkles size={10} />
                       가장 가능성이 높은 직무
                     </span>
                   )}
-                  <h3 className="font-extrabold text-lg tracking-tight">
+                  <h3 className="font-extrabold text-base tracking-tight">
                     "{job.title}"
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed line-clamp-3 flex-1">
                     {job.shortDescription}
                   </p>
                   <Link href={`/jobs/${job.id}`}>
-                    <Button className="mt-5 w-full rounded-xl h-11 font-semibold">
+                    <Button className="mt-3 w-full rounded-xl h-9 text-sm font-semibold">
                       자세히 보기
-                      <ArrowRight size={16} className="ml-1" />
+                      <ArrowRight size={14} className="ml-1" />
                     </Button>
                   </Link>
                 </article>

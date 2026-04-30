@@ -7,6 +7,7 @@ import Landing from "@/pages/Landing";
 import Jobs from "@/pages/Jobs";
 import JobDetail from "@/pages/JobDetail";
 import Mentors from "@/pages/Mentors";
+import MentorDetail from "@/pages/MentorDetail";
 import {
   CareerMatchPage,
   CreativeSpacePage,
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/:id" component={JobDetail} />
         <Route path="/mentors" component={Mentors} />
+        <Route path="/mentors/:id" component={MentorDetail} />
         <Route path="/career-match" component={CareerMatchPage} />
         <Route path="/creative-space" component={CreativeSpacePage} />
         <Route path="/humanities" component={HumanitiesPage} />

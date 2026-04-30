@@ -22,18 +22,18 @@ export function Mascot({ size = 80, className, animate = "none" }: MascotProps) 
 }
 
 export function WemiWordmark({
-  size = 180,
+  height = 56,
   className,
 }: {
-  size?: number;
+  height?: number;
   className?: string;
 }) {
   return (
     <img
       src={`${import.meta.env.BASE_URL}wemi-ci.png`}
       alt="위미 We Me"
-      width={size}
-      className={cn("inline-block select-none", className)}
+      style={{ height }}
+      className={cn("inline-block select-none w-auto", className)}
       draggable={false}
     />
   );

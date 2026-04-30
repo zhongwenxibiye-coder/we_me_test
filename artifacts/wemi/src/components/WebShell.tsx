@@ -12,6 +12,9 @@ const NAV = [
   { href: "/", label: "홈" },
   { href: "/jobs", label: "직무 학습" },
   { href: "/mentors", label: "졸업생 멘토링" },
+  { href: "/career-match", label: "커리어 매칭" },
+  { href: "/creative-space", label: "창작 공간" },
+  { href: "/humanities", label: "인문학 콘텐츠" },
 ];
 
 export function WebShell({ children }: WebShellProps) {
@@ -25,22 +28,22 @@ export function WebShell({ children }: WebShellProps) {
   return (
     <div className="min-h-screen flex flex-col wemi-page-bg">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/60">
-        <div className="mx-auto max-w-6xl px-6 lg:px-10 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-6xl px-4 lg:px-8 h-16 flex items-center justify-between gap-4">
           <Link href="/">
-            <button className="flex items-center gap-2 -ml-2 px-2 py-1 rounded-xl hover-elevate">
+            <button className="flex items-center gap-2 -ml-2 px-2 py-1 rounded-xl hover-elevate shrink-0">
               <Mascot size={32} animate="bob" />
               <span className="font-extrabold text-lg tracking-tight">위미</span>
             </button>
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5">
             {NAV.map((item) => {
               const active = isActive(item.href);
               return (
                 <Link key={item.href} href={item.href}>
                   <button
                     className={cn(
-                      "relative px-4 h-10 rounded-full text-sm font-medium transition-colors hover-elevate",
+                      "relative px-3 lg:px-3.5 h-10 rounded-full text-sm font-medium transition-colors hover-elevate whitespace-nowrap",
                       active ? "text-foreground" : "text-muted-foreground",
                     )}
                   >
