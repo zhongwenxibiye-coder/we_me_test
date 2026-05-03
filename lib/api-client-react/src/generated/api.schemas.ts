@@ -34,6 +34,131 @@ export interface MentorApplication {
   readAt: string | null;
 }
 
+export interface MentorProfile {
+  id: number;
+  name: string;
+  major: string;
+  yearsOfExperience: number;
+  /** @nullable */
+  photoUrl: string | null;
+  headlineText: string;
+  sublineText: string;
+  bio: string;
+  avatarColor: string;
+  initial: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+}
+
+export interface MentorProfileInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  major: string;
+  yearsOfExperience: number;
+  /** @nullable */
+  photoUrl?: string | null;
+  headlineText?: string;
+  sublineText?: string;
+  bio?: string;
+  avatarColor?: string;
+  /** @minLength 1 */
+  initial: string;
+  isActive?: boolean;
+  displayOrder?: number;
+}
+
+export interface MentorArticle {
+  id: number;
+  mentorId: number;
+  title: string;
+  content: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
+export type MentorDetail = MentorProfile & {
+  articles: MentorArticle[];
+};
+
+export interface MentorArticleInput {
+  /** @minLength 1 */
+  title: string;
+  content?: string;
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
+export interface LearningItem {
+  title: string;
+  content: string;
+}
+
+export interface JobListing {
+  id: number;
+  category: string;
+  title: string;
+  shortDescription: string;
+  /** @nullable */
+  imageUrl: string | null;
+  isActive: boolean;
+  displayOrder: number;
+  learning: LearningItem[];
+  createdAt: string;
+}
+
+export interface JobListingInput {
+  /** @minLength 1 */
+  category: string;
+  /** @minLength 1 */
+  title: string;
+  shortDescription?: string;
+  /** @nullable */
+  imageUrl?: string | null;
+  isActive?: boolean;
+  displayOrder?: number;
+  learning?: LearningItem[];
+}
+
+export interface StartupApplication {
+  id: number;
+  founderName: string;
+  email: string;
+  registrationStatus: string;
+  startupIdea: string;
+  readiness: string;
+  readinessDetail: string;
+  ideaReason: string;
+  experience: string;
+  team: string;
+  /** @nullable */
+  result: string | null;
+  /** @nullable */
+  resultReason: string | null;
+  createdAt: string;
+}
+
+export interface StartupApplicationPublic {
+  id: number;
+  founderName: string;
+  /** @nullable */
+  result: string | null;
+  /** @nullable */
+  resultReason: string | null;
+  createdAt: string;
+}
+
+/**
+ * Unauthorized
+ */
+export type UnauthorizedResponse = ApiError;
+
+/**
+ * Not found
+ */
+export type NotFoundResponse = ApiError;
+
 export type CreateMentorApplicationBody = {
   /** @minLength 1 */
   mentorId: string;
@@ -43,7 +168,7 @@ export type CreateMentorApplicationBody = {
   contact: string;
   /** @minLength 1 */
   topic: string;
-  /** @minLength 10 */
+  /** @minLength 100 */
   message: string;
 };
 
@@ -57,4 +182,37 @@ export const UpdateMentorApplicationStatusBodyStatus = {
 
 export type UpdateMentorApplicationStatusBody = {
   status: UpdateMentorApplicationStatusBodyStatus;
+};
+
+export type CreateStartupApplicationBody = {
+  /** @minLength 1 */
+  founderName: string;
+  /** @minLength 1 */
+  email: string;
+  /** @minLength 1 */
+  registrationStatus: string;
+  /** @minLength 1 */
+  startupIdea: string;
+  /** @minLength 1 */
+  readiness: string;
+  readinessDetail?: string;
+  /** @minLength 1 */
+  ideaReason: string;
+  /** @minLength 1 */
+  experience: string;
+  /** @minLength 1 */
+  team: string;
+};
+
+export type UpdateStartupApplicationResultBodyResult =
+  (typeof UpdateStartupApplicationResultBodyResult)[keyof typeof UpdateStartupApplicationResultBodyResult];
+
+export const UpdateStartupApplicationResultBodyResult = {
+  도전가능: "도전가능",
+  도전불가능: "도전불가능",
+} as const;
+
+export type UpdateStartupApplicationResultBody = {
+  result: UpdateStartupApplicationResultBodyResult;
+  resultReason?: string;
 };

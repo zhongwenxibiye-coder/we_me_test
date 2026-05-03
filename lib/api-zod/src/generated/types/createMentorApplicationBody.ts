@@ -15,6 +15,6 @@ export type CreateMentorApplicationBody = {
   contact: string;
   /** @minLength 1 */
   topic: string;
-  /** @minLength 10 */
+  /** @minLength 100 */
   message: string;
 };

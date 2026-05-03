@@ -17,11 +17,23 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
-  ApiError,
   CreateMentorApplicationBody,
+  CreateStartupApplicationBody,
   HealthStatus,
+  JobListing,
+  JobListingInput,
   MentorApplication,
+  MentorArticle,
+  MentorArticleInput,
+  MentorDetail,
+  MentorProfile,
+  MentorProfileInput,
+  NotFoundResponse,
+  StartupApplication,
+  StartupApplicationPublic,
+  UnauthorizedResponse,
   UpdateMentorApplicationStatusBody,
+  UpdateStartupApplicationResultBody,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -34,7 +46,6 @@ type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const getHealthCheckUrl = () => {
@@ -197,7 +208,6 @@ export const useCreateMentorApplication = <
 };
 
 /**
- * Requires admin password header
  * @summary List all mentoring applications (admin)
  */
 export const getListMentorApplicationsUrl = () => {
@@ -219,7 +229,7 @@ export const getListMentorApplicationsQueryKey = () => {
 
 export const getListMentorApplicationsQueryOptions = <
   TData = Awaited<ReturnType<typeof listMentorApplications>>,
-  TError = ErrorType<ApiError>,
+  TError = ErrorType<UnauthorizedResponse>,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof listMentorApplications>>,
@@ -247,7 +257,7 @@ export const getListMentorApplicationsQueryOptions = <
 export type ListMentorApplicationsQueryResult = NonNullable<
   Awaited<ReturnType<typeof listMentorApplications>>
 >;
-export type ListMentorApplicationsQueryError = ErrorType<ApiError>;
+export type ListMentorApplicationsQueryError = ErrorType<UnauthorizedResponse>;
 
 /**
  * @summary List all mentoring applications (admin)
@@ -255,7 +265,7 @@ export type ListMentorApplicationsQueryError = ErrorType<ApiError>;
 
 export function useListMentorApplications<
   TData = Awaited<ReturnType<typeof listMentorApplications>>,
-  TError = ErrorType<ApiError>,
+  TError = ErrorType<UnauthorizedResponse>,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof listMentorApplications>>,
@@ -274,7 +284,7 @@ export function useListMentorApplications<
 }
 
 /**
- * @summary Mark an application as read or new (admin)
+ * @summary Update application status (admin)
  */
 export const getUpdateMentorApplicationStatusUrl = (id: number) => {
   return `/api/mentor-applications/${id}/status`;
@@ -297,7 +307,7 @@ export const updateMentorApplicationStatus = async (
 };
 
 export const getUpdateMentorApplicationStatusMutationOptions = <
-  TError = ErrorType<ApiError>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -339,13 +349,15 @@ export type UpdateMentorApplicationStatusMutationResult = NonNullable<
 >;
 export type UpdateMentorApplicationStatusMutationBody =
   BodyType<UpdateMentorApplicationStatusBody>;
-export type UpdateMentorApplicationStatusMutationError = ErrorType<ApiError>;
+export type UpdateMentorApplicationStatusMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
 
 /**
- * @summary Mark an application as read or new (admin)
+ * @summary Update application status (admin)
  */
 export const useUpdateMentorApplicationStatus = <
-  TError = ErrorType<ApiError>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -363,3 +375,1458 @@ export const useUpdateMentorApplicationStatus = <
 > => {
   return useMutation(getUpdateMentorApplicationStatusMutationOptions(options));
 };
+
+/**
+ * @summary List active mentors
+ */
+export const getListMentorsUrl = () => {
+  return `/api/mentors`;
+};
+
+export const listMentors = async (
+  options?: RequestInit,
+): Promise<MentorProfile[]> => {
+  return customFetch<MentorProfile[]>(getListMentorsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListMentorsQueryKey = () => {
+  return [`/api/mentors`] as const;
+};
+
+export const getListMentorsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMentors>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listMentors>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListMentorsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listMentors>>> = ({
+    signal,
+  }) => listMentors({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMentors>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListMentorsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listMentors>>
+>;
+export type ListMentorsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active mentors
+ */
+
+export function useListMentors<
+  TData = Awaited<ReturnType<typeof listMentors>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listMentors>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListMentorsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a mentor (admin)
+ */
+export const getCreateMentorUrl = () => {
+  return `/api/mentors`;
+};
+
+export const createMentor = async (
+  mentorProfileInput: MentorProfileInput,
+  options?: RequestInit,
+): Promise<MentorProfile> => {
+  return customFetch<MentorProfile>(getCreateMentorUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(mentorProfileInput),
+  });
+};
+
+export const getCreateMentorMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createMentor>>,
+    TError,
+    { data: BodyType<MentorProfileInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createMentor>>,
+  TError,
+  { data: BodyType<MentorProfileInput> },
+  TContext
+> => {
+  const mutationKey = ["createMentor"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createMentor>>,
+    { data: BodyType<MentorProfileInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createMentor(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateMentorMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createMentor>>
+>;
+export type CreateMentorMutationBody = BodyType<MentorProfileInput>;
+export type CreateMentorMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create a mentor (admin)
+ */
+export const useCreateMentor = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createMentor>>,
+    TError,
+    { data: BodyType<MentorProfileInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createMentor>>,
+  TError,
+  { data: BodyType<MentorProfileInput> },
+  TContext
+> => {
+  return useMutation(getCreateMentorMutationOptions(options));
+};
+
+/**
+ * @summary Get a mentor with articles
+ */
+export const getGetMentorUrl = (id: number) => {
+  return `/api/mentors/${id}`;
+};
+
+export const getMentor = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MentorDetail> => {
+  return customFetch<MentorDetail>(getGetMentorUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMentorQueryKey = (id: number) => {
+  return [`/api/mentors/${id}`] as const;
+};
+
+export const getGetMentorQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMentor>>,
+  TError = ErrorType<NotFoundResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMentor>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMentorQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMentor>>> = ({
+    signal,
+  }) => getMentor(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getMentor>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
+};
+
+export type GetMentorQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMentor>>
+>;
+export type GetMentorQueryError = ErrorType<NotFoundResponse>;
+
+/**
+ * @summary Get a mentor with articles
+ */
+
+export function useGetMentor<
+  TData = Awaited<ReturnType<typeof getMentor>>,
+  TError = ErrorType<NotFoundResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMentor>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMentorQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a mentor (admin)
+ */
+export const getUpdateMentorUrl = (id: number) => {
+  return `/api/mentors/${id}`;
+};
+
+export const updateMentor = async (
+  id: number,
+  mentorProfileInput: MentorProfileInput,
+  options?: RequestInit,
+): Promise<MentorProfile> => {
+  return customFetch<MentorProfile>(getUpdateMentorUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(mentorProfileInput),
+  });
+};
+
+export const getUpdateMentorMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMentor>>,
+    TError,
+    { id: number; data: BodyType<MentorProfileInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMentor>>,
+  TError,
+  { id: number; data: BodyType<MentorProfileInput> },
+  TContext
+> => {
+  const mutationKey = ["updateMentor"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateMentor>>,
+    { id: number; data: BodyType<MentorProfileInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateMentor(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateMentorMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateMentor>>
+>;
+export type UpdateMentorMutationBody = BodyType<MentorProfileInput>;
+export type UpdateMentorMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update a mentor (admin)
+ */
+export const useUpdateMentor = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMentor>>,
+    TError,
+    { id: number; data: BodyType<MentorProfileInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateMentor>>,
+  TError,
+  { id: number; data: BodyType<MentorProfileInput> },
+  TContext
+> => {
+  return useMutation(getUpdateMentorMutationOptions(options));
+};
+
+/**
+ * @summary Delete a mentor (admin)
+ */
+export const getDeleteMentorUrl = (id: number) => {
+  return `/api/mentors/${id}`;
+};
+
+export const deleteMentor = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteMentorUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteMentorMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMentor>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteMentor>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteMentor"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteMentor>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteMentor(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteMentorMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteMentor>>
+>;
+
+export type DeleteMentorMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete a mentor (admin)
+ */
+export const useDeleteMentor = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMentor>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteMentor>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteMentorMutationOptions(options));
+};
+
+/**
+ * @summary List articles for a mentor
+ */
+export const getListMentorArticlesUrl = (mentorId: number) => {
+  return `/api/mentors/${mentorId}/articles`;
+};
+
+export const listMentorArticles = async (
+  mentorId: number,
+  options?: RequestInit,
+): Promise<MentorArticle[]> => {
+  return customFetch<MentorArticle[]>(getListMentorArticlesUrl(mentorId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListMentorArticlesQueryKey = (mentorId: number) => {
+  return [`/api/mentors/${mentorId}/articles`] as const;
+};
+
+export const getListMentorArticlesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMentorArticles>>,
+  TError = ErrorType<unknown>,
+>(
+  mentorId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listMentorArticles>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListMentorArticlesQueryKey(mentorId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listMentorArticles>>
+  > = ({ signal }) =>
+    listMentorArticles(mentorId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!mentorId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMentorArticles>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListMentorArticlesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listMentorArticles>>
+>;
+export type ListMentorArticlesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List articles for a mentor
+ */
+
+export function useListMentorArticles<
+  TData = Awaited<ReturnType<typeof listMentorArticles>>,
+  TError = ErrorType<unknown>,
+>(
+  mentorId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listMentorArticles>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListMentorArticlesQueryOptions(mentorId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create article for a mentor (admin)
+ */
+export const getCreateMentorArticleUrl = (mentorId: number) => {
+  return `/api/mentors/${mentorId}/articles`;
+};
+
+export const createMentorArticle = async (
+  mentorId: number,
+  mentorArticleInput: MentorArticleInput,
+  options?: RequestInit,
+): Promise<MentorArticle> => {
+  return customFetch<MentorArticle>(getCreateMentorArticleUrl(mentorId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(mentorArticleInput),
+  });
+};
+
+export const getCreateMentorArticleMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createMentorArticle>>,
+    TError,
+    { mentorId: number; data: BodyType<MentorArticleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createMentorArticle>>,
+  TError,
+  { mentorId: number; data: BodyType<MentorArticleInput> },
+  TContext
+> => {
+  const mutationKey = ["createMentorArticle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createMentorArticle>>,
+    { mentorId: number; data: BodyType<MentorArticleInput> }
+  > = (props) => {
+    const { mentorId, data } = props ?? {};
+
+    return createMentorArticle(mentorId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateMentorArticleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createMentorArticle>>
+>;
+export type CreateMentorArticleMutationBody = BodyType<MentorArticleInput>;
+export type CreateMentorArticleMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create article for a mentor (admin)
+ */
+export const useCreateMentorArticle = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createMentorArticle>>,
+    TError,
+    { mentorId: number; data: BodyType<MentorArticleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createMentorArticle>>,
+  TError,
+  { mentorId: number; data: BodyType<MentorArticleInput> },
+  TContext
+> => {
+  return useMutation(getCreateMentorArticleMutationOptions(options));
+};
+
+/**
+ * @summary Update an article (admin)
+ */
+export const getUpdateMentorArticleUrl = (id: number) => {
+  return `/api/mentor-articles/${id}`;
+};
+
+export const updateMentorArticle = async (
+  id: number,
+  mentorArticleInput: MentorArticleInput,
+  options?: RequestInit,
+): Promise<MentorArticle> => {
+  return customFetch<MentorArticle>(getUpdateMentorArticleUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(mentorArticleInput),
+  });
+};
+
+export const getUpdateMentorArticleMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMentorArticle>>,
+    TError,
+    { id: number; data: BodyType<MentorArticleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMentorArticle>>,
+  TError,
+  { id: number; data: BodyType<MentorArticleInput> },
+  TContext
+> => {
+  const mutationKey = ["updateMentorArticle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateMentorArticle>>,
+    { id: number; data: BodyType<MentorArticleInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateMentorArticle(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateMentorArticleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateMentorArticle>>
+>;
+export type UpdateMentorArticleMutationBody = BodyType<MentorArticleInput>;
+export type UpdateMentorArticleMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update an article (admin)
+ */
+export const useUpdateMentorArticle = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMentorArticle>>,
+    TError,
+    { id: number; data: BodyType<MentorArticleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateMentorArticle>>,
+  TError,
+  { id: number; data: BodyType<MentorArticleInput> },
+  TContext
+> => {
+  return useMutation(getUpdateMentorArticleMutationOptions(options));
+};
+
+/**
+ * @summary Delete an article (admin)
+ */
+export const getDeleteMentorArticleUrl = (id: number) => {
+  return `/api/mentor-articles/${id}`;
+};
+
+export const deleteMentorArticle = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteMentorArticleUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteMentorArticleMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMentorArticle>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteMentorArticle>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteMentorArticle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteMentorArticle>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteMentorArticle(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteMentorArticleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteMentorArticle>>
+>;
+
+export type DeleteMentorArticleMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete an article (admin)
+ */
+export const useDeleteMentorArticle = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMentorArticle>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteMentorArticle>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteMentorArticleMutationOptions(options));
+};
+
+/**
+ * @summary List active job listings
+ */
+export const getListJobListingsUrl = () => {
+  return `/api/job-listings`;
+};
+
+export const listJobListings = async (
+  options?: RequestInit,
+): Promise<JobListing[]> => {
+  return customFetch<JobListing[]>(getListJobListingsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListJobListingsQueryKey = () => {
+  return [`/api/job-listings`] as const;
+};
+
+export const getListJobListingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listJobListings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listJobListings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListJobListingsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listJobListings>>> = ({
+    signal,
+  }) => listJobListings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listJobListings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListJobListingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listJobListings>>
+>;
+export type ListJobListingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active job listings
+ */
+
+export function useListJobListings<
+  TData = Awaited<ReturnType<typeof listJobListings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listJobListings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListJobListingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a job listing (admin)
+ */
+export const getCreateJobListingUrl = () => {
+  return `/api/job-listings`;
+};
+
+export const createJobListing = async (
+  jobListingInput: JobListingInput,
+  options?: RequestInit,
+): Promise<JobListing> => {
+  return customFetch<JobListing>(getCreateJobListingUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(jobListingInput),
+  });
+};
+
+export const getCreateJobListingMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createJobListing>>,
+    TError,
+    { data: BodyType<JobListingInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createJobListing>>,
+  TError,
+  { data: BodyType<JobListingInput> },
+  TContext
+> => {
+  const mutationKey = ["createJobListing"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createJobListing>>,
+    { data: BodyType<JobListingInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createJobListing(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateJobListingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createJobListing>>
+>;
+export type CreateJobListingMutationBody = BodyType<JobListingInput>;
+export type CreateJobListingMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create a job listing (admin)
+ */
+export const useCreateJobListing = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createJobListing>>,
+    TError,
+    { data: BodyType<JobListingInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createJobListing>>,
+  TError,
+  { data: BodyType<JobListingInput> },
+  TContext
+> => {
+  return useMutation(getCreateJobListingMutationOptions(options));
+};
+
+/**
+ * @summary Update a job listing (admin)
+ */
+export const getUpdateJobListingUrl = (id: number) => {
+  return `/api/job-listings/${id}`;
+};
+
+export const updateJobListing = async (
+  id: number,
+  jobListingInput: JobListingInput,
+  options?: RequestInit,
+): Promise<JobListing> => {
+  return customFetch<JobListing>(getUpdateJobListingUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(jobListingInput),
+  });
+};
+
+export const getUpdateJobListingMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJobListing>>,
+    TError,
+    { id: number; data: BodyType<JobListingInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateJobListing>>,
+  TError,
+  { id: number; data: BodyType<JobListingInput> },
+  TContext
+> => {
+  const mutationKey = ["updateJobListing"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateJobListing>>,
+    { id: number; data: BodyType<JobListingInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateJobListing(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateJobListingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateJobListing>>
+>;
+export type UpdateJobListingMutationBody = BodyType<JobListingInput>;
+export type UpdateJobListingMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update a job listing (admin)
+ */
+export const useUpdateJobListing = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJobListing>>,
+    TError,
+    { id: number; data: BodyType<JobListingInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateJobListing>>,
+  TError,
+  { id: number; data: BodyType<JobListingInput> },
+  TContext
+> => {
+  return useMutation(getUpdateJobListingMutationOptions(options));
+};
+
+/**
+ * @summary Delete a job listing (admin)
+ */
+export const getDeleteJobListingUrl = (id: number) => {
+  return `/api/job-listings/${id}`;
+};
+
+export const deleteJobListing = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteJobListingUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteJobListingMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJobListing>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteJobListing>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteJobListing"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteJobListing>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteJobListing(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteJobListingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteJobListing>>
+>;
+
+export type DeleteJobListingMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete a job listing (admin)
+ */
+export const useDeleteJobListing = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJobListing>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteJobListing>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteJobListingMutationOptions(options));
+};
+
+/**
+ * @summary Submit a startup application
+ */
+export const getCreateStartupApplicationUrl = () => {
+  return `/api/startup-applications`;
+};
+
+export const createStartupApplication = async (
+  createStartupApplicationBody: CreateStartupApplicationBody,
+  options?: RequestInit,
+): Promise<StartupApplication> => {
+  return customFetch<StartupApplication>(getCreateStartupApplicationUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createStartupApplicationBody),
+  });
+};
+
+export const getCreateStartupApplicationMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createStartupApplication>>,
+    TError,
+    { data: BodyType<CreateStartupApplicationBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createStartupApplication>>,
+  TError,
+  { data: BodyType<CreateStartupApplicationBody> },
+  TContext
+> => {
+  const mutationKey = ["createStartupApplication"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createStartupApplication>>,
+    { data: BodyType<CreateStartupApplicationBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createStartupApplication(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateStartupApplicationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createStartupApplication>>
+>;
+export type CreateStartupApplicationMutationBody =
+  BodyType<CreateStartupApplicationBody>;
+export type CreateStartupApplicationMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Submit a startup application
+ */
+export const useCreateStartupApplication = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createStartupApplication>>,
+    TError,
+    { data: BodyType<CreateStartupApplicationBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createStartupApplication>>,
+  TError,
+  { data: BodyType<CreateStartupApplicationBody> },
+  TContext
+> => {
+  return useMutation(getCreateStartupApplicationMutationOptions(options));
+};
+
+/**
+ * @summary List startup applications (admin)
+ */
+export const getListStartupApplicationsUrl = () => {
+  return `/api/startup-applications`;
+};
+
+export const listStartupApplications = async (
+  options?: RequestInit,
+): Promise<StartupApplication[]> => {
+  return customFetch<StartupApplication[]>(getListStartupApplicationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListStartupApplicationsQueryKey = () => {
+  return [`/api/startup-applications`] as const;
+};
+
+export const getListStartupApplicationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listStartupApplications>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listStartupApplications>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListStartupApplicationsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listStartupApplications>>
+  > = ({ signal }) => listStartupApplications({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listStartupApplications>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListStartupApplicationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listStartupApplications>>
+>;
+export type ListStartupApplicationsQueryError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary List startup applications (admin)
+ */
+
+export function useListStartupApplications<
+  TData = Awaited<ReturnType<typeof listStartupApplications>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listStartupApplications>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListStartupApplicationsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Set result for a startup application (admin)
+ */
+export const getUpdateStartupApplicationResultUrl = (id: number) => {
+  return `/api/startup-applications/${id}/result`;
+};
+
+export const updateStartupApplicationResult = async (
+  id: number,
+  updateStartupApplicationResultBody: UpdateStartupApplicationResultBody,
+  options?: RequestInit,
+): Promise<StartupApplication> => {
+  return customFetch<StartupApplication>(
+    getUpdateStartupApplicationResultUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateStartupApplicationResultBody),
+    },
+  );
+};
+
+export const getUpdateStartupApplicationResultMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateStartupApplicationResult>>,
+    TError,
+    { id: number; data: BodyType<UpdateStartupApplicationResultBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateStartupApplicationResult>>,
+  TError,
+  { id: number; data: BodyType<UpdateStartupApplicationResultBody> },
+  TContext
+> => {
+  const mutationKey = ["updateStartupApplicationResult"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateStartupApplicationResult>>,
+    { id: number; data: BodyType<UpdateStartupApplicationResultBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateStartupApplicationResult(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateStartupApplicationResultMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateStartupApplicationResult>>
+>;
+export type UpdateStartupApplicationResultMutationBody =
+  BodyType<UpdateStartupApplicationResultBody>;
+export type UpdateStartupApplicationResultMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Set result for a startup application (admin)
+ */
+export const useUpdateStartupApplicationResult = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateStartupApplicationResult>>,
+    TError,
+    { id: number; data: BodyType<UpdateStartupApplicationResultBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateStartupApplicationResult>>,
+  TError,
+  { id: number; data: BodyType<UpdateStartupApplicationResultBody> },
+  TContext
+> => {
+  return useMutation(getUpdateStartupApplicationResultMutationOptions(options));
+};
+
+/**
+ * @summary Get a startup application by id (public – for applicant result view)
+ */
+export const getGetStartupApplicationUrl = (id: number) => {
+  return `/api/startup-applications/${id}`;
+};
+
+export const getStartupApplication = async (
+  id: number,
+  options?: RequestInit,
+): Promise<StartupApplicationPublic> => {
+  return customFetch<StartupApplicationPublic>(
+    getGetStartupApplicationUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetStartupApplicationQueryKey = (id: number) => {
+  return [`/api/startup-applications/${id}`] as const;
+};
+
+export const getGetStartupApplicationQueryOptions = <
+  TData = Awaited<ReturnType<typeof getStartupApplication>>,
+  TError = ErrorType<NotFoundResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getStartupApplication>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetStartupApplicationQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getStartupApplication>>
+  > = ({ signal }) => getStartupApplication(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getStartupApplication>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetStartupApplicationQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getStartupApplication>>
+>;
+export type GetStartupApplicationQueryError = ErrorType<NotFoundResponse>;
+
+/**
+ * @summary Get a startup application by id (public – for applicant result view)
+ */
+
+export function useGetStartupApplication<
+  TData = Awaited<ReturnType<typeof getStartupApplication>>,
+  TError = ErrorType<NotFoundResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getStartupApplication>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetStartupApplicationQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

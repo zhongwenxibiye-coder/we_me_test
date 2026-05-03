@@ -1,6 +1,5 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
   description: API specification
@@ -9,16 +8,17 @@ servers:
     description: Base API path
 tags:
   - name: health
-    description: Health operations
   - name: mentor-applications
-    description: Mentor application operations
+  - name: mentors
+  - name: mentor-articles
+  - name: job-listings
+  - name: startup-applications
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -26,6 +26,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Mentor Applications ────────────────────────────────────
   /mentor-applications:
     post:
       operationId: createMentorApplication
@@ -52,13 +54,8 @@ paths:
                   minLength: 1
                 message:
                   type: string
-                  minLength: 10
-              required:
-                - mentorId
-                - name
-                - contact
-                - topic
-                - message
+                  minLength: 100
+              required: [mentorId, name, contact, topic, message]
       responses:
         "201":
           description: Created
@@ -70,7 +67,6 @@ paths:
       operationId: listMentorApplications
       tags: [mentor-applications]
       summary: List all mentoring applications (admin)
-      description: Requires admin password header
       parameters:
         - in: header
           name: x-admin-password
@@ -79,7 +75,7 @@ paths:
             type: string
       responses:
         "200":
-          description: List of applications
+          description: OK
           content:
             application/json:
               schema:
@@ -87,16 +83,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/MentorApplication"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
+          $ref: "#/components/responses/Unauthorized"
   /mentor-applications/{id}/status:
     patch:
       operationId: updateMentorApplicationStatus
       tags: [mentor-applications]
-      summary: Mark an application as read or new (admin)
+      summary: Update application status (admin)
       parameters:
         - in: header
           name: x-admin-password
@@ -118,8 +110,7 @@ paths:
                 status:
                   type: string
                   enum: [new, read]
-              required:
-                - status
+              required: [status]
       responses:
         "200":
           description: Updated
@@ -128,33 +119,498 @@ paths:
               schema:
                 $ref: "#/components/schemas/MentorApplication"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
+          $ref: "#/components/responses/Unauthorized"
         "404":
-          description: Not found
+          $ref: "#/components/responses/NotFound"
+
+  # ── Mentors ────────────────────────────────────────────────
+  /mentors:
+    get:
+      operationId: listMentors
+      tags: [mentors]
+      summary: List active mentors
+      responses:
+        "200":
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
+                type: array
+                items:
+                  $ref: "#/components/schemas/MentorProfile"
+    post:
+      operationId: createMentor
+      tags: [mentors]
+      summary: Create a mentor (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MentorProfileInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /mentors/{id}:
+    get:
+      operationId: getMentor
+      tags: [mentors]
+      summary: Get a mentor with articles
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateMentor
+      tags: [mentors]
+      summary: Update a mentor (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MentorProfileInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteMentor
+      tags: [mentors]
+      summary: Delete a mentor (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Mentor Articles ────────────────────────────────────────
+  /mentors/{mentorId}/articles:
+    get:
+      operationId: listMentorArticles
+      tags: [mentor-articles]
+      summary: List articles for a mentor
+      parameters:
+        - in: path
+          name: mentorId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MentorArticle"
+    post:
+      operationId: createMentorArticle
+      tags: [mentor-articles]
+      summary: Create article for a mentor (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: mentorId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MentorArticleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorArticle"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /mentor-articles/{id}:
+    put:
+      operationId: updateMentorArticle
+      tags: [mentor-articles]
+      summary: Update an article (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MentorArticleInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorArticle"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteMentorArticle
+      tags: [mentor-articles]
+      summary: Delete an article (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Job Listings ───────────────────────────────────────────
+  /job-listings:
+    get:
+      operationId: listJobListings
+      tags: [job-listings]
+      summary: List active job listings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobListing"
+    post:
+      operationId: createJobListing
+      tags: [job-listings]
+      summary: Create a job listing (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobListingInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobListing"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /job-listings/{id}:
+    put:
+      operationId: updateJobListing
+      tags: [job-listings]
+      summary: Update a job listing (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobListingInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobListing"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteJobListing
+      tags: [job-listings]
+      summary: Delete a job listing (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Startup Applications ───────────────────────────────────
+  /startup-applications:
+    post:
+      operationId: createStartupApplication
+      tags: [startup-applications]
+      summary: Submit a startup application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                founderName:
+                  type: string
+                  minLength: 1
+                email:
+                  type: string
+                  minLength: 1
+                registrationStatus:
+                  type: string
+                  minLength: 1
+                startupIdea:
+                  type: string
+                  minLength: 1
+                readiness:
+                  type: string
+                  minLength: 1
+                readinessDetail:
+                  type: string
+                  default: ""
+                ideaReason:
+                  type: string
+                  minLength: 1
+                experience:
+                  type: string
+                  minLength: 1
+                team:
+                  type: string
+                  minLength: 1
+              required:
+                - founderName
+                - email
+                - registrationStatus
+                - startupIdea
+                - readiness
+                - ideaReason
+                - experience
+                - team
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartupApplication"
+    get:
+      operationId: listStartupApplications
+      tags: [startup-applications]
+      summary: List startup applications (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StartupApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /startup-applications/{id}/result:
+    patch:
+      operationId: updateStartupApplicationResult
+      tags: [startup-applications]
+      summary: Set result for a startup application (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                result:
+                  type: string
+                  enum: [도전가능, 도전불가능]
+                resultReason:
+                  type: string
+                  default: ""
+              required: [result]
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartupApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /startup-applications/{id}:
+    get:
+      operationId: getStartupApplication
+      tags: [startup-applications]
+      summary: Get a startup application by id (public – for applicant result view)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartupApplicationPublic"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
 components:
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
+
     ApiError:
       type: object
       properties:
         error:
           type: string
-      required:
-        - error
+      required: [error]
+
+    # ── Mentor Application ─────────────────────────────────
     MentorApplication:
       type: object
       properties:
@@ -179,13 +635,253 @@ components:
         readAt:
           type: ["string", "null"]
           format: date-time
+      required: [id, mentorId, name, contact, topic, message, status, createdAt, readAt]
+
+    # ── Mentor ─────────────────────────────────────────────
+    MentorProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        major:
+          type: string
+        yearsOfExperience:
+          type: integer
+        photoUrl:
+          type: ["string", "null"]
+        headlineText:
+          type: string
+        sublineText:
+          type: string
+        bio:
+          type: string
+        avatarColor:
+          type: string
+        initial:
+          type: string
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
       required:
         - id
-        - mentorId
         - name
-        - contact
-        - topic
-        - message
-        - status
+        - major
+        - yearsOfExperience
+        - photoUrl
+        - headlineText
+        - sublineText
+        - bio
+        - avatarColor
+        - initial
+        - isActive
+        - displayOrder
         - createdAt
-        - readAt
+
+    MentorProfileInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        major:
+          type: string
+          minLength: 1
+        yearsOfExperience:
+          type: integer
+        photoUrl:
+          type: ["string", "null"]
+        headlineText:
+          type: string
+        sublineText:
+          type: string
+        bio:
+          type: string
+        avatarColor:
+          type: string
+        initial:
+          type: string
+          minLength: 1
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+      required: [name, major, yearsOfExperience, initial]
+
+    MentorDetail:
+      allOf:
+        - $ref: "#/components/schemas/MentorProfile"
+        - type: object
+          properties:
+            articles:
+              type: array
+              items:
+                $ref: "#/components/schemas/MentorArticle"
+          required: [articles]
+
+    # ── Mentor Article ─────────────────────────────────────
+    MentorArticle:
+      type: object
+      properties:
+        id:
+          type: integer
+        mentorId:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        displayOrder:
+          type: integer
+        isActive:
+          type: boolean
+      required: [id, mentorId, title, content, displayOrder, isActive]
+
+    MentorArticleInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        displayOrder:
+          type: integer
+        isActive:
+          type: boolean
+      required: [title]
+
+    # ── Job Listing ────────────────────────────────────────
+    LearningItem:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+      required: [title, content]
+
+    JobListing:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        title:
+          type: string
+        shortDescription:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+        learning:
+          type: array
+          items:
+            $ref: "#/components/schemas/LearningItem"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - category
+        - title
+        - shortDescription
+        - imageUrl
+        - isActive
+        - displayOrder
+        - learning
+        - createdAt
+
+    JobListingInput:
+      type: object
+      properties:
+        category:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        shortDescription:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+        learning:
+          type: array
+          items:
+            $ref: "#/components/schemas/LearningItem"
+      required: [category, title]
+
+    # ── Startup Application ────────────────────────────────
+    StartupApplication:
+      type: object
+      properties:
+        id:
+          type: integer
+        founderName:
+          type: string
+        email:
+          type: string
+        registrationStatus:
+          type: string
+        startupIdea:
+          type: string
+        readiness:
+          type: string
+        readinessDetail:
+          type: string
+        ideaReason:
+          type: string
+        experience:
+          type: string
+        team:
+          type: string
+        result:
+          type: ["string", "null"]
+        resultReason:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - founderName
+        - email
+        - registrationStatus
+        - startupIdea
+        - readiness
+        - readinessDetail
+        - ideaReason
+        - experience
+        - team
+        - result
+        - resultReason
+        - createdAt
+
+    StartupApplicationPublic:
+      type: object
+      properties:
+        id:
+          type: integer
+        founderName:
+          type: string
+        result:
+          type: ["string", "null"]
+        resultReason:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, founderName, result, resultReason, createdAt]

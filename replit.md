@@ -7,28 +7,49 @@
 ## Artifacts
 
 - `wemi` (react-vite, `/`) — 위미 메인 웹 앱
-- `api-server` (express, `/api`) — 공유 API 서버 (healthz, mentor-applications)
+- `api-server` (express, `/api`) — 공유 API 서버
 - `mockup-sandbox` (`/__mockup`) — 디자인 프로토타이핑 캔버스
 
 ## Pages (wemi)
 
-- `/` — 메인화면 (히어로, 가치 제안, 직무 미리보기, 멘토 미리보기, CTA)
-- `/jobs`, `/jobs/:id` — 직무 학습
-- `/mentors`, `/mentors/:id` — 졸업생 멘토링 + 멘토 상세/신청 폼
-- `/admin` — 관리자 신청함 (ADMIN_PASSWORD 로그인, localStorage 보관)
-- `/career-match`, `/creative-space`, `/humanities`, `/projects` — 준비중
+- `/` — 메인화면 (히어로, 위미의 가치, Features)
+- `/jobs`, `/jobs/:id` — 직무 학습 (정적 데이터)
+- `/mentors` — 졸업생 멘토링 목록 (DB)
+- `/mentors/:id` — 멘토 허브 (프로필+아티클 목록+신청링크+후원)
+- `/mentors/:id/articles/:articleId` — 아티클 상세
+- `/mentors/:id/apply` — 1:1 멘토링 신청 폼 (이메일 only, 100자+)
+- `/career-match` — 커리어 매칭 (창업 신청 폼 + 프로젝트 목록)
+- `/career-match/result/:id` — 창업 신청 결과 (공개)
+- `/admin` — 관리자 (4탭: 멘토링 신청함 / 멘토 관리 / 직무 관리 / 창업 아이디어)
+- `/creative-space`, `/humanities`, `/projects` — 준비중
 
 ## Backend
 
-- DB: PostgreSQL (Replit) — `mentor_applications` 테이블 (id, mentorId, name, contact, topic, message, status, createdAt, readAt)
-- 스키마: `lib/db/src/schema/mentor-applications.ts`, push: `pnpm --filter @workspace/db run push`
-- API 계약: `lib/api-spec/openapi.yaml` → `pnpm --filter @workspace/api-spec run codegen`로 `@workspace/api-zod`, `@workspace/api-client-react` 생성
-- 라우트: `artifacts/api-server/src/routes/mentor-applications.ts`
-  - `POST /api/mentor-applications` — 공개, 신청 생성
-  - `GET /api/mentor-applications` — 어드민 (x-admin-password)
-  - `PATCH /api/mentor-applications/:id/status` — 어드민 (read|new 토글)
+- DB: PostgreSQL (Replit) — 5개 테이블
+  - `mentor_applications` — 멘토링 신청 (mentorId TEXT, name, contact, topic, message, status)
+  - `mentors` — 멘토 프로필 (DB CRUD, integer PK)
+  - `mentor_articles` — 멘토별 아티클 (mentorId → mentors.id)
+  - `job_listings` — 직무 목록 (learning JSON)
+  - `startup_applications` — 창업 신청 (result: 도전가능/도전불가능)
+- 스키마: `lib/db/src/schema/`, push: `pnpm --filter @workspace/db run push`
+- API 계약: `lib/api-spec/openapi.yaml` → codegen: `pnpm --filter @workspace/api-spec run codegen`
+- 생성물: `@workspace/api-client-react` (TanStack Query hooks), `@workspace/api-zod` (Zod schemas)
 - 어드민 인증: `x-admin-password` 헤더, env `ADMIN_PASSWORD` (Secret)
-- `lib/api-zod/src/index.ts`는 generated/types를 `Types` 네임스페이스로 re-export (Zod const와 TS type 이름 충돌 회피)
+- `lib/api-zod/src/index.ts`는 generated/types를 `Types` 네임스페이스로 re-export (충돌 회피)
+
+## Key Routes (api-server)
+
+- `GET/POST /api/mentors` — 멘토 목록/추가
+- `GET/PUT/DELETE /api/mentors/:id` — 멘토 상세/수정/삭제
+- `GET/POST /api/mentors/:mentorId/articles` — 아티클 목록/추가
+- `PUT/DELETE /api/mentor-articles/:id` — 아티클 수정/삭제
+- `GET/POST /api/job-listings` — 직무 목록/추가
+- `PUT/DELETE /api/job-listings/:id` — 직무 수정/삭제
+- `POST/GET /api/startup-applications` — 창업 신청/목록(어드민)
+- `GET /api/startup-applications/:id` — 공개 결과 조회
+- `PATCH /api/startup-applications/:id/result` — 결과 설정(어드민)
+- `POST/GET /api/mentor-applications` — 멘토링 신청/목록(어드민)
+- `PATCH /api/mentor-applications/:id/status` — 상태 토글(어드민)
 
 ## Stack
 
@@ -36,7 +57,7 @@
 - React + Vite + Tailwind v4 + shadcn/ui + framer-motion + wouter
 - TanStack Query + Orval generated hooks
 - 폰트: Pretendard (CDN)
-- 시드 데이터: `src/data/jobs.ts`, `src/data/mentors.ts`
+- Drizzle ORM
 
 ## Layout
 
@@ -55,5 +76,5 @@
 ## Key Commands
 
 - `pnpm run typecheck` — 전체 타입체크
-- `pnpm run build` — 전체 빌드
-- `pnpm --filter @workspace/wemi run dev` — wemi 로컬 실행
+- `pnpm --filter @workspace/db run push` — DB 스키마 push
+- `pnpm --filter @workspace/api-spec run codegen` — OpenAPI → hooks 생성

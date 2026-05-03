@@ -8,7 +8,6 @@
 import * as zod from "zod";
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -19,7 +18,7 @@ export const HealthCheckResponse = zod.object({
  * @summary Submit a new mentoring application
  */
 
-export const createMentorApplicationBodyMessageMin = 10;
+export const createMentorApplicationBodyMessageMin = 100;
 
 export const CreateMentorApplicationBody = zod.object({
   mentorId: zod.string().min(1),
@@ -30,7 +29,6 @@ export const CreateMentorApplicationBody = zod.object({
 });
 
 /**
- * Requires admin password header
  * @summary List all mentoring applications (admin)
  */
 export const ListMentorApplicationsHeader = zod.object({
@@ -53,7 +51,7 @@ export const ListMentorApplicationsResponse = zod.array(
 );
 
 /**
- * @summary Mark an application as read or new (admin)
+ * @summary Update application status (admin)
  */
 export const UpdateMentorApplicationStatusParams = zod.object({
   id: zod.coerce.number(),
@@ -77,4 +75,408 @@ export const UpdateMentorApplicationStatusResponse = zod.object({
   status: zod.enum(["new", "read"]),
   createdAt: zod.coerce.date(),
   readAt: zod.coerce.date().nullable(),
+});
+
+/**
+ * @summary List active mentors
+ */
+export const ListMentorsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  major: zod.string(),
+  yearsOfExperience: zod.number(),
+  photoUrl: zod.string().nullable(),
+  headlineText: zod.string(),
+  sublineText: zod.string(),
+  bio: zod.string(),
+  avatarColor: zod.string(),
+  initial: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListMentorsResponse = zod.array(ListMentorsResponseItem);
+
+/**
+ * @summary Create a mentor (admin)
+ */
+export const CreateMentorHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateMentorBody = zod.object({
+  name: zod.string().min(1),
+  major: zod.string().min(1),
+  yearsOfExperience: zod.number(),
+  photoUrl: zod.string().nullish(),
+  headlineText: zod.string().optional(),
+  sublineText: zod.string().optional(),
+  bio: zod.string().optional(),
+  avatarColor: zod.string().optional(),
+  initial: zod.string().min(1),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+/**
+ * @summary Get a mentor with articles
+ */
+export const GetMentorParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetMentorResponse = zod
+  .object({
+    id: zod.number(),
+    name: zod.string(),
+    major: zod.string(),
+    yearsOfExperience: zod.number(),
+    photoUrl: zod.string().nullable(),
+    headlineText: zod.string(),
+    sublineText: zod.string(),
+    bio: zod.string(),
+    avatarColor: zod.string(),
+    initial: zod.string(),
+    isActive: zod.boolean(),
+    displayOrder: zod.number(),
+    createdAt: zod.coerce.date(),
+  })
+  .and(
+    zod.object({
+      articles: zod.array(
+        zod.object({
+          id: zod.number(),
+          mentorId: zod.number(),
+          title: zod.string(),
+          content: zod.string(),
+          displayOrder: zod.number(),
+          isActive: zod.boolean(),
+        }),
+      ),
+    }),
+  );
+
+/**
+ * @summary Update a mentor (admin)
+ */
+export const UpdateMentorParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateMentorHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateMentorBody = zod.object({
+  name: zod.string().min(1),
+  major: zod.string().min(1),
+  yearsOfExperience: zod.number(),
+  photoUrl: zod.string().nullish(),
+  headlineText: zod.string().optional(),
+  sublineText: zod.string().optional(),
+  bio: zod.string().optional(),
+  avatarColor: zod.string().optional(),
+  initial: zod.string().min(1),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+export const UpdateMentorResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  major: zod.string(),
+  yearsOfExperience: zod.number(),
+  photoUrl: zod.string().nullable(),
+  headlineText: zod.string(),
+  sublineText: zod.string(),
+  bio: zod.string(),
+  avatarColor: zod.string(),
+  initial: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a mentor (admin)
+ */
+export const DeleteMentorParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteMentorHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+/**
+ * @summary List articles for a mentor
+ */
+export const ListMentorArticlesParams = zod.object({
+  mentorId: zod.coerce.number(),
+});
+
+export const ListMentorArticlesResponseItem = zod.object({
+  id: zod.number(),
+  mentorId: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  displayOrder: zod.number(),
+  isActive: zod.boolean(),
+});
+export const ListMentorArticlesResponse = zod.array(
+  ListMentorArticlesResponseItem,
+);
+
+/**
+ * @summary Create article for a mentor (admin)
+ */
+export const CreateMentorArticleParams = zod.object({
+  mentorId: zod.coerce.number(),
+});
+
+export const CreateMentorArticleHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateMentorArticleBody = zod.object({
+  title: zod.string().min(1),
+  content: zod.string().optional(),
+  displayOrder: zod.number().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update an article (admin)
+ */
+export const UpdateMentorArticleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateMentorArticleHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateMentorArticleBody = zod.object({
+  title: zod.string().min(1),
+  content: zod.string().optional(),
+  displayOrder: zod.number().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateMentorArticleResponse = zod.object({
+  id: zod.number(),
+  mentorId: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  displayOrder: zod.number(),
+  isActive: zod.boolean(),
+});
+
+/**
+ * @summary Delete an article (admin)
+ */
+export const DeleteMentorArticleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteMentorArticleHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+/**
+ * @summary List active job listings
+ */
+export const ListJobListingsResponseItem = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  title: zod.string(),
+  shortDescription: zod.string(),
+  imageUrl: zod.string().nullable(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  learning: zod.array(
+    zod.object({
+      title: zod.string(),
+      content: zod.string(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+});
+export const ListJobListingsResponse = zod.array(ListJobListingsResponseItem);
+
+/**
+ * @summary Create a job listing (admin)
+ */
+export const CreateJobListingHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateJobListingBody = zod.object({
+  category: zod.string().min(1),
+  title: zod.string().min(1),
+  shortDescription: zod.string().optional(),
+  imageUrl: zod.string().nullish(),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+  learning: zod
+    .array(
+      zod.object({
+        title: zod.string(),
+        content: zod.string(),
+      }),
+    )
+    .optional(),
+});
+
+/**
+ * @summary Update a job listing (admin)
+ */
+export const UpdateJobListingParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateJobListingHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateJobListingBody = zod.object({
+  category: zod.string().min(1),
+  title: zod.string().min(1),
+  shortDescription: zod.string().optional(),
+  imageUrl: zod.string().nullish(),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+  learning: zod
+    .array(
+      zod.object({
+        title: zod.string(),
+        content: zod.string(),
+      }),
+    )
+    .optional(),
+});
+
+export const UpdateJobListingResponse = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  title: zod.string(),
+  shortDescription: zod.string(),
+  imageUrl: zod.string().nullable(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  learning: zod.array(
+    zod.object({
+      title: zod.string(),
+      content: zod.string(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a job listing (admin)
+ */
+export const DeleteJobListingParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteJobListingHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+/**
+ * @summary Submit a startup application
+ */
+
+export const createStartupApplicationBodyReadinessDetailDefault = ``;
+
+export const CreateStartupApplicationBody = zod.object({
+  founderName: zod.string().min(1),
+  email: zod.string().min(1),
+  registrationStatus: zod.string().min(1),
+  startupIdea: zod.string().min(1),
+  readiness: zod.string().min(1),
+  readinessDetail: zod
+    .string()
+    .default(createStartupApplicationBodyReadinessDetailDefault),
+  ideaReason: zod.string().min(1),
+  experience: zod.string().min(1),
+  team: zod.string().min(1),
+});
+
+/**
+ * @summary List startup applications (admin)
+ */
+export const ListStartupApplicationsHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const ListStartupApplicationsResponseItem = zod.object({
+  id: zod.number(),
+  founderName: zod.string(),
+  email: zod.string(),
+  registrationStatus: zod.string(),
+  startupIdea: zod.string(),
+  readiness: zod.string(),
+  readinessDetail: zod.string(),
+  ideaReason: zod.string(),
+  experience: zod.string(),
+  team: zod.string(),
+  result: zod.string().nullable(),
+  resultReason: zod.string().nullable(),
+  createdAt: zod.coerce.date(),
+});
+export const ListStartupApplicationsResponse = zod.array(
+  ListStartupApplicationsResponseItem,
+);
+
+/**
+ * @summary Set result for a startup application (admin)
+ */
+export const UpdateStartupApplicationResultParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateStartupApplicationResultHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const updateStartupApplicationResultBodyResultReasonDefault = ``;
+
+export const UpdateStartupApplicationResultBody = zod.object({
+  result: zod.enum(["도전가능", "도전불가능"]),
+  resultReason: zod
+    .string()
+    .default(updateStartupApplicationResultBodyResultReasonDefault),
+});
+
+export const UpdateStartupApplicationResultResponse = zod.object({
+  id: zod.number(),
+  founderName: zod.string(),
+  email: zod.string(),
+  registrationStatus: zod.string(),
+  startupIdea: zod.string(),
+  readiness: zod.string(),
+  readinessDetail: zod.string(),
+  ideaReason: zod.string(),
+  experience: zod.string(),
+  team: zod.string(),
+  result: zod.string().nullable(),
+  resultReason: zod.string().nullable(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Get a startup application by id (public – for applicant result view)
+ */
+export const GetStartupApplicationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetStartupApplicationResponse = zod.object({
+  id: zod.number(),
+  founderName: zod.string(),
+  result: zod.string().nullable(),
+  resultReason: zod.string().nullable(),
+  createdAt: zod.coerce.date(),
 });

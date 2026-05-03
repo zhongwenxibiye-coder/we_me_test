@@ -8,9 +8,12 @@ import Jobs from "@/pages/Jobs";
 import JobDetail from "@/pages/JobDetail";
 import Mentors from "@/pages/Mentors";
 import MentorDetail from "@/pages/MentorDetail";
+import ArticleDetail from "@/pages/ArticleDetail";
+import MentorApply from "@/pages/MentorApply";
 import Admin from "@/pages/Admin";
+import CareerMatchPage from "@/pages/CareerMatch";
+import StartupResult from "@/pages/StartupResult";
 import {
-  CareerMatchPage,
   CreativeSpacePage,
   HumanitiesPage,
   ProjectsPage,
@@ -27,7 +30,10 @@ function Router() {
         <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/:id" component={JobDetail} />
         <Route path="/mentors" component={Mentors} />
+        <Route path="/mentors/:id/articles/:articleId" component={ArticleDetail} />
+        <Route path="/mentors/:id/apply" component={MentorApply} />
         <Route path="/mentors/:id" component={MentorDetail} />
+        <Route path="/career-match/result/:id" component={StartupResult} />
         <Route path="/career-match" component={CareerMatchPage} />
         <Route path="/creative-space" component={CreativeSpacePage} />
         <Route path="/humanities" component={HumanitiesPage} />

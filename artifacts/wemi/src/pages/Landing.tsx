@@ -8,6 +8,9 @@ import {
   PenTool,
   BookOpen,
   ArrowRight,
+  Heart,
+  Star,
+  TrendingUp,
 } from "lucide-react";
 import { Mascot, WemiWordmark } from "@/components/Mascot";
 
@@ -57,6 +60,24 @@ const FEATURES: FeatureCard[] = [
   },
 ];
 
+const VALUES = [
+  {
+    icon: Heart,
+    number: "①",
+    text: "다같이 고민하고 해결합니다",
+  },
+  {
+    icon: Star,
+    number: "②",
+    text: "진심을 전달합니다",
+  },
+  {
+    icon: TrendingUp,
+    number: "③",
+    text: "인문학의 가치를 높입니다",
+  },
+];
+
 export default function Landing() {
   return (
     <div>
@@ -97,18 +118,55 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          {/* Hero illustration */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, type: "spring", stiffness: 120, damping: 18 }}
-            className="relative flex flex-col items-center justify-center min-h-[360px]"
+            className="relative flex flex-col items-center justify-center min-h-[280px]"
           >
-            <Mascot size={300} animate="float" />
+            <Mascot size={200} animate="float" />
             <div className="mt-2">
-              <WemiWordmark height={64} />
+              <WemiWordmark height={56} />
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* 위미의 가치 */}
+      <section className="mx-auto max-w-6xl px-6 lg:px-10 py-12 lg:py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          className="text-center max-w-2xl mx-auto"
+        >
+          <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "hsl(45 80% 40%)" }}>
+            Values
+          </p>
+          <h2 className="mt-3 text-3xl lg:text-4xl font-extrabold tracking-tight">
+            위미의 가치
+          </h2>
+        </motion.div>
+
+        <div className="mt-10 grid sm:grid-cols-3 gap-5">
+          {VALUES.map((v, i) => (
+            <motion.div
+              key={v.number}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ delay: i * 0.1 }}
+              className="rounded-3xl bg-card border border-card-border p-8 text-center flex flex-col items-center gap-4"
+            >
+              <div
+                className="size-16 rounded-2xl flex items-center justify-center text-2xl font-extrabold"
+                style={{ background: "hsl(45 92% 55% / 0.18)", color: "hsl(35 60% 30%)" }}
+              >
+                {v.number}
+              </div>
+              <p className="text-lg font-extrabold tracking-tight leading-snug">{v.text}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
