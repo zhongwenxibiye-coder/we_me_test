@@ -120,7 +120,7 @@ type MentorFormData = {
 const MENTOR_FORM_DEFAULTS: MentorFormData = {
   name: "", major: "", yearsOfExperience: "0", photoUrl: "",
   headlineText: "", sublineText: "", bio: "",
-  avatarColor: "bg-amber-200", initial: "", isActive: true, displayOrder: "0",
+  avatarColor: "bg-amber-200", initial: "", isActive: true, displayOrder: "1",
 };
 
 function MentorsTab({ password }: { password: string }) {
@@ -218,7 +218,7 @@ function MentorsTab({ password }: { password: string }) {
             </label>
             <div className="flex items-center gap-2">
               <label className="text-xs text-muted-foreground">순서</label>
-              <Input type="number" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-8 w-20 rounded-xl bg-background" />
+              <Input type="number" min="1" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-8 w-20 rounded-xl bg-background" />
             </div>
           </div>
           <div className="flex gap-2">
@@ -273,9 +273,9 @@ function ArticleManager({ mentorId, password }: { mentorId: number; password: st
   const deleteArticle = useDeleteMentorArticle({ request: ro });
 
   const [editing, setEditing] = useState<number | "new" | null>(null);
-  const [form, setForm] = useState({ title: "", content: "", displayOrder: "0", isActive: true });
+  const [form, setForm] = useState({ title: "", content: "", displayOrder: "1", isActive: true });
 
-  function startNew() { setForm({ title: "", content: "", displayOrder: "0", isActive: true }); setEditing("new"); }
+  function startNew() { setForm({ title: "", content: "", displayOrder: "1", isActive: true }); setEditing("new"); }
   function startEdit(a: { id: number; title: string; content: string; displayOrder: number; isActive: boolean }) {
     setForm({ title: a.title, content: a.content, displayOrder: String(a.displayOrder), isActive: a.isActive });
     setEditing(a.id);
@@ -331,7 +331,7 @@ function ArticleManager({ mentorId, password }: { mentorId: number; password: st
             </label>
             <div className="flex items-center gap-1.5">
               <label className="text-xs text-muted-foreground">순서</label>
-              <Input type="number" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-7 w-16 rounded-lg bg-card" />
+              <Input type="number" min="1" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-7 w-16 rounded-lg bg-card" />
             </div>
           </div>
           <div className="flex gap-2">
@@ -357,12 +357,12 @@ function ArticleManager({ mentorId, password }: { mentorId: number; password: st
   );
 }
 
-// ── Tab: 직무 관리 ──────────────────────────────────────────
+// ── Tab: 직무 학습 ──────────────────────────────────────────
 
 const JOB_CATEGORIES = ["영업", "마케팅", "홍보", "기획", "일반사무/공공기관", "IR", "기타"];
 
 type JobFormData = { category: string; title: string; shortDescription: string; imageUrl: string; isActive: boolean; displayOrder: string };
-const JOB_FORM_DEFAULTS: JobFormData = { category: "영업", title: "", shortDescription: "", imageUrl: "", isActive: true, displayOrder: "0" };
+const JOB_FORM_DEFAULTS: JobFormData = { category: "영업", title: "", shortDescription: "", imageUrl: "", isActive: true, displayOrder: "1" };
 
 function JobsTab({ password }: { password: string }) {
   const queryClient = useQueryClient();
@@ -451,7 +451,7 @@ function JobsTab({ password }: { password: string }) {
             </label>
             <div className="flex items-center gap-2">
               <label className="text-xs text-muted-foreground">순서</label>
-              <Input type="number" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-8 w-20 rounded-xl bg-background" />
+              <Input type="number" min="1" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-8 w-20 rounded-xl bg-background" />
             </div>
           </div>
           <div className="flex gap-2">
@@ -607,7 +607,7 @@ function StartupTab({ password }: { password: string }) {
 const TABS: { id: Tab; label: string; icon: typeof Inbox }[] = [
   { id: "applications", label: "멘토링 신청함", icon: Inbox },
   { id: "mentors", label: "멘토 관리", icon: Users },
-  { id: "jobs", label: "직무 관리", icon: Briefcase },
+  { id: "jobs", label: "직무 학습", icon: Briefcase },
   { id: "startup", label: "창업 아이디어", icon: Rocket },
 ];
 

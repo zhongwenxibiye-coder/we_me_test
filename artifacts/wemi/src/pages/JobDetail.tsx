@@ -1,16 +1,27 @@
 import { useState } from "react";
 import { Link, useRoute } from "wouter";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronLeft, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronLeft } from "lucide-react";
+import { useListJobListings, type JobListing } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
-import { getSubJobById } from "@/data/jobs";
 import { cn } from "@/lib/utils";
 
 export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");
-  const job = params?.id ? getSubJobById(params.id) : undefined;
+  const id = params?.id ? parseInt(params.id, 10) : NaN;
   const [openIdx, setOpenIdx] = useState<number | null>(0);
+
+  const { data: allJobs = [], isLoading } = useListJobListings<JobListing[]>();
+  const job = isNaN(id) ? undefined : allJobs.find((j) => j.id === id);
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-4xl px-6 lg:px-10 py-16 text-center text-muted-foreground">
+        불러오는 중...
+      </div>
+    );
+  }
 
   if (!job) {
     return (
@@ -37,91 +48,82 @@ export default function JobDetail() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-4 rounded-3xl bg-card border border-card-border p-6 lg:p-8 grid md:grid-cols-[200px_1fr] gap-6 items-center"
+        className={cn(
+          "mt-4 rounded-3xl bg-card border border-card-border p-6 lg:p-8",
+          job.imageUrl && "grid md:grid-cols-[200px_1fr] gap-6 items-center",
+        )}
       >
-        {job.image && (
+        {job.imageUrl && (
           <div className="rounded-2xl bg-muted/40 overflow-hidden flex items-center justify-center aspect-square">
             <img
-              src={`${import.meta.env.BASE_URL}${job.image}`}
+              src={`${import.meta.env.BASE_URL}${job.imageUrl}`}
               alt={job.title}
               className="w-full h-full object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
             />
           </div>
         )}
         <div>
-          <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-secondary/15 border border-secondary/30" style={{ color: "hsl(88 45% 32%)" }}>
+          <span
+            className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-secondary/15 border border-secondary/30"
+            style={{ color: "hsl(88 45% 32%)" }}
+          >
             {job.category}
           </span>
-          {job.topRecommended && (
-            <span
-              className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full bg-primary/20 ml-2"
-              style={{ color: "hsl(35 60% 25%)" }}
-            >
-              <Sparkles size={11} />
-              가장 가능성이 높은 직무
-            </span>
-          )}
-          <h1 className="mt-3 text-3xl lg:text-4xl font-extrabold tracking-tight">
-            "{job.title}"
-          </h1>
-          <p className="mt-3 text-muted-foreground leading-relaxed">
-            {job.shortDescription}
-          </p>
+          <h1 className="mt-3 text-3xl lg:text-4xl font-extrabold tracking-tight">"{job.title}"</h1>
+          <p className="mt-3 text-muted-foreground leading-relaxed">{job.shortDescription}</p>
         </div>
       </motion.div>
 
       {/* Learning list */}
-      <div className="mt-10">
-        <h2 className="text-2xl font-extrabold tracking-tight">학습 목록</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          관심 있는 항목을 눌러서 내용을 펼쳐보세요.
-        </p>
+      {job.learning && job.learning.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-extrabold tracking-tight">학습 목록</h2>
+          <p className="text-sm text-muted-foreground mt-1">관심 있는 항목을 눌러서 내용을 펼쳐보세요.</p>
 
-        <div className="mt-5 rounded-3xl bg-card border border-card-border overflow-hidden divide-y divide-border/60">
-          {job.learning.map((item, idx) => {
-            const open = openIdx === idx;
-            const empty = !item.content;
-            return (
-              <div key={idx}>
-                <button
-                  type="button"
-                  onClick={() => setOpenIdx(open ? null : idx)}
-                  className="w-full flex items-center gap-3 px-5 py-5 text-left hover-elevate"
-                >
-                  <span
-                    className="size-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                    style={{
-                      background: "hsl(45 80% 88%)",
-                      color: "hsl(35 60% 25%)",
-                    }}
+          <div className="mt-5 rounded-3xl bg-card border border-card-border overflow-hidden divide-y divide-border/60">
+            {job.learning.map((item, idx) => {
+              const open = openIdx === idx;
+              const empty = !item.content;
+              return (
+                <div key={idx}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenIdx(open ? null : idx)}
+                    className="w-full flex items-center gap-3 px-5 py-5 text-left hover-elevate"
                   >
-                    {idx + 1}
-                  </span>
-                  <span className="flex-1 font-semibold text-base">{item.title}</span>
-                  <ChevronDown
-                    size={18}
-                    className={cn("transition-transform text-muted-foreground", open && "rotate-180")}
-                  />
-                </button>
-                <motion.div
-                  initial={false}
-                  animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="overflow-hidden"
-                >
-                  <div className="px-5 pb-5 pl-16 text-sm leading-relaxed text-foreground/85">
-                    {empty ? (
-                      <span className="text-muted-foreground italic">내용 추가 예정</span>
-                    ) : (
-                      item.content
-                    )}
-                  </div>
-                </motion.div>
-              </div>
-            );
-          })}
+                    <span
+                      className="size-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                      style={{ background: "hsl(45 80% 88%)", color: "hsl(35 60% 25%)" }}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span className="flex-1 font-semibold text-base">{item.title}</span>
+                    <ChevronDown
+                      size={18}
+                      className={cn("transition-transform text-muted-foreground", open && "rotate-180")}
+                    />
+                  </button>
+                  <motion.div
+                    initial={false}
+                    animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-5 pb-5 pl-16 text-sm leading-relaxed text-foreground/85">
+                      {empty ? (
+                        <span className="text-muted-foreground italic">내용 추가 예정</span>
+                      ) : (
+                        item.content
+                      )}
+                    </div>
+                  </motion.div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

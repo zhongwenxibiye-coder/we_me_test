@@ -245,10 +245,10 @@ export default function CareerMatchPage() {
         className="pb-8 border-b border-border/60"
       >
         <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "hsl(88 45% 38%)" }}>
-          Career Matching
+          Projects
         </p>
-        <h1 className="mt-2 text-4xl lg:text-5xl font-extrabold tracking-tight">커리어 매칭</h1>
-        <p className="mt-3 text-muted-foreground">나에게 맞는 진로와 도전의 기회를 찾아보세요.</p>
+        <h1 className="mt-2 text-4xl lg:text-5xl font-extrabold tracking-tight">프로젝트 참여</h1>
+        <p className="mt-3 text-muted-foreground">창업과 프로젝트에 도전해 보세요.</p>
       </motion.div>
 
       {/* 아이디어 창업 도전하기 */}

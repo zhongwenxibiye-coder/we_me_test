@@ -9,7 +9,6 @@ import {
   BookOpen,
   ArrowRight,
   Heart,
-  Star,
   TrendingUp,
 } from "lucide-react";
 import { Mascot, WemiWordmark } from "@/components/Mascot";
@@ -38,7 +37,7 @@ const FEATURES: FeatureCard[] = [
     icon: Lightbulb,
     title: "프로젝트 참여",
     desc: "실제 기업에서 내 준 과제를 수행하여 경험을 쌓아요.",
-    href: "/projects",
+    href: "/career-match",
   },
   {
     icon: Sparkles,
@@ -60,20 +59,22 @@ const FEATURES: FeatureCard[] = [
   },
 ];
 
-const VALUES = [
+interface ValueItem {
+  icon: typeof Heart;
+  text: string;
+}
+
+const VALUES: ValueItem[] = [
   {
-    icon: Heart,
-    number: "①",
+    icon: Users,
     text: "다같이 고민하고 해결합니다",
   },
   {
-    icon: Star,
-    number: "②",
+    icon: Heart,
     text: "진심을 전달합니다",
   },
   {
     icon: TrendingUp,
-    number: "③",
     text: "인문학의 가치를 높입니다",
   },
 ];
@@ -151,7 +152,7 @@ export default function Landing() {
         <div className="mt-10 grid sm:grid-cols-3 gap-5">
           {VALUES.map((v, i) => (
             <motion.div
-              key={v.number}
+              key={v.text}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
@@ -159,10 +160,10 @@ export default function Landing() {
               className="rounded-3xl bg-card border border-card-border p-8 text-center flex flex-col items-center gap-4"
             >
               <div
-                className="size-16 rounded-2xl flex items-center justify-center text-2xl font-extrabold"
-                style={{ background: "hsl(45 92% 55% / 0.18)", color: "hsl(35 60% 30%)" }}
+                className="size-16 rounded-2xl flex items-center justify-center"
+                style={{ background: "hsl(45 92% 55% / 0.18)" }}
               >
-                {v.number}
+                <v.icon size={28} style={{ color: "hsl(35 60% 30%)" }} />
               </div>
               <p className="text-lg font-extrabold tracking-tight leading-snug">{v.text}</p>
             </motion.div>
