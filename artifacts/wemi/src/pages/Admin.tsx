@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Inbox, Lock, Mail, CheckCircle2, Clock, LogOut, Users, Briefcase,
@@ -24,6 +24,72 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mascot } from "@/components/Mascot";
 
 const STORAGE_KEY = "wemi-admin-password";
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function ImageUpload({
+  value,
+  onChange,
+  label = "이미지",
+}: {
+  value: string;
+  onChange: (url: string) => void;
+  label?: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div>
+      <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</label>
+      <div className="mt-1.5 flex items-center gap-3 flex-wrap">
+        {value && (
+          <img
+            src={value}
+            alt="미리보기"
+            className="size-16 rounded-xl object-cover border border-border bg-muted/40"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
+        )}
+        <button
+          type="button"
+          onClick={() => ref.current?.click()}
+          className="px-3 py-2 rounded-xl border border-border text-sm font-medium hover:bg-muted/40 transition-colors"
+        >
+          📁 파일 선택
+        </button>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+          >
+            제거
+          </button>
+        )}
+        <input
+          ref={ref}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) fileToBase64(file).then(onChange);
+            e.target.value = "";
+          }}
+        />
+      </div>
+      {!value && (
+        <p className="text-xs text-muted-foreground mt-1">이미지를 선택하면 미리보기가 표시됩니다.</p>
+      )}
+    </div>
+  );
+}
 
 type Tab = "applications" | "mentors" | "jobs" | "startup";
 
@@ -201,8 +267,11 @@ function MentorsTab({ password }: { password: string }) {
               <Input type="number" value={form.yearsOfExperience} onChange={(e) => setForm((f) => ({ ...f, yearsOfExperience: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" />
             </div>
             <div className="sm:col-span-2">
-              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">사진 URL (선택)</label>
-              <Input value={form.photoUrl} onChange={(e) => setForm((f) => ({ ...f, photoUrl: e.target.value }))} placeholder="https://..." className="mt-1 h-9 rounded-xl bg-background" />
+              <ImageUpload
+                label="프로필 사진 (선택)"
+                value={form.photoUrl}
+                onChange={(url) => setForm((f) => ({ ...f, photoUrl: url }))}
+              />
             </div>
           </div>
           {(["headlineText", "sublineText", "bio"] as const).map((k) => (
@@ -361,8 +430,9 @@ function ArticleManager({ mentorId, password }: { mentorId: number; password: st
 
 const JOB_CATEGORIES = ["영업", "마케팅", "홍보", "기획", "일반사무/공공기관", "IR", "기타"];
 
-type JobFormData = { category: string; title: string; shortDescription: string; imageUrl: string; isActive: boolean; displayOrder: string };
-const JOB_FORM_DEFAULTS: JobFormData = { category: "영업", title: "", shortDescription: "", imageUrl: "", isActive: true, displayOrder: "1" };
+type LearningItem = { title: string; content: string };
+type JobFormData = { category: string; title: string; shortDescription: string; imageUrl: string; isActive: boolean; displayOrder: string; learning: LearningItem[] };
+const JOB_FORM_DEFAULTS: JobFormData = { category: "영업", title: "", shortDescription: "", imageUrl: "", isActive: true, displayOrder: "1", learning: [] };
 
 function JobsTab({ password }: { password: string }) {
   const queryClient = useQueryClient();
@@ -382,6 +452,7 @@ function JobsTab({ password }: { password: string }) {
       category: j.category, title: j.title,
       shortDescription: j.shortDescription, imageUrl: j.imageUrl ?? "",
       isActive: j.isActive, displayOrder: String(j.displayOrder),
+      learning: (j.learning as LearningItem[] | null) ?? [],
     });
     setEditing(j.id);
   }
@@ -391,6 +462,7 @@ function JobsTab({ password }: { password: string }) {
       category: form.category, title: form.title,
       shortDescription: form.shortDescription, imageUrl: form.imageUrl || null,
       isActive: form.isActive, displayOrder: Number(form.displayOrder),
+      learning: form.learning,
     };
     if (editing === "new") {
       createJob.mutate({ data: payload }, {
@@ -431,20 +503,77 @@ function JobsTab({ password }: { password: string }) {
               ))}
             </div>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">직무명</label>
-              <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" />
-            </div>
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">이미지 URL (선택)</label>
-              <Input value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} placeholder="https://..." className="mt-1 h-9 rounded-xl bg-background" />
-            </div>
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">직무명</label>
+            <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" />
           </div>
+          <ImageUpload
+            label="이미지 (선택)"
+            value={form.imageUrl}
+            onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))}
+          />
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">짧은 설명</label>
             <Textarea value={form.shortDescription} onChange={(e) => setForm((f) => ({ ...f, shortDescription: e.target.value }))} rows={2} className="mt-1 rounded-xl bg-background" />
           </div>
+
+          {/* 학습 목록 편집 */}
+          <div className="border border-border rounded-2xl p-4 bg-background/50 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-extrabold">학습 목록</label>
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, learning: [...f.learning, { title: "", content: "" }] }))}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-primary/15 font-semibold hover:bg-primary/25 transition-colors"
+              >
+                <Plus size={11} />항목 추가
+              </button>
+            </div>
+            {form.learning.length === 0 && (
+              <p className="text-xs text-muted-foreground italic">학습 항목이 없습니다. [항목 추가]를 눌러주세요.</p>
+            )}
+            <div className="space-y-3">
+              {form.learning.map((item, idx) => (
+                <div key={idx} className="rounded-xl border border-border p-3 bg-card space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="size-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                      style={{ background: "hsl(45 80% 88%)", color: "hsl(35 60% 25%)" }}
+                    >
+                      {idx + 1}
+                    </span>
+                    <Input
+                      value={item.title}
+                      onChange={(e) => setForm((f) => ({
+                        ...f,
+                        learning: f.learning.map((it, i) => i === idx ? { ...it, title: e.target.value } : it),
+                      }))}
+                      placeholder="학습 항목 제목 (예: 국내 영업의 정의)"
+                      className="h-8 rounded-lg bg-background flex-1 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, learning: f.learning.filter((_, i) => i !== idx) }))}
+                      className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <Textarea
+                    value={item.content}
+                    onChange={(e) => setForm((f) => ({
+                      ...f,
+                      learning: f.learning.map((it, i) => i === idx ? { ...it, content: e.target.value } : it),
+                    }))}
+                    placeholder="내용 (비워두면 '내용 추가 예정'으로 표시)"
+                    rows={3}
+                    className="rounded-lg bg-background text-sm"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center gap-3">
             <label className="text-sm font-semibold flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />활성
