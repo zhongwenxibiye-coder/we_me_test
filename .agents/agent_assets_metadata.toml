@@ -101,3 +101,9 @@ id = "C8KZ6nYm1_L5h2PyxUje6"
 uri = "file://attached_assets/generated_images/overseas-sales-v3-720.png"
 type = "image"
 title = "해외영업 일러스트 720x720 / 투명배경 / 96dpi"
+
+[[outputs]]
+id = "dxtJdquTOIUAaMoirtDiv"
+uri = "file://attached_assets/generated_images/overseas-chosen-720.png"
+type = "image"
+title = "해외영업 720x720 / 투명배경 / 96dpi"
