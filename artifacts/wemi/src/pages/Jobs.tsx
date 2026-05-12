@@ -88,7 +88,7 @@ export default function Jobs() {
                   {job.imageUrl && (
                     <div className="rounded-xl bg-muted/40 mb-3 overflow-hidden flex items-center justify-center aspect-[4/3]">
                       <img
-                        src={`${import.meta.env.BASE_URL}${job.imageUrl}`}
+                        src={job.imageUrl?.startsWith("data:") ? job.imageUrl : `${import.meta.env.BASE_URL}${job.imageUrl}`}
                         alt={job.title}
                         className="w-full h-full object-contain"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
