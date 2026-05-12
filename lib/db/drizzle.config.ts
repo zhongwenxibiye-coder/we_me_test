@@ -1,7 +1,13 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 
-const url = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+function extractUrl(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  const match = raw.match(/postgresql:\/\/[^\s"']+/);
+  return match ? match[0] : raw.trim();
+}
+
+const url = extractUrl(process.env.SUPABASE_DATABASE_URL) || extractUrl(process.env.DATABASE_URL);
 
 if (!url) {
   throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL must be set");
