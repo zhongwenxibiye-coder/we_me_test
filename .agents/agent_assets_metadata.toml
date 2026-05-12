@@ -48,6 +48,12 @@ uri = "file://attached_assets/generated_images/salesperson-1x1.png"
 type = "image"
 title = "cute salesperson 1x1"
 
+[[generated]]
+id = "I4IvqFtfHjgVO_q08lkE_"
+uri = "file://attached_assets/generated_images/salesperson-skin.png"
+type = "image"
+title = "cute salesperson warm skin"
+
 [[outputs]]
 id = "fT9aC-03DscNYleUjSOlr"
 uri = "file://attached_assets/generated_images/korean-salesperson.png"
@@ -65,3 +71,9 @@ id = "DgoCgTf7kzZuowb5YvnRh"
 uri = "file://attached_assets/generated_images/salesperson-final.png"
 type = "image"
 title = "영업사원 1:1 / 투명배경 / 150dpi"
+
+[[outputs]]
+id = "jNNy9tlcC4qSoX7s8bhgm"
+uri = "file://attached_assets/generated_images/salesperson-skin-final.png"
+type = "image"
+title = "영업사원 살색 피부 / 투명배경 / 150dpi"
