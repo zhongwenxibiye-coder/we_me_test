@@ -19,6 +19,10 @@ import type {
 import type {
   CreateMentorApplicationBody,
   CreateStartupApplicationBody,
+  CreativeEpisode,
+  CreativeEpisodeInput,
+  CreativeWork,
+  CreativeWorkInput,
   HealthStatus,
   JobListing,
   JobListingInput,
@@ -1830,3 +1834,691 @@ export function useGetStartupApplication<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List all creative works
+ */
+export const getListCreativeWorksUrl = () => {
+  return `/api/creative-works`;
+};
+
+export const listCreativeWorks = async (
+  options?: RequestInit,
+): Promise<CreativeWork[]> => {
+  return customFetch<CreativeWork[]>(getListCreativeWorksUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListCreativeWorksQueryKey = () => {
+  return [`/api/creative-works`] as const;
+};
+
+export const getListCreativeWorksQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCreativeWorks>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCreativeWorks>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListCreativeWorksQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCreativeWorks>>
+  > = ({ signal }) => listCreativeWorks({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCreativeWorks>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCreativeWorksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCreativeWorks>>
+>;
+export type ListCreativeWorksQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all creative works
+ */
+
+export function useListCreativeWorks<
+  TData = Awaited<ReturnType<typeof listCreativeWorks>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCreativeWorks>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCreativeWorksQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a creative work (admin)
+ */
+export const getCreateCreativeWorkUrl = () => {
+  return `/api/creative-works`;
+};
+
+export const createCreativeWork = async (
+  creativeWorkInput: CreativeWorkInput,
+  options?: RequestInit,
+): Promise<CreativeWork> => {
+  return customFetch<CreativeWork>(getCreateCreativeWorkUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(creativeWorkInput),
+  });
+};
+
+export const getCreateCreativeWorkMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCreativeWork>>,
+    TError,
+    { data: BodyType<CreativeWorkInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCreativeWork>>,
+  TError,
+  { data: BodyType<CreativeWorkInput> },
+  TContext
+> => {
+  const mutationKey = ["createCreativeWork"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCreativeWork>>,
+    { data: BodyType<CreativeWorkInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createCreativeWork(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCreativeWorkMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCreativeWork>>
+>;
+export type CreateCreativeWorkMutationBody = BodyType<CreativeWorkInput>;
+export type CreateCreativeWorkMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create a creative work (admin)
+ */
+export const useCreateCreativeWork = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCreativeWork>>,
+    TError,
+    { data: BodyType<CreativeWorkInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCreativeWork>>,
+  TError,
+  { data: BodyType<CreativeWorkInput> },
+  TContext
+> => {
+  return useMutation(getCreateCreativeWorkMutationOptions(options));
+};
+
+/**
+ * @summary Update a creative work (admin)
+ */
+export const getUpdateCreativeWorkUrl = (id: number) => {
+  return `/api/creative-works/${id}`;
+};
+
+export const updateCreativeWork = async (
+  id: number,
+  creativeWorkInput: CreativeWorkInput,
+  options?: RequestInit,
+): Promise<CreativeWork> => {
+  return customFetch<CreativeWork>(getUpdateCreativeWorkUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(creativeWorkInput),
+  });
+};
+
+export const getUpdateCreativeWorkMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCreativeWork>>,
+    TError,
+    { id: number; data: BodyType<CreativeWorkInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCreativeWork>>,
+  TError,
+  { id: number; data: BodyType<CreativeWorkInput> },
+  TContext
+> => {
+  const mutationKey = ["updateCreativeWork"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCreativeWork>>,
+    { id: number; data: BodyType<CreativeWorkInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateCreativeWork(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCreativeWorkMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCreativeWork>>
+>;
+export type UpdateCreativeWorkMutationBody = BodyType<CreativeWorkInput>;
+export type UpdateCreativeWorkMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update a creative work (admin)
+ */
+export const useUpdateCreativeWork = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCreativeWork>>,
+    TError,
+    { id: number; data: BodyType<CreativeWorkInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCreativeWork>>,
+  TError,
+  { id: number; data: BodyType<CreativeWorkInput> },
+  TContext
+> => {
+  return useMutation(getUpdateCreativeWorkMutationOptions(options));
+};
+
+/**
+ * @summary Delete a creative work (admin)
+ */
+export const getDeleteCreativeWorkUrl = (id: number) => {
+  return `/api/creative-works/${id}`;
+};
+
+export const deleteCreativeWork = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteCreativeWorkUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteCreativeWorkMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCreativeWork>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteCreativeWork>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteCreativeWork"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteCreativeWork>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteCreativeWork(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCreativeWorkMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCreativeWork>>
+>;
+
+export type DeleteCreativeWorkMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete a creative work (admin)
+ */
+export const useDeleteCreativeWork = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCreativeWork>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteCreativeWork>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteCreativeWorkMutationOptions(options));
+};
+
+/**
+ * @summary List episodes for a creative work
+ */
+export const getListCreativeEpisodesUrl = (workId: number) => {
+  return `/api/creative-works/${workId}/episodes`;
+};
+
+export const listCreativeEpisodes = async (
+  workId: number,
+  options?: RequestInit,
+): Promise<CreativeEpisode[]> => {
+  return customFetch<CreativeEpisode[]>(getListCreativeEpisodesUrl(workId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListCreativeEpisodesQueryKey = (workId: number) => {
+  return [`/api/creative-works/${workId}/episodes`] as const;
+};
+
+export const getListCreativeEpisodesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCreativeEpisodes>>,
+  TError = ErrorType<unknown>,
+>(
+  workId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listCreativeEpisodes>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListCreativeEpisodesQueryKey(workId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCreativeEpisodes>>
+  > = ({ signal }) =>
+    listCreativeEpisodes(workId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!workId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCreativeEpisodes>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCreativeEpisodesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCreativeEpisodes>>
+>;
+export type ListCreativeEpisodesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List episodes for a creative work
+ */
+
+export function useListCreativeEpisodes<
+  TData = Awaited<ReturnType<typeof listCreativeEpisodes>>,
+  TError = ErrorType<unknown>,
+>(
+  workId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listCreativeEpisodes>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCreativeEpisodesQueryOptions(workId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add an episode to a creative work (admin)
+ */
+export const getCreateCreativeEpisodeUrl = (workId: number) => {
+  return `/api/creative-works/${workId}/episodes`;
+};
+
+export const createCreativeEpisode = async (
+  workId: number,
+  creativeEpisodeInput: CreativeEpisodeInput,
+  options?: RequestInit,
+): Promise<CreativeEpisode> => {
+  return customFetch<CreativeEpisode>(getCreateCreativeEpisodeUrl(workId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(creativeEpisodeInput),
+  });
+};
+
+export const getCreateCreativeEpisodeMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCreativeEpisode>>,
+    TError,
+    { workId: number; data: BodyType<CreativeEpisodeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCreativeEpisode>>,
+  TError,
+  { workId: number; data: BodyType<CreativeEpisodeInput> },
+  TContext
+> => {
+  const mutationKey = ["createCreativeEpisode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCreativeEpisode>>,
+    { workId: number; data: BodyType<CreativeEpisodeInput> }
+  > = (props) => {
+    const { workId, data } = props ?? {};
+
+    return createCreativeEpisode(workId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCreativeEpisodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCreativeEpisode>>
+>;
+export type CreateCreativeEpisodeMutationBody = BodyType<CreativeEpisodeInput>;
+export type CreateCreativeEpisodeMutationError =
+  ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Add an episode to a creative work (admin)
+ */
+export const useCreateCreativeEpisode = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCreativeEpisode>>,
+    TError,
+    { workId: number; data: BodyType<CreativeEpisodeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCreativeEpisode>>,
+  TError,
+  { workId: number; data: BodyType<CreativeEpisodeInput> },
+  TContext
+> => {
+  return useMutation(getCreateCreativeEpisodeMutationOptions(options));
+};
+
+/**
+ * @summary Update an episode (admin)
+ */
+export const getUpdateCreativeEpisodeUrl = (id: number) => {
+  return `/api/creative-episodes/${id}`;
+};
+
+export const updateCreativeEpisode = async (
+  id: number,
+  creativeEpisodeInput: CreativeEpisodeInput,
+  options?: RequestInit,
+): Promise<CreativeEpisode> => {
+  return customFetch<CreativeEpisode>(getUpdateCreativeEpisodeUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(creativeEpisodeInput),
+  });
+};
+
+export const getUpdateCreativeEpisodeMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCreativeEpisode>>,
+    TError,
+    { id: number; data: BodyType<CreativeEpisodeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCreativeEpisode>>,
+  TError,
+  { id: number; data: BodyType<CreativeEpisodeInput> },
+  TContext
+> => {
+  const mutationKey = ["updateCreativeEpisode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCreativeEpisode>>,
+    { id: number; data: BodyType<CreativeEpisodeInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateCreativeEpisode(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCreativeEpisodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCreativeEpisode>>
+>;
+export type UpdateCreativeEpisodeMutationBody = BodyType<CreativeEpisodeInput>;
+export type UpdateCreativeEpisodeMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update an episode (admin)
+ */
+export const useUpdateCreativeEpisode = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCreativeEpisode>>,
+    TError,
+    { id: number; data: BodyType<CreativeEpisodeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCreativeEpisode>>,
+  TError,
+  { id: number; data: BodyType<CreativeEpisodeInput> },
+  TContext
+> => {
+  return useMutation(getUpdateCreativeEpisodeMutationOptions(options));
+};
+
+/**
+ * @summary Delete an episode (admin)
+ */
+export const getDeleteCreativeEpisodeUrl = (id: number) => {
+  return `/api/creative-episodes/${id}`;
+};
+
+export const deleteCreativeEpisode = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteCreativeEpisodeUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteCreativeEpisodeMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCreativeEpisode>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteCreativeEpisode>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteCreativeEpisode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteCreativeEpisode>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteCreativeEpisode(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCreativeEpisodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCreativeEpisode>>
+>;
+
+export type DeleteCreativeEpisodeMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete an episode (admin)
+ */
+export const useDeleteCreativeEpisode = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCreativeEpisode>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteCreativeEpisode>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteCreativeEpisodeMutationOptions(options));
+};

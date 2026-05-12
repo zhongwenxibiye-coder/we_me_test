@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Inbox, Lock, Mail, CheckCircle2, Clock, LogOut, Users, Briefcase,
-  Rocket, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Eye,
+  Rocket, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Eye, PenLine, ImageIcon,
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -16,6 +16,10 @@ import {
   getListJobListingsQueryKey,
   useListStartupApplications, useUpdateStartupApplicationResult, type StartupApplication,
   getListStartupApplicationsQueryKey,
+  useListCreativeWorks, useCreateCreativeWork, useUpdateCreativeWork, useDeleteCreativeWork,
+  getListCreativeWorksQueryKey, type CreativeWork,
+  useListCreativeEpisodes, useCreateCreativeEpisode, useUpdateCreativeEpisode, useDeleteCreativeEpisode,
+  getListCreativeEpisodesQueryKey, type CreativeEpisode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -91,7 +95,7 @@ function ImageUpload({
   );
 }
 
-type Tab = "applications" | "mentors" | "jobs" | "startup";
+type Tab = "applications" | "mentors" | "jobs" | "startup" | "creative";
 
 function formatDate(value: string | Date): string {
   const d = new Date(value as string);
@@ -731,6 +735,267 @@ function StartupTab({ password }: { password: string }) {
   );
 }
 
+// ── Tab: 창작 공간 ───────────────────────────────────────────
+
+function EpisodeManager({ work, password }: { work: CreativeWork; password: string }) {
+  const queryClient = useQueryClient();
+  const ro = useMemo(() => ({ headers: { "x-admin-password": password } }), [password]);
+
+  const { data: episodes = [], isLoading } = useListCreativeEpisodes(work.id);
+  const createEp = useCreateCreativeEpisode({ request: ro });
+  const updateEp = useUpdateCreativeEpisode({ request: ro });
+  const deleteEp = useDeleteCreativeEpisode({ request: ro });
+
+  const [editing, setEditing] = useState<number | "new" | null>(null);
+  const [form, setForm] = useState({ episodeNumber: "1", title: "", content: "", isActive: true });
+
+  function startNew() {
+    const next = episodes.length > 0 ? Math.max(...episodes.map((e) => e.episodeNumber)) + 1 : 1;
+    setForm({ episodeNumber: String(next), title: "", content: "", isActive: true });
+    setEditing("new");
+  }
+  function startEdit(ep: CreativeEpisode) {
+    setForm({ episodeNumber: String(ep.episodeNumber), title: ep.title, content: ep.content, isActive: ep.isActive });
+    setEditing(ep.id);
+  }
+
+  function handleSave() {
+    const payload = { episodeNumber: Number(form.episodeNumber), title: form.title, content: form.content, isActive: form.isActive };
+    if (editing === "new") {
+      createEp.mutate({ workId: work.id, data: payload }, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListCreativeEpisodesQueryKey(work.id) });
+          setEditing(null);
+        },
+      });
+    } else if (typeof editing === "number") {
+      updateEp.mutate({ id: editing, data: payload }, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListCreativeEpisodesQueryKey(work.id) });
+          setEditing(null);
+        },
+      });
+    }
+  }
+
+  function handleDelete(id: number) {
+    if (!confirm("에피소드를 삭제할까요?")) return;
+    deleteEp.mutate({ id }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListCreativeEpisodesQueryKey(work.id) }),
+    });
+  }
+
+  return (
+    <div className="mt-4 pt-4 border-t border-border/60 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">화(에피소드) 목록</p>
+        <Button size="sm" variant="outline" className="rounded-full bg-background h-7 text-xs" onClick={startNew}>
+          <Plus size={12} className="mr-1" />추가
+        </Button>
+      </div>
+      {editing !== null && (
+        <div className="bg-background rounded-2xl border border-border p-4 space-y-3">
+          <div className="flex gap-3">
+            <div className="w-20">
+              <label className="text-xs font-semibold">화 번호</label>
+              <Input type="number" min="1" value={form.episodeNumber}
+                onChange={(e) => setForm((f) => ({ ...f, episodeNumber: e.target.value }))}
+                className="mt-1 h-9 rounded-xl bg-card" />
+            </div>
+            <div className="flex-1">
+              <label className="text-xs font-semibold">제목</label>
+              <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                className="mt-1 h-9 rounded-xl bg-card" placeholder="에피소드 제목" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-semibold">내용</label>
+            <Textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+              rows={8} className="mt-1 rounded-xl bg-card font-mono text-sm" placeholder="본문 내용을 입력하세요..." />
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-xs flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />활성
+            </label>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" className="h-7 rounded-full text-xs" onClick={handleSave} disabled={!form.title}>저장</Button>
+            <Button size="sm" variant="outline" className="h-7 rounded-full text-xs bg-card" onClick={() => setEditing(null)}>취소</Button>
+          </div>
+        </div>
+      )}
+      {isLoading ? <p className="text-xs text-muted-foreground">불러오는 중...</p> : (
+        <ul className="space-y-2">
+          {episodes.map((ep) => (
+            <li key={ep.id} className="flex items-center justify-between gap-2 bg-background rounded-xl border border-border px-4 py-2.5">
+              <span className={`text-sm font-medium ${!ep.isActive ? "text-muted-foreground line-through" : ""}`}>
+                <span className="font-bold text-primary mr-2">{ep.episodeNumber}화</span>{ep.title}
+              </span>
+              <div className="flex gap-1.5 shrink-0">
+                <Button size="sm" variant="outline" className="h-7 rounded-full bg-card" onClick={() => startEdit(ep)}><Pencil size={12} /></Button>
+                <Button size="sm" variant="outline" className="h-7 rounded-full bg-card text-destructive" onClick={() => handleDelete(ep.id)}><Trash2 size={12} /></Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function CreativeTab({ password }: { password: string }) {
+  const queryClient = useQueryClient();
+  const ro = useMemo(() => ({ headers: { "x-admin-password": password } }), [password]);
+
+  const { data: works = [], isLoading } = useListCreativeWorks();
+  const createWork = useCreateCreativeWork({ request: ro });
+  const updateWork = useUpdateCreativeWork({ request: ro });
+  const deleteWork = useDeleteCreativeWork({ request: ro });
+
+  const [editing, setEditing] = useState<number | "new" | null>(null);
+  const [expandedEpisodes, setExpandedEpisodes] = useState<number | null>(null);
+  const [form, setForm] = useState({ category: "소설", title: "", thumbnailUrl: "", displayOrder: "0", isActive: true });
+  const thumbRef = useRef<HTMLInputElement>(null);
+
+  function startNew() { setForm({ category: "소설", title: "", thumbnailUrl: "", displayOrder: "0", isActive: true }); setEditing("new"); }
+  function startEdit(w: CreativeWork) {
+    setForm({ category: w.category, title: w.title, thumbnailUrl: w.thumbnailUrl ?? "", displayOrder: String(w.displayOrder), isActive: w.isActive });
+    setEditing(w.id);
+  }
+
+  function handleSave() {
+    const payload = {
+      category: form.category, title: form.title,
+      thumbnailUrl: form.thumbnailUrl || null,
+      displayOrder: Number(form.displayOrder), isActive: form.isActive,
+    };
+    if (editing === "new") {
+      createWork.mutate({ data: payload }, {
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListCreativeWorksQueryKey() }); setEditing(null); },
+      });
+    } else if (typeof editing === "number") {
+      updateWork.mutate({ id: editing, data: payload }, {
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListCreativeWorksQueryKey() }); setEditing(null); },
+      });
+    }
+  }
+
+  function handleDelete(id: number) {
+    if (!confirm("작품을 삭제하면 모든 에피소드도 삭제됩니다. 계속할까요?")) return;
+    deleteWork.mutate({ id }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListCreativeWorksQueryKey() }),
+    });
+  }
+
+  const CATEGORIES = ["소설", "만화", "에세이", "여행기", "시", "기타"];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">창작물 목록 ({works.length})</p>
+        <Button size="sm" variant="outline" className="rounded-full bg-card h-8" onClick={startNew}>
+          <Plus size={13} className="mr-1" />작품 추가
+        </Button>
+      </div>
+
+      {editing !== null && (
+        <div className="rounded-3xl bg-card border border-card-border p-5 space-y-4">
+          <p className="font-bold text-sm">{editing === "new" ? "새 작품 추가" : "작품 수정"}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">분류</label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                className="mt-1.5 w-full h-9 px-3 rounded-xl border border-border bg-background text-sm"
+              >
+                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">순서</label>
+              <Input type="number" min="0" value={form.displayOrder}
+                onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))}
+                className="mt-1.5 h-9 rounded-xl bg-background" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">제목</label>
+            <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              className="mt-1.5 h-9 rounded-xl bg-background" placeholder="작품 제목" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">썸네일 이미지</label>
+            <div className="mt-1.5 flex items-center gap-3 flex-wrap">
+              {form.thumbnailUrl && (
+                <img src={form.thumbnailUrl} alt="썸네일"
+                  className="size-16 rounded-xl object-cover border border-border bg-muted/40"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              )}
+              <button type="button" onClick={() => thumbRef.current?.click()}
+                className="px-3 py-2 rounded-xl border border-border text-sm font-medium hover:bg-muted/40 transition-colors">
+                <ImageIcon size={14} className="inline mr-1.5" />파일 선택
+              </button>
+              {form.thumbnailUrl && (
+                <button type="button" onClick={() => setForm((f) => ({ ...f, thumbnailUrl: "" }))}
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors">제거</button>
+              )}
+              <input ref={thumbRef} type="file" accept="image/*" className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) fileToBase64(file).then((b64) => setForm((f) => ({ ...f, thumbnailUrl: b64 })));
+                  e.target.value = "";
+                }} />
+            </div>
+          </div>
+          <label className="text-xs flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />활성
+          </label>
+          <div className="flex gap-2">
+            <Button size="sm" className="h-8 rounded-full" onClick={handleSave} disabled={!form.title || !form.category}>저장</Button>
+            <Button size="sm" variant="outline" className="h-8 rounded-full bg-background" onClick={() => setEditing(null)}>취소</Button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="py-8 text-center text-muted-foreground">불러오는 중...</div>
+      ) : (
+        <ul className="space-y-3">
+          {works.map((w: CreativeWork) => (
+            <li key={w.id} className="rounded-3xl bg-card border border-card-border p-5">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                  {w.thumbnailUrl
+                    ? <img src={w.thumbnailUrl} alt={w.title} className="size-12 rounded-xl object-cover border border-border" />
+                    : <div className="size-12 rounded-xl bg-muted/40 flex items-center justify-center"><ImageIcon size={20} className="text-muted-foreground/40" /></div>
+                  }
+                  <div>
+                    <p className="font-extrabold">{w.title}</p>
+                    <p className="text-xs text-muted-foreground">[{w.category}] · 순서 {w.displayOrder} · {w.isActive ? "활성" : "비활성"}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="rounded-full bg-card h-8"
+                    onClick={() => setExpandedEpisodes(expandedEpisodes === w.id ? null : w.id)}>
+                    {expandedEpisodes === w.id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                    <span className="ml-1 text-xs">에피소드</span>
+                  </Button>
+                  <Button size="sm" variant="outline" className="rounded-full bg-card h-8" onClick={() => startEdit(w)}><Pencil size={13} /></Button>
+                  <Button size="sm" variant="outline" className="rounded-full bg-card h-8 text-destructive" onClick={() => handleDelete(w.id)}><Trash2 size={13} /></Button>
+                </div>
+              </div>
+              {expandedEpisodes === w.id && (
+                <EpisodeManager work={w} password={password} />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // ── Admin Shell ─────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string; icon: typeof Inbox }[] = [
@@ -738,6 +1003,7 @@ const TABS: { id: Tab; label: string; icon: typeof Inbox }[] = [
   { id: "mentors", label: "멘토 관리", icon: Users },
   { id: "jobs", label: "직무 학습", icon: Briefcase },
   { id: "startup", label: "창업 아이디어", icon: Rocket },
+  { id: "creative", label: "창작 공간", icon: PenLine },
 ];
 
 function AdminShell({ password, onLogout }: { password: string; onLogout: () => void }) {
@@ -763,6 +1029,7 @@ function AdminShell({ password, onLogout }: { password: string; onLogout: () => 
       {tab === "mentors" && <MentorsTab password={password} />}
       {tab === "jobs" && <JobsTab password={password} />}
       {tab === "startup" && <StartupTab password={password} />}
+      {tab === "creative" && <CreativeTab password={password} />}
     </div>
   );
 }

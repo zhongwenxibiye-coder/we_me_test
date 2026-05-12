@@ -13,6 +13,7 @@ const NAV = [
   { href: "/jobs", label: "직무 학습" },
   { href: "/mentors", label: "졸업생 멘토링" },
   { href: "/career-match", label: "프로젝트 참여" },
+  { href: "/career-matching", label: "커리어 매칭" },
   { href: "/creative-space", label: "창작 공간" },
   { href: "/humanities", label: "인문학 콘텐츠" },
 ];

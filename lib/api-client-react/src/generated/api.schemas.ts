@@ -149,6 +149,45 @@ export interface StartupApplicationPublic {
   createdAt: string;
 }
 
+export interface CreativeWork {
+  id: number;
+  category: string;
+  title: string;
+  /** @nullable */
+  thumbnailUrl: string | null;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreativeWorkInput {
+  /** @minLength 1 */
+  category: string;
+  /** @minLength 1 */
+  title: string;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
+export interface CreativeEpisode {
+  id: number;
+  workId: number;
+  episodeNumber: number;
+  title: string;
+  content: string;
+  isActive: boolean;
+}
+
+export interface CreativeEpisodeInput {
+  episodeNumber: number;
+  /** @minLength 1 */
+  title: string;
+  content?: string;
+  isActive?: boolean;
+}
+
 /**
  * Unauthorized
  */

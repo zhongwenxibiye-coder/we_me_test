@@ -39,11 +39,13 @@ export function ComingSoonPage({ title, caption }: Props) {
   );
 }
 
-export function CareerMatchPage() {
-  return <ComingSoonPage title="커리어 매칭" />;
-}
-export function CreativeSpacePage() {
-  return <ComingSoonPage title="창작 공간" />;
+export function CareerMatchingPage() {
+  return (
+    <ComingSoonPage
+      title="커리어 매칭"
+      caption="AI가 나에게 꼭 맞는 직무를 찾아주는 기능을 준비 중이에요."
+    />
+  );
 }
 export function HumanitiesPage() {
   return <ComingSoonPage title="인문학 콘텐츠" />;

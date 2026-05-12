@@ -43,7 +43,7 @@ const FEATURES: FeatureCard[] = [
     icon: Sparkles,
     title: "커리어 매칭",
     desc: "AI가 가장 적합한 직무를 찾아주어요.",
-    href: "/career-match",
+    href: "/career-matching",
   },
   {
     icon: PenTool,

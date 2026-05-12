@@ -18,19 +18,24 @@
 - `/mentors/:id` — 멘토 허브 (프로필+아티클 목록+신청링크+후원)
 - `/mentors/:id/articles/:articleId` — 아티클 상세
 - `/mentors/:id/apply` — 1:1 멘토링 신청 폼 (이메일 only, 100자+)
-- `/career-match` — 커리어 매칭 (창업 신청 폼 + 프로젝트 목록)
+- `/career-match` — 프로젝트 참여 (창업 신청 폼 + 프로젝트 목록)
 - `/career-match/result/:id` — 창업 신청 결과 (공개)
-- `/admin` — 관리자 (4탭: 멘토링 신청함 / 멘토 관리 / 직무 관리 / 창업 아이디어)
-- `/creative-space`, `/humanities`, `/projects` — 준비중
+- `/career-matching` — 커리어 매칭 (준비중 Coming Soon)
+- `/creative-space` — 창작 공간 (썸네일 그리드 + 에피소드 목록)
+- `/creative-space/:workId/episodes/:episodeId` — 에피소드 읽기
+- `/admin` — 관리자 (5탭: 멘토링 신청함 / 멘토 관리 / 직무 관리 / 창업 아이디어 / 창작 공간)
+- `/humanities`, `/projects` — 준비중
 
 ## Backend
 
-- DB: PostgreSQL (Replit) — 5개 테이블
+- DB: PostgreSQL (Replit) — 7개 테이블
   - `mentor_applications` — 멘토링 신청 (mentorId TEXT, name, contact, topic, message, status)
   - `mentors` — 멘토 프로필 (DB CRUD, integer PK)
   - `mentor_articles` — 멘토별 아티클 (mentorId → mentors.id)
   - `job_listings` — 직무 목록 (learning JSON)
   - `startup_applications` — 창업 신청 (result: 도전가능/도전불가능)
+  - `creative_works` — 창작물 (category, title, thumbnailUrl, displayOrder, isActive)
+  - `creative_episodes` — 화 목록 (workId → creative_works.id, episodeNumber, title, content)
 - 스키마: `lib/db/src/schema/`, push: `pnpm --filter @workspace/db run push`
 - API 계약: `lib/api-spec/openapi.yaml` → codegen: `pnpm --filter @workspace/api-spec run codegen`
 - 생성물: `@workspace/api-client-react` (TanStack Query hooks), `@workspace/api-zod` (Zod schemas)
@@ -50,6 +55,10 @@
 - `PATCH /api/startup-applications/:id/result` — 결과 설정(어드민)
 - `POST/GET /api/mentor-applications` — 멘토링 신청/목록(어드민)
 - `PATCH /api/mentor-applications/:id/status` — 상태 토글(어드민)
+- `GET/POST /api/creative-works` — 창작물 목록/추가
+- `PUT/DELETE /api/creative-works/:id` — 창작물 수정/삭제
+- `GET/POST /api/creative-works/:workId/episodes` — 에피소드 목록/추가
+- `PUT/DELETE /api/creative-episodes/:id` — 에피소드 수정/삭제
 
 ## Stack
 

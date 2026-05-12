@@ -13,6 +13,8 @@ tags:
   - name: mentor-articles
   - name: job-listings
   - name: startup-applications
+  - name: creative-works
+  - name: creative-episodes
 paths:
   /healthz:
     get:
@@ -580,6 +582,210 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  # ── Creative Works ────────────────────────────────────────
+  /creative-works:
+    get:
+      operationId: listCreativeWorks
+      tags: [creative-works]
+      summary: List all creative works
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CreativeWork"
+    post:
+      operationId: createCreativeWork
+      tags: [creative-works]
+      summary: Create a creative work (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreativeWorkInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreativeWork"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /creative-works/{id}:
+    put:
+      operationId: updateCreativeWork
+      tags: [creative-works]
+      summary: Update a creative work (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreativeWorkInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreativeWork"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteCreativeWork
+      tags: [creative-works]
+      summary: Delete a creative work (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /creative-works/{workId}/episodes:
+    get:
+      operationId: listCreativeEpisodes
+      tags: [creative-episodes]
+      summary: List episodes for a creative work
+      parameters:
+        - in: path
+          name: workId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CreativeEpisode"
+    post:
+      operationId: createCreativeEpisode
+      tags: [creative-episodes]
+      summary: Add an episode to a creative work (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: workId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreativeEpisodeInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreativeEpisode"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /creative-episodes/{id}:
+    put:
+      operationId: updateCreativeEpisode
+      tags: [creative-episodes]
+      summary: Update an episode (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreativeEpisodeInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreativeEpisode"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteCreativeEpisode
+      tags: [creative-episodes]
+      summary: Delete an episode (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
 components:
   responses:
     Unauthorized:
@@ -885,3 +1091,73 @@ components:
           type: string
           format: date-time
       required: [id, founderName, result, resultReason, createdAt]
+
+    # ── Creative Work ────────────────────────────────────────
+    CreativeWork:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        title:
+          type: string
+        thumbnailUrl:
+          type: ["string", "null"]
+        displayOrder:
+          type: integer
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, category, title, thumbnailUrl, displayOrder, isActive, createdAt]
+
+    CreativeWorkInput:
+      type: object
+      properties:
+        category:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        thumbnailUrl:
+          type: ["string", "null"]
+        displayOrder:
+          type: integer
+        isActive:
+          type: boolean
+      required: [category, title]
+
+    # ── Creative Episode ─────────────────────────────────────
+    CreativeEpisode:
+      type: object
+      properties:
+        id:
+          type: integer
+        workId:
+          type: integer
+        episodeNumber:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        isActive:
+          type: boolean
+      required: [id, workId, episodeNumber, title, content, isActive]
+
+    CreativeEpisodeInput:
+      type: object
+      properties:
+        episodeNumber:
+          type: integer
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        isActive:
+          type: boolean
+      required: [episodeNumber, title]

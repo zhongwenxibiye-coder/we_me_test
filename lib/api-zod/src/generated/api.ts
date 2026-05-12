@@ -480,3 +480,149 @@ export const GetStartupApplicationResponse = zod.object({
   resultReason: zod.string().nullable(),
   createdAt: zod.coerce.date(),
 });
+
+/**
+ * @summary List all creative works
+ */
+export const ListCreativeWorksResponseItem = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  title: zod.string(),
+  thumbnailUrl: zod.string().nullable(),
+  displayOrder: zod.number(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const ListCreativeWorksResponse = zod.array(
+  ListCreativeWorksResponseItem,
+);
+
+/**
+ * @summary Create a creative work (admin)
+ */
+export const CreateCreativeWorkHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateCreativeWorkBody = zod.object({
+  category: zod.string().min(1),
+  title: zod.string().min(1),
+  thumbnailUrl: zod.string().nullish(),
+  displayOrder: zod.number().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update a creative work (admin)
+ */
+export const UpdateCreativeWorkParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCreativeWorkHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateCreativeWorkBody = zod.object({
+  category: zod.string().min(1),
+  title: zod.string().min(1),
+  thumbnailUrl: zod.string().nullish(),
+  displayOrder: zod.number().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateCreativeWorkResponse = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  title: zod.string(),
+  thumbnailUrl: zod.string().nullable(),
+  displayOrder: zod.number(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a creative work (admin)
+ */
+export const DeleteCreativeWorkParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteCreativeWorkHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+/**
+ * @summary List episodes for a creative work
+ */
+export const ListCreativeEpisodesParams = zod.object({
+  workId: zod.coerce.number(),
+});
+
+export const ListCreativeEpisodesResponseItem = zod.object({
+  id: zod.number(),
+  workId: zod.number(),
+  episodeNumber: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  isActive: zod.boolean(),
+});
+export const ListCreativeEpisodesResponse = zod.array(
+  ListCreativeEpisodesResponseItem,
+);
+
+/**
+ * @summary Add an episode to a creative work (admin)
+ */
+export const CreateCreativeEpisodeParams = zod.object({
+  workId: zod.coerce.number(),
+});
+
+export const CreateCreativeEpisodeHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateCreativeEpisodeBody = zod.object({
+  episodeNumber: zod.number(),
+  title: zod.string().min(1),
+  content: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update an episode (admin)
+ */
+export const UpdateCreativeEpisodeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCreativeEpisodeHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateCreativeEpisodeBody = zod.object({
+  episodeNumber: zod.number(),
+  title: zod.string().min(1),
+  content: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateCreativeEpisodeResponse = zod.object({
+  id: zod.number(),
+  workId: zod.number(),
+  episodeNumber: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  isActive: zod.boolean(),
+});
+
+/**
+ * @summary Delete an episode (admin)
+ */
+export const DeleteCreativeEpisodeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteCreativeEpisodeHeader = zod.object({
+  "x-admin-password": zod.string(),
+});

@@ -13,8 +13,10 @@ import MentorApply from "@/pages/MentorApply";
 import Admin from "@/pages/Admin";
 import CareerMatchPage from "@/pages/CareerMatch";
 import StartupResult from "@/pages/StartupResult";
+import CreativeSpace from "@/pages/CreativeSpace";
+import CreativeEpisode from "@/pages/CreativeEpisode";
 import {
-  CreativeSpacePage,
+  CareerMatchingPage,
   HumanitiesPage,
   ProjectsPage,
 } from "@/pages/ComingSoon";
@@ -35,7 +37,9 @@ function Router() {
         <Route path="/mentors/:id" component={MentorDetail} />
         <Route path="/career-match/result/:id" component={StartupResult} />
         <Route path="/career-match" component={CareerMatchPage} />
-        <Route path="/creative-space" component={CreativeSpacePage} />
+        <Route path="/career-matching" component={CareerMatchingPage} />
+        <Route path="/creative-space/:workId/episodes/:episodeId" component={CreativeEpisode} />
+        <Route path="/creative-space" component={CreativeSpace} />
         <Route path="/humanities" component={HumanitiesPage} />
         <Route path="/projects" component={ProjectsPage} />
         <Route path="/admin" component={Admin} />
