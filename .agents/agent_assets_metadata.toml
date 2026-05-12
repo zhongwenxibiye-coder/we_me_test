@@ -36,8 +36,20 @@ uri = "file://attached_assets/generated_images/korean-salesperson.png"
 type = "image"
 title = "korean salesperson suit briefcase"
 
+[[generated]]
+id = "ooEJqGcIFBPmqN8jcYn6n"
+uri = "file://attached_assets/generated_images/korean-salesperson-cute.png"
+type = "image"
+title = "cute simple salesperson"
+
 [[outputs]]
 id = "fT9aC-03DscNYleUjSOlr"
 uri = "file://attached_assets/generated_images/korean-salesperson.png"
 type = "image"
 title = "국내 영업사원 일러스트"
+
+[[outputs]]
+id = "lKj6LDzUIN2Ck9FcrdfK0"
+uri = "file://attached_assets/generated_images/korean-salesperson-cute.png"
+type = "image"
+title = "귀여운 영업사원 일러스트"
