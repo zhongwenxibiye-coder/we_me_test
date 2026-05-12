@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "wMy2vfQVAupBFHUWwc_0o"
@@ -30,3 +29,15 @@ id = "AhoR5kCuwvotOUAVKGRQG"
 uri = "file://attached_assets/generated_images/generated_image.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "q5TOJML7yHQV-hMxbDIgT"
+uri = "file://attached_assets/generated_images/korean-salesperson.png"
+type = "image"
+title = "korean salesperson suit briefcase"
+
+[[outputs]]
+id = "fT9aC-03DscNYleUjSOlr"
+uri = "file://attached_assets/generated_images/korean-salesperson.png"
+type = "image"
+title = "국내 영업사원 일러스트"
