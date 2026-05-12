@@ -72,6 +72,12 @@ uri = "file://attached_assets/generated_images/overseas-sales-v3.png"
 type = "image"
 title = "overseas salesperson gray laptop globe simple"
 
+[[generated]]
+id = "_PNjjDPdehl7bsLyQ0U-v"
+uri = "file://attached_assets/generated_images/overseas-new.png"
+type = "image"
+title = "overseas sales desk phone globe fresh"
+
 [[outputs]]
 id = "fT9aC-03DscNYleUjSOlr"
 uri = "file://attached_assets/generated_images/korean-salesperson.png"
@@ -105,5 +111,11 @@ title = "해외영업 일러스트 720x720 / 투명배경 / 96dpi"
 [[outputs]]
 id = "dxtJdquTOIUAaMoirtDiv"
 uri = "file://attached_assets/generated_images/overseas-chosen-720.png"
+type = "image"
+title = "해외영업 720x720 / 투명배경 / 96dpi"
+
+[[outputs]]
+id = "eGgpO_fYgObqH4JPoIFyW"
+uri = "file://attached_assets/generated_images/overseas-new-720.png"
 type = "image"
 title = "해외영업 720x720 / 투명배경 / 96dpi"
