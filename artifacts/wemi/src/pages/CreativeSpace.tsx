@@ -106,11 +106,8 @@ export default function CreativeSpace() {
           CREATIVE SPACE
         </p>
         <h1 className="mt-1 text-3xl lg:text-4xl font-extrabold tracking-tight">창작 공간</h1>
-        <p className="mt-2 text-muted-foreground">
-          소설, 에세이, 만화 등 다양한 창작물을 감상해보세요.
-        </p>
+        <p className="mt-2 text-muted-foreground">전공 지식으로 만든 다양한 창작물을 감상해 보세요!</p>
       </motion.div>
-
       {query.isLoading ? (
         <div className="text-center py-24 text-muted-foreground">불러오는 중...</div>
       ) : works.length === 0 ? (
