@@ -17,6 +17,7 @@ router.post("/creative-works", requireAdmin, async (req, res) => {
   const body = req.body as {
     category: string;
     title: string;
+    authorName?: string;
     thumbnailUrl?: string | null;
     displayOrder?: number;
     isActive?: boolean;
@@ -30,6 +31,7 @@ router.post("/creative-works", requireAdmin, async (req, res) => {
     .values({
       category: body.category,
       title: body.title,
+      authorName: body.authorName ?? "",
       thumbnailUrl: body.thumbnailUrl ?? null,
       displayOrder: body.displayOrder ?? 0,
       isActive: body.isActive ?? true,
@@ -39,7 +41,7 @@ router.post("/creative-works", requireAdmin, async (req, res) => {
 });
 
 router.put("/creative-works/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   const body = req.body;
   const [updated] = await db
@@ -52,14 +54,14 @@ router.put("/creative-works/:id", requireAdmin, async (req, res) => {
 });
 
 router.delete("/creative-works/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   await db.delete(creativeWorksTable).where(eq(creativeWorksTable.id, id));
   res.status(204).send();
 });
 
 router.get("/creative-works/:workId/episodes", async (req, res) => {
-  const workId = parseInt(req.params.workId, 10);
+  const workId = parseInt(String(req.params.workId), 10);
   if (isNaN(workId)) { res.status(404).json({ error: "Not found" }); return; }
   const rows = await db
     .select()
@@ -70,12 +72,13 @@ router.get("/creative-works/:workId/episodes", async (req, res) => {
 });
 
 router.post("/creative-works/:workId/episodes", requireAdmin, async (req, res) => {
-  const workId = parseInt(req.params.workId, 10);
+  const workId = parseInt(String(req.params.workId), 10);
   if (isNaN(workId)) { res.status(404).json({ error: "Not found" }); return; }
   const body = req.body as {
     episodeNumber: number;
     title: string;
     content?: string;
+    images?: string[];
     isActive?: boolean;
   };
   if (!body.title) { res.status(400).json({ error: "title required" }); return; }
@@ -86,6 +89,7 @@ router.post("/creative-works/:workId/episodes", requireAdmin, async (req, res) =
       episodeNumber: body.episodeNumber ?? 1,
       title: body.title,
       content: body.content ?? "",
+      images: body.images ?? [],
       isActive: body.isActive ?? true,
     })
     .returning();
@@ -93,7 +97,7 @@ router.post("/creative-works/:workId/episodes", requireAdmin, async (req, res) =
 });
 
 router.put("/creative-episodes/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   const body = req.body;
   const [updated] = await db
@@ -106,7 +110,7 @@ router.put("/creative-episodes/:id", requireAdmin, async (req, res) => {
 });
 
 router.delete("/creative-episodes/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   await db.delete(creativeEpisodesTable).where(eq(creativeEpisodesTable.id, id));
   res.status(204).send();

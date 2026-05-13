@@ -44,7 +44,7 @@ router.post("/job-listings", requireAdmin, async (req, res) => {
 });
 
 router.put("/job-listings/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   const body = req.body;
   const [updated] = await db
@@ -57,7 +57,7 @@ router.put("/job-listings/:id", requireAdmin, async (req, res) => {
 });
 
 router.delete("/job-listings/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   const [deleted] = await db
     .delete(jobListingsTable)

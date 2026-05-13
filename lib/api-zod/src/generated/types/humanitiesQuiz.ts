@@ -6,14 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreativeWork {
+export interface HumanitiesQuiz {
   id: number;
-  category: string;
-  title: string;
-  authorName: string;
+  question: string;
+  answer: boolean;
+  explanation: string;
   /** @nullable */
-  thumbnailUrl: string | null;
-  displayOrder: number;
+  scheduledDate: string | null;
   isActive: boolean;
   createdAt: Date;
 }

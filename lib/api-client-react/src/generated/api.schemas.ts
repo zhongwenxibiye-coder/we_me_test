@@ -153,6 +153,7 @@ export interface CreativeWork {
   id: number;
   category: string;
   title: string;
+  authorName: string;
   /** @nullable */
   thumbnailUrl: string | null;
   displayOrder: number;
@@ -165,6 +166,7 @@ export interface CreativeWorkInput {
   category: string;
   /** @minLength 1 */
   title: string;
+  authorName?: string;
   /** @nullable */
   thumbnailUrl?: string | null;
   displayOrder?: number;
@@ -177,6 +179,7 @@ export interface CreativeEpisode {
   episodeNumber: number;
   title: string;
   content: string;
+  images: string[];
   isActive: boolean;
 }
 
@@ -185,7 +188,104 @@ export interface CreativeEpisodeInput {
   /** @minLength 1 */
   title: string;
   content?: string;
+  images?: string[];
   isActive?: boolean;
+}
+
+export interface CreativeWorkSubmission {
+  id: number;
+  authorName: string;
+  email: string;
+  description: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface CreativeWorkSubmissionInput {
+  /** @minLength 1 */
+  authorName: string;
+  /** @minLength 1 */
+  email: string;
+  /** @minLength 200 */
+  description: string;
+}
+
+export interface HumanitiesQuiz {
+  id: number;
+  question: string;
+  answer: boolean;
+  explanation: string;
+  /** @nullable */
+  scheduledDate: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export type HumanitiesQuizWithStats = HumanitiesQuiz & {
+  participantCount: number;
+  correctCount: number;
+  correctRate: number;
+};
+
+export interface HumanitiesQuizInput {
+  /** @minLength 1 */
+  question: string;
+  answer: boolean;
+  explanation?: string;
+  /** @nullable */
+  scheduledDate?: string | null;
+  isActive?: boolean;
+}
+
+export type HumanitiesQuizTodayResponseAttempt = {
+  id?: number;
+  quizId?: number;
+  sessionKey?: string;
+  isCorrect?: boolean;
+  attemptedAt?: string;
+} | null;
+
+export interface HumanitiesQuizTodayResponse {
+  quiz: HumanitiesQuiz | null;
+  attempt: HumanitiesQuizTodayResponseAttempt;
+}
+
+export interface HumanitiesQuizAttemptInput {
+  quizId: number;
+  sessionKey: string;
+  isCorrect: boolean;
+}
+
+export interface HumanitiesQuizAttempt {
+  id: number;
+  quizId: number;
+  sessionKey: string;
+  isCorrect: boolean;
+  attemptedAt: string;
+}
+
+export interface HumanitiesArticle {
+  id: number;
+  category: string;
+  title: string;
+  content: string;
+  authorName: string;
+  imageUrl: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+}
+
+export interface HumanitiesArticleInput {
+  /** @minLength 1 */
+  category: string;
+  /** @minLength 1 */
+  title: string;
+  content?: string;
+  authorName?: string;
+  imageUrl?: string;
+  isActive?: boolean;
+  displayOrder?: number;
 }
 
 /**
@@ -254,4 +354,12 @@ export const UpdateStartupApplicationResultBodyResult = {
 export type UpdateStartupApplicationResultBody = {
   result: UpdateStartupApplicationResultBodyResult;
   resultReason?: string;
+};
+
+export type UpdateCreativeWorkSubmissionStatusBody = {
+  status: string;
+};
+
+export type GetTodayQuizParams = {
+  sessionKey?: string;
 };

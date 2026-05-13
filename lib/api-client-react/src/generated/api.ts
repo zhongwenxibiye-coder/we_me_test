@@ -23,7 +23,18 @@ import type {
   CreativeEpisodeInput,
   CreativeWork,
   CreativeWorkInput,
+  CreativeWorkSubmission,
+  CreativeWorkSubmissionInput,
+  GetTodayQuizParams,
   HealthStatus,
+  HumanitiesArticle,
+  HumanitiesArticleInput,
+  HumanitiesQuiz,
+  HumanitiesQuizAttempt,
+  HumanitiesQuizAttemptInput,
+  HumanitiesQuizInput,
+  HumanitiesQuizTodayResponse,
+  HumanitiesQuizWithStats,
   JobListing,
   JobListingInput,
   MentorApplication,
@@ -36,6 +47,7 @@ import type {
   StartupApplication,
   StartupApplicationPublic,
   UnauthorizedResponse,
+  UpdateCreativeWorkSubmissionStatusBody,
   UpdateMentorApplicationStatusBody,
   UpdateStartupApplicationResultBody,
 } from "./api.schemas";
@@ -2521,4 +2533,1215 @@ export const useDeleteCreativeEpisode = <
   TContext
 > => {
   return useMutation(getDeleteCreativeEpisodeMutationOptions(options));
+};
+
+/**
+ * @summary Submit a creative work proposal
+ */
+export const getCreateCreativeWorkSubmissionUrl = () => {
+  return `/api/creative-work-submissions`;
+};
+
+export const createCreativeWorkSubmission = async (
+  creativeWorkSubmissionInput: CreativeWorkSubmissionInput,
+  options?: RequestInit,
+): Promise<CreativeWorkSubmission> => {
+  return customFetch<CreativeWorkSubmission>(
+    getCreateCreativeWorkSubmissionUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(creativeWorkSubmissionInput),
+    },
+  );
+};
+
+export const getCreateCreativeWorkSubmissionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCreativeWorkSubmission>>,
+    TError,
+    { data: BodyType<CreativeWorkSubmissionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCreativeWorkSubmission>>,
+  TError,
+  { data: BodyType<CreativeWorkSubmissionInput> },
+  TContext
+> => {
+  const mutationKey = ["createCreativeWorkSubmission"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCreativeWorkSubmission>>,
+    { data: BodyType<CreativeWorkSubmissionInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createCreativeWorkSubmission(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCreativeWorkSubmissionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCreativeWorkSubmission>>
+>;
+export type CreateCreativeWorkSubmissionMutationBody =
+  BodyType<CreativeWorkSubmissionInput>;
+export type CreateCreativeWorkSubmissionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Submit a creative work proposal
+ */
+export const useCreateCreativeWorkSubmission = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCreativeWorkSubmission>>,
+    TError,
+    { data: BodyType<CreativeWorkSubmissionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCreativeWorkSubmission>>,
+  TError,
+  { data: BodyType<CreativeWorkSubmissionInput> },
+  TContext
+> => {
+  return useMutation(getCreateCreativeWorkSubmissionMutationOptions(options));
+};
+
+/**
+ * @summary List submissions (admin)
+ */
+export const getListCreativeWorkSubmissionsUrl = () => {
+  return `/api/creative-work-submissions`;
+};
+
+export const listCreativeWorkSubmissions = async (
+  options?: RequestInit,
+): Promise<CreativeWorkSubmission[]> => {
+  return customFetch<CreativeWorkSubmission[]>(
+    getListCreativeWorkSubmissionsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListCreativeWorkSubmissionsQueryKey = () => {
+  return [`/api/creative-work-submissions`] as const;
+};
+
+export const getListCreativeWorkSubmissionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCreativeWorkSubmissions>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCreativeWorkSubmissions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListCreativeWorkSubmissionsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCreativeWorkSubmissions>>
+  > = ({ signal }) =>
+    listCreativeWorkSubmissions({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCreativeWorkSubmissions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCreativeWorkSubmissionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCreativeWorkSubmissions>>
+>;
+export type ListCreativeWorkSubmissionsQueryError =
+  ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary List submissions (admin)
+ */
+
+export function useListCreativeWorkSubmissions<
+  TData = Awaited<ReturnType<typeof listCreativeWorkSubmissions>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCreativeWorkSubmissions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCreativeWorkSubmissionsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update submission status (admin)
+ */
+export const getUpdateCreativeWorkSubmissionStatusUrl = (id: number) => {
+  return `/api/creative-work-submissions/${id}/status`;
+};
+
+export const updateCreativeWorkSubmissionStatus = async (
+  id: number,
+  updateCreativeWorkSubmissionStatusBody: UpdateCreativeWorkSubmissionStatusBody,
+  options?: RequestInit,
+): Promise<CreativeWorkSubmission> => {
+  return customFetch<CreativeWorkSubmission>(
+    getUpdateCreativeWorkSubmissionStatusUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateCreativeWorkSubmissionStatusBody),
+    },
+  );
+};
+
+export const getUpdateCreativeWorkSubmissionStatusMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCreativeWorkSubmissionStatus>>,
+    TError,
+    { id: number; data: BodyType<UpdateCreativeWorkSubmissionStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCreativeWorkSubmissionStatus>>,
+  TError,
+  { id: number; data: BodyType<UpdateCreativeWorkSubmissionStatusBody> },
+  TContext
+> => {
+  const mutationKey = ["updateCreativeWorkSubmissionStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCreativeWorkSubmissionStatus>>,
+    { id: number; data: BodyType<UpdateCreativeWorkSubmissionStatusBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateCreativeWorkSubmissionStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCreativeWorkSubmissionStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCreativeWorkSubmissionStatus>>
+>;
+export type UpdateCreativeWorkSubmissionStatusMutationBody =
+  BodyType<UpdateCreativeWorkSubmissionStatusBody>;
+export type UpdateCreativeWorkSubmissionStatusMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update submission status (admin)
+ */
+export const useUpdateCreativeWorkSubmissionStatus = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCreativeWorkSubmissionStatus>>,
+    TError,
+    { id: number; data: BodyType<UpdateCreativeWorkSubmissionStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCreativeWorkSubmissionStatus>>,
+  TError,
+  { id: number; data: BodyType<UpdateCreativeWorkSubmissionStatusBody> },
+  TContext
+> => {
+  return useMutation(
+    getUpdateCreativeWorkSubmissionStatusMutationOptions(options),
+  );
+};
+
+/**
+ * @summary Get today's O/X quiz and attempt status
+ */
+export const getGetTodayQuizUrl = (params?: GetTodayQuizParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/humanities/quiz/today?${stringifiedParams}`
+    : `/api/humanities/quiz/today`;
+};
+
+export const getTodayQuiz = async (
+  params?: GetTodayQuizParams,
+  options?: RequestInit,
+): Promise<HumanitiesQuizTodayResponse> => {
+  return customFetch<HumanitiesQuizTodayResponse>(getGetTodayQuizUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTodayQuizQueryKey = (params?: GetTodayQuizParams) => {
+  return [`/api/humanities/quiz/today`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetTodayQuizQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTodayQuiz>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTodayQuizParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTodayQuiz>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTodayQuizQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTodayQuiz>>> = ({
+    signal,
+  }) => getTodayQuiz(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTodayQuiz>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTodayQuizQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTodayQuiz>>
+>;
+export type GetTodayQuizQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get today's O/X quiz and attempt status
+ */
+
+export function useGetTodayQuiz<
+  TData = Awaited<ReturnType<typeof getTodayQuiz>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetTodayQuizParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTodayQuiz>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTodayQuizQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Submit quiz attempt
+ */
+export const getSubmitQuizAttemptUrl = () => {
+  return `/api/humanities/quiz/attempt`;
+};
+
+export const submitQuizAttempt = async (
+  humanitiesQuizAttemptInput: HumanitiesQuizAttemptInput,
+  options?: RequestInit,
+): Promise<HumanitiesQuizAttempt> => {
+  return customFetch<HumanitiesQuizAttempt>(getSubmitQuizAttemptUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(humanitiesQuizAttemptInput),
+  });
+};
+
+export const getSubmitQuizAttemptMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitQuizAttempt>>,
+    TError,
+    { data: BodyType<HumanitiesQuizAttemptInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof submitQuizAttempt>>,
+  TError,
+  { data: BodyType<HumanitiesQuizAttemptInput> },
+  TContext
+> => {
+  const mutationKey = ["submitQuizAttempt"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof submitQuizAttempt>>,
+    { data: BodyType<HumanitiesQuizAttemptInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return submitQuizAttempt(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubmitQuizAttemptMutationResult = NonNullable<
+  Awaited<ReturnType<typeof submitQuizAttempt>>
+>;
+export type SubmitQuizAttemptMutationBody =
+  BodyType<HumanitiesQuizAttemptInput>;
+export type SubmitQuizAttemptMutationError = ErrorType<void>;
+
+/**
+ * @summary Submit quiz attempt
+ */
+export const useSubmitQuizAttempt = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitQuizAttempt>>,
+    TError,
+    { data: BodyType<HumanitiesQuizAttemptInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof submitQuizAttempt>>,
+  TError,
+  { data: BodyType<HumanitiesQuizAttemptInput> },
+  TContext
+> => {
+  return useMutation(getSubmitQuizAttemptMutationOptions(options));
+};
+
+/**
+ * @summary List all quizzes with stats (admin)
+ */
+export const getListHumanitiesQuizzesUrl = () => {
+  return `/api/humanities/quizzes`;
+};
+
+export const listHumanitiesQuizzes = async (
+  options?: RequestInit,
+): Promise<HumanitiesQuizWithStats[]> => {
+  return customFetch<HumanitiesQuizWithStats[]>(getListHumanitiesQuizzesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListHumanitiesQuizzesQueryKey = () => {
+  return [`/api/humanities/quizzes`] as const;
+};
+
+export const getListHumanitiesQuizzesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listHumanitiesQuizzes>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listHumanitiesQuizzes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListHumanitiesQuizzesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listHumanitiesQuizzes>>
+  > = ({ signal }) => listHumanitiesQuizzes({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listHumanitiesQuizzes>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListHumanitiesQuizzesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listHumanitiesQuizzes>>
+>;
+export type ListHumanitiesQuizzesQueryError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary List all quizzes with stats (admin)
+ */
+
+export function useListHumanitiesQuizzes<
+  TData = Awaited<ReturnType<typeof listHumanitiesQuizzes>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listHumanitiesQuizzes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListHumanitiesQuizzesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create quiz (admin)
+ */
+export const getCreateHumanitiesQuizUrl = () => {
+  return `/api/humanities/quizzes`;
+};
+
+export const createHumanitiesQuiz = async (
+  humanitiesQuizInput: HumanitiesQuizInput,
+  options?: RequestInit,
+): Promise<HumanitiesQuiz> => {
+  return customFetch<HumanitiesQuiz>(getCreateHumanitiesQuizUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(humanitiesQuizInput),
+  });
+};
+
+export const getCreateHumanitiesQuizMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createHumanitiesQuiz>>,
+    TError,
+    { data: BodyType<HumanitiesQuizInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createHumanitiesQuiz>>,
+  TError,
+  { data: BodyType<HumanitiesQuizInput> },
+  TContext
+> => {
+  const mutationKey = ["createHumanitiesQuiz"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createHumanitiesQuiz>>,
+    { data: BodyType<HumanitiesQuizInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createHumanitiesQuiz(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateHumanitiesQuizMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createHumanitiesQuiz>>
+>;
+export type CreateHumanitiesQuizMutationBody = BodyType<HumanitiesQuizInput>;
+export type CreateHumanitiesQuizMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create quiz (admin)
+ */
+export const useCreateHumanitiesQuiz = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createHumanitiesQuiz>>,
+    TError,
+    { data: BodyType<HumanitiesQuizInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createHumanitiesQuiz>>,
+  TError,
+  { data: BodyType<HumanitiesQuizInput> },
+  TContext
+> => {
+  return useMutation(getCreateHumanitiesQuizMutationOptions(options));
+};
+
+/**
+ * @summary Update quiz (admin)
+ */
+export const getUpdateHumanitiesQuizUrl = (id: number) => {
+  return `/api/humanities/quizzes/${id}`;
+};
+
+export const updateHumanitiesQuiz = async (
+  id: number,
+  humanitiesQuizInput: HumanitiesQuizInput,
+  options?: RequestInit,
+): Promise<HumanitiesQuiz> => {
+  return customFetch<HumanitiesQuiz>(getUpdateHumanitiesQuizUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(humanitiesQuizInput),
+  });
+};
+
+export const getUpdateHumanitiesQuizMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateHumanitiesQuiz>>,
+    TError,
+    { id: number; data: BodyType<HumanitiesQuizInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateHumanitiesQuiz>>,
+  TError,
+  { id: number; data: BodyType<HumanitiesQuizInput> },
+  TContext
+> => {
+  const mutationKey = ["updateHumanitiesQuiz"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateHumanitiesQuiz>>,
+    { id: number; data: BodyType<HumanitiesQuizInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateHumanitiesQuiz(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateHumanitiesQuizMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateHumanitiesQuiz>>
+>;
+export type UpdateHumanitiesQuizMutationBody = BodyType<HumanitiesQuizInput>;
+export type UpdateHumanitiesQuizMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update quiz (admin)
+ */
+export const useUpdateHumanitiesQuiz = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateHumanitiesQuiz>>,
+    TError,
+    { id: number; data: BodyType<HumanitiesQuizInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateHumanitiesQuiz>>,
+  TError,
+  { id: number; data: BodyType<HumanitiesQuizInput> },
+  TContext
+> => {
+  return useMutation(getUpdateHumanitiesQuizMutationOptions(options));
+};
+
+/**
+ * @summary Delete quiz (admin)
+ */
+export const getDeleteHumanitiesQuizUrl = (id: number) => {
+  return `/api/humanities/quizzes/${id}`;
+};
+
+export const deleteHumanitiesQuiz = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteHumanitiesQuizUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteHumanitiesQuizMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteHumanitiesQuiz>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteHumanitiesQuiz>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteHumanitiesQuiz"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteHumanitiesQuiz>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteHumanitiesQuiz(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteHumanitiesQuizMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteHumanitiesQuiz>>
+>;
+
+export type DeleteHumanitiesQuizMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete quiz (admin)
+ */
+export const useDeleteHumanitiesQuiz = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteHumanitiesQuiz>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteHumanitiesQuiz>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteHumanitiesQuizMutationOptions(options));
+};
+
+/**
+ * @summary List active humanities articles
+ */
+export const getListHumanitiesArticlesUrl = () => {
+  return `/api/humanities/articles`;
+};
+
+export const listHumanitiesArticles = async (
+  options?: RequestInit,
+): Promise<HumanitiesArticle[]> => {
+  return customFetch<HumanitiesArticle[]>(getListHumanitiesArticlesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListHumanitiesArticlesQueryKey = () => {
+  return [`/api/humanities/articles`] as const;
+};
+
+export const getListHumanitiesArticlesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listHumanitiesArticles>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listHumanitiesArticles>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListHumanitiesArticlesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listHumanitiesArticles>>
+  > = ({ signal }) => listHumanitiesArticles({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listHumanitiesArticles>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListHumanitiesArticlesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listHumanitiesArticles>>
+>;
+export type ListHumanitiesArticlesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active humanities articles
+ */
+
+export function useListHumanitiesArticles<
+  TData = Awaited<ReturnType<typeof listHumanitiesArticles>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listHumanitiesArticles>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListHumanitiesArticlesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create article (admin)
+ */
+export const getCreateHumanitiesArticleUrl = () => {
+  return `/api/humanities/articles`;
+};
+
+export const createHumanitiesArticle = async (
+  humanitiesArticleInput: HumanitiesArticleInput,
+  options?: RequestInit,
+): Promise<HumanitiesArticle> => {
+  return customFetch<HumanitiesArticle>(getCreateHumanitiesArticleUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(humanitiesArticleInput),
+  });
+};
+
+export const getCreateHumanitiesArticleMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createHumanitiesArticle>>,
+    TError,
+    { data: BodyType<HumanitiesArticleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createHumanitiesArticle>>,
+  TError,
+  { data: BodyType<HumanitiesArticleInput> },
+  TContext
+> => {
+  const mutationKey = ["createHumanitiesArticle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createHumanitiesArticle>>,
+    { data: BodyType<HumanitiesArticleInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createHumanitiesArticle(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateHumanitiesArticleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createHumanitiesArticle>>
+>;
+export type CreateHumanitiesArticleMutationBody =
+  BodyType<HumanitiesArticleInput>;
+export type CreateHumanitiesArticleMutationError =
+  ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create article (admin)
+ */
+export const useCreateHumanitiesArticle = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createHumanitiesArticle>>,
+    TError,
+    { data: BodyType<HumanitiesArticleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createHumanitiesArticle>>,
+  TError,
+  { data: BodyType<HumanitiesArticleInput> },
+  TContext
+> => {
+  return useMutation(getCreateHumanitiesArticleMutationOptions(options));
+};
+
+/**
+ * @summary Get article detail
+ */
+export const getGetHumanitiesArticleUrl = (id: number) => {
+  return `/api/humanities/articles/${id}`;
+};
+
+export const getHumanitiesArticle = async (
+  id: number,
+  options?: RequestInit,
+): Promise<HumanitiesArticle> => {
+  return customFetch<HumanitiesArticle>(getGetHumanitiesArticleUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetHumanitiesArticleQueryKey = (id: number) => {
+  return [`/api/humanities/articles/${id}`] as const;
+};
+
+export const getGetHumanitiesArticleQueryOptions = <
+  TData = Awaited<ReturnType<typeof getHumanitiesArticle>>,
+  TError = ErrorType<NotFoundResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getHumanitiesArticle>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetHumanitiesArticleQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getHumanitiesArticle>>
+  > = ({ signal }) => getHumanitiesArticle(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getHumanitiesArticle>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetHumanitiesArticleQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getHumanitiesArticle>>
+>;
+export type GetHumanitiesArticleQueryError = ErrorType<NotFoundResponse>;
+
+/**
+ * @summary Get article detail
+ */
+
+export function useGetHumanitiesArticle<
+  TData = Awaited<ReturnType<typeof getHumanitiesArticle>>,
+  TError = ErrorType<NotFoundResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getHumanitiesArticle>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetHumanitiesArticleQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update article (admin)
+ */
+export const getUpdateHumanitiesArticleUrl = (id: number) => {
+  return `/api/humanities/articles/${id}`;
+};
+
+export const updateHumanitiesArticle = async (
+  id: number,
+  humanitiesArticleInput: HumanitiesArticleInput,
+  options?: RequestInit,
+): Promise<HumanitiesArticle> => {
+  return customFetch<HumanitiesArticle>(getUpdateHumanitiesArticleUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(humanitiesArticleInput),
+  });
+};
+
+export const getUpdateHumanitiesArticleMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateHumanitiesArticle>>,
+    TError,
+    { id: number; data: BodyType<HumanitiesArticleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateHumanitiesArticle>>,
+  TError,
+  { id: number; data: BodyType<HumanitiesArticleInput> },
+  TContext
+> => {
+  const mutationKey = ["updateHumanitiesArticle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateHumanitiesArticle>>,
+    { id: number; data: BodyType<HumanitiesArticleInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateHumanitiesArticle(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateHumanitiesArticleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateHumanitiesArticle>>
+>;
+export type UpdateHumanitiesArticleMutationBody =
+  BodyType<HumanitiesArticleInput>;
+export type UpdateHumanitiesArticleMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update article (admin)
+ */
+export const useUpdateHumanitiesArticle = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateHumanitiesArticle>>,
+    TError,
+    { id: number; data: BodyType<HumanitiesArticleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateHumanitiesArticle>>,
+  TError,
+  { id: number; data: BodyType<HumanitiesArticleInput> },
+  TContext
+> => {
+  return useMutation(getUpdateHumanitiesArticleMutationOptions(options));
+};
+
+/**
+ * @summary Delete article (admin)
+ */
+export const getDeleteHumanitiesArticleUrl = (id: number) => {
+  return `/api/humanities/articles/${id}`;
+};
+
+export const deleteHumanitiesArticle = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteHumanitiesArticleUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteHumanitiesArticleMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteHumanitiesArticle>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteHumanitiesArticle>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteHumanitiesArticle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteHumanitiesArticle>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteHumanitiesArticle(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteHumanitiesArticleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteHumanitiesArticle>>
+>;
+
+export type DeleteHumanitiesArticleMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete article (admin)
+ */
+export const useDeleteHumanitiesArticle = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteHumanitiesArticle>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteHumanitiesArticle>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteHumanitiesArticleMutationOptions(options));
 };

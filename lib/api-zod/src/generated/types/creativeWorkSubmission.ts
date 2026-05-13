@@ -6,14 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreativeWork {
+export interface CreativeWorkSubmission {
   id: number;
-  category: string;
-  title: string;
   authorName: string;
-  /** @nullable */
-  thumbnailUrl: string | null;
-  displayOrder: number;
-  isActive: boolean;
+  email: string;
+  description: string;
+  status: string;
   createdAt: Date;
 }

@@ -12,5 +12,6 @@ export interface CreativeEpisode {
   episodeNumber: number;
   title: string;
   content: string;
+  images: string[];
   isActive: boolean;
 }

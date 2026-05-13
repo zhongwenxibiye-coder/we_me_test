@@ -5,3 +5,7 @@ export * from "./startup-applications";
 export * from "./job-listings";
 export * from "./creative-works";
 export * from "./creative-episodes";
+export * from "./creative-work-submissions";
+export * from "./humanities-quizzes";
+export * from "./humanities-quiz-attempts";
+export * from "./humanities-articles";

@@ -15,9 +15,10 @@ import CareerMatchPage from "@/pages/CareerMatch";
 import StartupResult from "@/pages/StartupResult";
 import CreativeSpace from "@/pages/CreativeSpace";
 import CreativeEpisode from "@/pages/CreativeEpisode";
+import HumanitiesContent from "@/pages/HumanitiesContent";
+import HumanitiesArticle from "@/pages/HumanitiesArticle";
 import {
   CareerMatchingPage,
-  HumanitiesPage,
   ProjectsPage,
 } from "@/pages/ComingSoon";
 import NotFound from "@/pages/not-found";
@@ -40,7 +41,8 @@ function Router() {
         <Route path="/career-matching" component={CareerMatchingPage} />
         <Route path="/creative-space/:workId/episodes/:episodeId" component={CreativeEpisode} />
         <Route path="/creative-space" component={CreativeSpace} />
-        <Route path="/humanities" component={HumanitiesPage} />
+        <Route path="/humanities/articles/:id" component={HumanitiesArticle} />
+        <Route path="/humanities" component={HumanitiesContent} />
         <Route path="/projects" component={ProjectsPage} />
         <Route path="/admin" component={Admin} />
         <Route component={NotFound} />

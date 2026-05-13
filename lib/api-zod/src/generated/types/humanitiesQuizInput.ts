@@ -6,11 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreativeEpisodeInput {
-  episodeNumber: number;
+export interface HumanitiesQuizInput {
   /** @minLength 1 */
-  title: string;
-  content?: string;
-  images?: string[];
+  question: string;
+  answer: boolean;
+  explanation?: string;
+  /** @nullable */
+  scheduledDate?: string | null;
   isActive?: boolean;
 }

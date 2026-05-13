@@ -6,14 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreativeWork {
+export interface HumanitiesArticle {
   id: number;
   category: string;
   title: string;
+  content: string;
   authorName: string;
-  /** @nullable */
-  thumbnailUrl: string | null;
-  displayOrder: number;
+  imageUrl: string;
   isActive: boolean;
+  displayOrder: number;
   createdAt: Date;
 }

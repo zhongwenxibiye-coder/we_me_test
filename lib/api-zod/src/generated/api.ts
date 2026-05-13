@@ -488,6 +488,7 @@ export const ListCreativeWorksResponseItem = zod.object({
   id: zod.number(),
   category: zod.string(),
   title: zod.string(),
+  authorName: zod.string(),
   thumbnailUrl: zod.string().nullable(),
   displayOrder: zod.number(),
   isActive: zod.boolean(),
@@ -507,6 +508,7 @@ export const CreateCreativeWorkHeader = zod.object({
 export const CreateCreativeWorkBody = zod.object({
   category: zod.string().min(1),
   title: zod.string().min(1),
+  authorName: zod.string().optional(),
   thumbnailUrl: zod.string().nullish(),
   displayOrder: zod.number().optional(),
   isActive: zod.boolean().optional(),
@@ -526,6 +528,7 @@ export const UpdateCreativeWorkHeader = zod.object({
 export const UpdateCreativeWorkBody = zod.object({
   category: zod.string().min(1),
   title: zod.string().min(1),
+  authorName: zod.string().optional(),
   thumbnailUrl: zod.string().nullish(),
   displayOrder: zod.number().optional(),
   isActive: zod.boolean().optional(),
@@ -535,6 +538,7 @@ export const UpdateCreativeWorkResponse = zod.object({
   id: zod.number(),
   category: zod.string(),
   title: zod.string(),
+  authorName: zod.string(),
   thumbnailUrl: zod.string().nullable(),
   displayOrder: zod.number(),
   isActive: zod.boolean(),
@@ -565,6 +569,7 @@ export const ListCreativeEpisodesResponseItem = zod.object({
   episodeNumber: zod.number(),
   title: zod.string(),
   content: zod.string(),
+  images: zod.array(zod.string()),
   isActive: zod.boolean(),
 });
 export const ListCreativeEpisodesResponse = zod.array(
@@ -586,6 +591,7 @@ export const CreateCreativeEpisodeBody = zod.object({
   episodeNumber: zod.number(),
   title: zod.string().min(1),
   content: zod.string().optional(),
+  images: zod.array(zod.string()).optional(),
   isActive: zod.boolean().optional(),
 });
 
@@ -604,6 +610,7 @@ export const UpdateCreativeEpisodeBody = zod.object({
   episodeNumber: zod.number(),
   title: zod.string().min(1),
   content: zod.string().optional(),
+  images: zod.array(zod.string()).optional(),
   isActive: zod.boolean().optional(),
 });
 
@@ -613,6 +620,7 @@ export const UpdateCreativeEpisodeResponse = zod.object({
   episodeNumber: zod.number(),
   title: zod.string(),
   content: zod.string(),
+  images: zod.array(zod.string()),
   isActive: zod.boolean(),
 });
 
@@ -624,5 +632,281 @@ export const DeleteCreativeEpisodeParams = zod.object({
 });
 
 export const DeleteCreativeEpisodeHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+/**
+ * @summary Submit a creative work proposal
+ */
+
+export const createCreativeWorkSubmissionBodyDescriptionMin = 200;
+
+export const CreateCreativeWorkSubmissionBody = zod.object({
+  authorName: zod.string().min(1),
+  email: zod.string().min(1),
+  description: zod.string().min(createCreativeWorkSubmissionBodyDescriptionMin),
+});
+
+/**
+ * @summary List submissions (admin)
+ */
+export const ListCreativeWorkSubmissionsHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const ListCreativeWorkSubmissionsResponseItem = zod.object({
+  id: zod.number(),
+  authorName: zod.string(),
+  email: zod.string(),
+  description: zod.string(),
+  status: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListCreativeWorkSubmissionsResponse = zod.array(
+  ListCreativeWorkSubmissionsResponseItem,
+);
+
+/**
+ * @summary Update submission status (admin)
+ */
+export const UpdateCreativeWorkSubmissionStatusParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCreativeWorkSubmissionStatusHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateCreativeWorkSubmissionStatusBody = zod.object({
+  status: zod.string(),
+});
+
+export const UpdateCreativeWorkSubmissionStatusResponse = zod.object({
+  id: zod.number(),
+  authorName: zod.string(),
+  email: zod.string(),
+  description: zod.string(),
+  status: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Get today's O/X quiz and attempt status
+ */
+export const GetTodayQuizQueryParams = zod.object({
+  sessionKey: zod.coerce.string().optional(),
+});
+
+export const GetTodayQuizResponse = zod.object({
+  quiz: zod.union([
+    zod.object({
+      id: zod.number(),
+      question: zod.string(),
+      answer: zod.boolean(),
+      explanation: zod.string(),
+      scheduledDate: zod.string().nullable(),
+      isActive: zod.boolean(),
+      createdAt: zod.coerce.date(),
+    }),
+    zod.null(),
+  ]),
+  attempt: zod
+    .object({
+      id: zod.number().optional(),
+      quizId: zod.number().optional(),
+      sessionKey: zod.string().optional(),
+      isCorrect: zod.boolean().optional(),
+      attemptedAt: zod.coerce.date().optional(),
+    })
+    .nullable(),
+});
+
+/**
+ * @summary Submit quiz attempt
+ */
+export const SubmitQuizAttemptBody = zod.object({
+  quizId: zod.number(),
+  sessionKey: zod.string(),
+  isCorrect: zod.boolean(),
+});
+
+/**
+ * @summary List all quizzes with stats (admin)
+ */
+export const ListHumanitiesQuizzesHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const ListHumanitiesQuizzesResponseItem = zod
+  .object({
+    id: zod.number(),
+    question: zod.string(),
+    answer: zod.boolean(),
+    explanation: zod.string(),
+    scheduledDate: zod.string().nullable(),
+    isActive: zod.boolean(),
+    createdAt: zod.coerce.date(),
+  })
+  .and(
+    zod.object({
+      participantCount: zod.number(),
+      correctCount: zod.number(),
+      correctRate: zod.number(),
+    }),
+  );
+export const ListHumanitiesQuizzesResponse = zod.array(
+  ListHumanitiesQuizzesResponseItem,
+);
+
+/**
+ * @summary Create quiz (admin)
+ */
+export const CreateHumanitiesQuizHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateHumanitiesQuizBody = zod.object({
+  question: zod.string().min(1),
+  answer: zod.boolean(),
+  explanation: zod.string().optional(),
+  scheduledDate: zod.string().nullish(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update quiz (admin)
+ */
+export const UpdateHumanitiesQuizParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateHumanitiesQuizHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateHumanitiesQuizBody = zod.object({
+  question: zod.string().min(1),
+  answer: zod.boolean(),
+  explanation: zod.string().optional(),
+  scheduledDate: zod.string().nullish(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateHumanitiesQuizResponse = zod.object({
+  id: zod.number(),
+  question: zod.string(),
+  answer: zod.boolean(),
+  explanation: zod.string(),
+  scheduledDate: zod.string().nullable(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete quiz (admin)
+ */
+export const DeleteHumanitiesQuizParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteHumanitiesQuizHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+/**
+ * @summary List active humanities articles
+ */
+export const ListHumanitiesArticlesResponseItem = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  title: zod.string(),
+  content: zod.string(),
+  authorName: zod.string(),
+  imageUrl: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListHumanitiesArticlesResponse = zod.array(
+  ListHumanitiesArticlesResponseItem,
+);
+
+/**
+ * @summary Create article (admin)
+ */
+export const CreateHumanitiesArticleHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateHumanitiesArticleBody = zod.object({
+  category: zod.string().min(1),
+  title: zod.string().min(1),
+  content: zod.string().optional(),
+  authorName: zod.string().optional(),
+  imageUrl: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+/**
+ * @summary Get article detail
+ */
+export const GetHumanitiesArticleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetHumanitiesArticleResponse = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  title: zod.string(),
+  content: zod.string(),
+  authorName: zod.string(),
+  imageUrl: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update article (admin)
+ */
+export const UpdateHumanitiesArticleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateHumanitiesArticleHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateHumanitiesArticleBody = zod.object({
+  category: zod.string().min(1),
+  title: zod.string().min(1),
+  content: zod.string().optional(),
+  authorName: zod.string().optional(),
+  imageUrl: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+export const UpdateHumanitiesArticleResponse = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  title: zod.string(),
+  content: zod.string(),
+  authorName: zod.string(),
+  imageUrl: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete article (admin)
+ */
+export const DeleteHumanitiesArticleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteHumanitiesArticleHeader = zod.object({
   "x-admin-password": zod.string(),
 });

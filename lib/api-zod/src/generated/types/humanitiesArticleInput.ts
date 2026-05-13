@@ -6,11 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreativeEpisodeInput {
-  episodeNumber: number;
+export interface HumanitiesArticleInput {
+  /** @minLength 1 */
+  category: string;
   /** @minLength 1 */
   title: string;
   content?: string;
-  images?: string[];
+  authorName?: string;
+  imageUrl?: string;
   isActive?: boolean;
+  displayOrder?: number;
 }

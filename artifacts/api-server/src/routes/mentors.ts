@@ -15,7 +15,7 @@ router.get("/mentors", async (_req, res) => {
 });
 
 router.get("/mentors/:id", async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) {
     res.status(404).json({ error: "Not found" });
     return;
@@ -74,7 +74,7 @@ router.post("/mentors", requireAdmin, async (req, res) => {
 });
 
 router.put("/mentors/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   const body = req.body as Partial<typeof mentorsTable.$inferInsert>;
   const [updated] = await db
@@ -87,7 +87,7 @@ router.put("/mentors/:id", requireAdmin, async (req, res) => {
 });
 
 router.delete("/mentors/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   const [deleted] = await db
     .delete(mentorsTable)
@@ -100,7 +100,7 @@ router.delete("/mentors/:id", requireAdmin, async (req, res) => {
 // ── Articles ──────────────────────────────────────────────
 
 router.get("/mentors/:mentorId/articles", async (req, res) => {
-  const mentorId = parseInt(req.params.mentorId, 10);
+  const mentorId = parseInt(String(req.params.mentorId), 10);
   if (isNaN(mentorId)) { res.status(404).json({ error: "Not found" }); return; }
   const rows = await db
     .select()
@@ -111,7 +111,7 @@ router.get("/mentors/:mentorId/articles", async (req, res) => {
 });
 
 router.post("/mentors/:mentorId/articles", requireAdmin, async (req, res) => {
-  const mentorId = parseInt(req.params.mentorId, 10);
+  const mentorId = parseInt(String(req.params.mentorId), 10);
   if (isNaN(mentorId)) { res.status(400).json({ error: "Invalid mentorId" }); return; }
   const body = req.body as { title: string; content?: string; displayOrder?: number; isActive?: boolean };
   if (!body.title) { res.status(400).json({ error: "title required" }); return; }
@@ -129,7 +129,7 @@ router.post("/mentors/:mentorId/articles", requireAdmin, async (req, res) => {
 });
 
 router.put("/mentor-articles/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   const body = req.body as { title?: string; content?: string; displayOrder?: number; isActive?: boolean };
   const [updated] = await db
@@ -142,7 +142,7 @@ router.put("/mentor-articles/:id", requireAdmin, async (req, res) => {
 });
 
 router.delete("/mentor-articles/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
   const [deleted] = await db
     .delete(mentorArticlesTable)

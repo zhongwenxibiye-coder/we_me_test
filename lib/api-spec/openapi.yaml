@@ -15,6 +15,9 @@ tags:
   - name: startup-applications
   - name: creative-works
   - name: creative-episodes
+  - name: creative-work-submissions
+  - name: humanities-quizzes
+  - name: humanities-articles
 paths:
   /healthz:
     get:
@@ -786,6 +789,345 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  # ── Creative Work Submissions ─────────────────────────────
+  /creative-work-submissions:
+    post:
+      operationId: createCreativeWorkSubmission
+      tags: [creative-work-submissions]
+      summary: Submit a creative work proposal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreativeWorkSubmissionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreativeWorkSubmission"
+    get:
+      operationId: listCreativeWorkSubmissions
+      tags: [creative-work-submissions]
+      summary: List submissions (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CreativeWorkSubmission"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /creative-work-submissions/{id}/status:
+    patch:
+      operationId: updateCreativeWorkSubmissionStatus
+      tags: [creative-work-submissions]
+      summary: Update submission status (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+              required: [status]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreativeWorkSubmission"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Humanities Quiz ───────────────────────────────────────
+  /humanities/quiz/today:
+    get:
+      operationId: getTodayQuiz
+      tags: [humanities-quizzes]
+      summary: Get today's O/X quiz and attempt status
+      parameters:
+        - in: query
+          name: sessionKey
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HumanitiesQuizTodayResponse"
+
+  /humanities/quiz/attempt:
+    post:
+      operationId: submitQuizAttempt
+      tags: [humanities-quizzes]
+      summary: Submit quiz attempt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HumanitiesQuizAttemptInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HumanitiesQuizAttempt"
+        "409":
+          description: Already attempted
+
+  /humanities/quizzes:
+    get:
+      operationId: listHumanitiesQuizzes
+      tags: [humanities-quizzes]
+      summary: List all quizzes with stats (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HumanitiesQuizWithStats"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createHumanitiesQuiz
+      tags: [humanities-quizzes]
+      summary: Create quiz (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HumanitiesQuizInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HumanitiesQuiz"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /humanities/quizzes/{id}:
+    put:
+      operationId: updateHumanitiesQuiz
+      tags: [humanities-quizzes]
+      summary: Update quiz (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HumanitiesQuizInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HumanitiesQuiz"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteHumanitiesQuiz
+      tags: [humanities-quizzes]
+      summary: Delete quiz (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Humanities Articles ───────────────────────────────────
+  /humanities/articles:
+    get:
+      operationId: listHumanitiesArticles
+      tags: [humanities-articles]
+      summary: List active humanities articles
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HumanitiesArticle"
+    post:
+      operationId: createHumanitiesArticle
+      tags: [humanities-articles]
+      summary: Create article (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HumanitiesArticleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HumanitiesArticle"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /humanities/articles/{id}:
+    get:
+      operationId: getHumanitiesArticle
+      tags: [humanities-articles]
+      summary: Get article detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HumanitiesArticle"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateHumanitiesArticle
+      tags: [humanities-articles]
+      summary: Update article (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HumanitiesArticleInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HumanitiesArticle"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteHumanitiesArticle
+      tags: [humanities-articles]
+      summary: Delete article (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
 components:
   responses:
     Unauthorized:
@@ -1102,6 +1444,8 @@ components:
           type: string
         title:
           type: string
+        authorName:
+          type: string
         thumbnailUrl:
           type: ["string", "null"]
         displayOrder:
@@ -1111,7 +1455,7 @@ components:
         createdAt:
           type: string
           format: date-time
-      required: [id, category, title, thumbnailUrl, displayOrder, isActive, createdAt]
+      required: [id, category, title, authorName, thumbnailUrl, displayOrder, isActive, createdAt]
 
     CreativeWorkInput:
       type: object
@@ -1122,6 +1466,8 @@ components:
         title:
           type: string
           minLength: 1
+        authorName:
+          type: string
         thumbnailUrl:
           type: ["string", "null"]
         displayOrder:
@@ -1144,9 +1490,13 @@ components:
           type: string
         content:
           type: string
+        images:
+          type: array
+          items:
+            type: string
         isActive:
           type: boolean
-      required: [id, workId, episodeNumber, title, content, isActive]
+      required: [id, workId, episodeNumber, title, content, images, isActive]
 
     CreativeEpisodeInput:
       type: object
@@ -1158,6 +1508,190 @@ components:
           minLength: 1
         content:
           type: string
+        images:
+          type: array
+          items:
+            type: string
         isActive:
           type: boolean
       required: [episodeNumber, title]
+
+    # ── Creative Work Submission ──────────────────────────────
+    CreativeWorkSubmission:
+      type: object
+      properties:
+        id:
+          type: integer
+        authorName:
+          type: string
+        email:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, authorName, email, description, status, createdAt]
+
+    CreativeWorkSubmissionInput:
+      type: object
+      properties:
+        authorName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 200
+      required: [authorName, email, description]
+
+    # ── Humanities Quiz ───────────────────────────────────────
+    HumanitiesQuiz:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: boolean
+        explanation:
+          type: string
+        scheduledDate:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, question, answer, explanation, scheduledDate, isActive, createdAt]
+
+    HumanitiesQuizWithStats:
+      allOf:
+        - $ref: "#/components/schemas/HumanitiesQuiz"
+        - type: object
+          properties:
+            participantCount:
+              type: integer
+            correctCount:
+              type: integer
+            correctRate:
+              type: integer
+          required: [participantCount, correctCount, correctRate]
+
+    HumanitiesQuizInput:
+      type: object
+      properties:
+        question:
+          type: string
+          minLength: 1
+        answer:
+          type: boolean
+        explanation:
+          type: string
+        scheduledDate:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+      required: [question, answer]
+
+    HumanitiesQuizTodayResponse:
+      type: object
+      properties:
+        quiz:
+          oneOf:
+            - $ref: "#/components/schemas/HumanitiesQuiz"
+            - type: "null"
+        attempt:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            quizId:
+              type: integer
+            sessionKey:
+              type: string
+            isCorrect:
+              type: boolean
+            attemptedAt:
+              type: string
+              format: date-time
+      required: [quiz, attempt]
+
+    HumanitiesQuizAttemptInput:
+      type: object
+      properties:
+        quizId:
+          type: integer
+        sessionKey:
+          type: string
+        isCorrect:
+          type: boolean
+      required: [quizId, sessionKey, isCorrect]
+
+    HumanitiesQuizAttempt:
+      type: object
+      properties:
+        id:
+          type: integer
+        quizId:
+          type: integer
+        sessionKey:
+          type: string
+        isCorrect:
+          type: boolean
+        attemptedAt:
+          type: string
+          format: date-time
+      required: [id, quizId, sessionKey, isCorrect, attemptedAt]
+
+    # ── Humanities Article ────────────────────────────────────
+    HumanitiesArticle:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        authorName:
+          type: string
+        imageUrl:
+          type: string
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, category, title, content, authorName, imageUrl, isActive, displayOrder, createdAt]
+
+    HumanitiesArticleInput:
+      type: object
+      properties:
+        category:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        authorName:
+          type: string
+        imageUrl:
+          type: string
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+      required: [category, title]

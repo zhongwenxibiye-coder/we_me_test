@@ -18,7 +18,7 @@ export default function CreativeEpisode() {
   const episodesQuery = useListCreativeEpisodes(workId);
 
   const work = worksQuery.data?.find((w) => w.id === workId);
-  const episodes = episodesQuery.data ?? [];
+  const episodes = (episodesQuery.data ?? []).filter((e) => e.isActive);
   const episode = episodes.find((e) => e.id === episodeId);
   const currentIndex = episodes.findIndex((e) => e.id === episodeId);
   const prevEpisode = currentIndex > 0 ? episodes[currentIndex - 1] : null;
@@ -45,16 +45,34 @@ export default function CreativeEpisode() {
           <div className="mb-8">
             <p className="text-xs font-semibold" style={{ color: "hsl(45 92% 38%)" }}>
               [{work.category}] {work.title}
+              {work.authorName ? ` · ${work.authorName}` : ""}
             </p>
             <h1 className="mt-1 text-2xl lg:text-3xl font-extrabold tracking-tight">
               {episode.episodeNumber}화: {episode.title}
             </h1>
           </div>
 
-          <div className="bg-card rounded-2xl border border-border px-6 py-8 lg:px-10 lg:py-10 leading-8 text-base whitespace-pre-wrap font-[Pretendard,sans-serif]">
-            {episode.content ? (
-              episode.content
-            ) : (
+          <div className="bg-card rounded-2xl border border-border px-6 py-8 lg:px-10 lg:py-10 space-y-6">
+            {episode.content && (
+              <p className="leading-8 text-base whitespace-pre-wrap font-[Pretendard,sans-serif]">
+                {episode.content}
+              </p>
+            )}
+
+            {Array.isArray(episode.images) && episode.images.length > 0 && (
+              <div className="space-y-4 pt-2">
+                {(episode.images as string[]).map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt={`이미지 ${i + 1}`}
+                    className="w-full rounded-xl border border-border object-contain max-h-[600px]"
+                  />
+                ))}
+              </div>
+            )}
+
+            {!episode.content && (!Array.isArray(episode.images) || episode.images.length === 0) && (
               <span className="text-muted-foreground italic">내용이 아직 없습니다.</span>
             )}
           </div>

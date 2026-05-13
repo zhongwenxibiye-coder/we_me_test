@@ -11,6 +11,7 @@ export interface CreativeWorkInput {
   category: string;
   /** @minLength 1 */
   title: string;
+  authorName?: string;
   /** @nullable */
   thumbnailUrl?: string | null;
   displayOrder?: number;
