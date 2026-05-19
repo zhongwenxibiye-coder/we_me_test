@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");
   const id = params?.id ? parseInt(params.id, 10) : NaN;
-  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   const { data: allJobs = [], isLoading } = useListJobListings<JobListing[]>();
   const job = isNaN(id) ? undefined : allJobs.find((j) => j.id === id);
