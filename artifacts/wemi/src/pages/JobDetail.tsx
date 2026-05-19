@@ -110,7 +110,7 @@ export default function JobDetail() {
                     transition={{ duration: 0.25 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-5 pb-5 pl-16 text-sm leading-relaxed text-foreground/85">
+                    <div className="px-5 pb-5 pl-16 text-sm leading-relaxed text-foreground/85 whitespace-pre-wrap">
                       {empty ? (
                         <span className="text-muted-foreground italic">내용 추가 예정</span>
                       ) : (
