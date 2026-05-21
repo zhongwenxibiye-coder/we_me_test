@@ -699,15 +699,23 @@ export const GetTodayQuizQueryParams = zod.object({
 
 export const GetTodayQuizResponse = zod.object({
   quiz: zod.union([
-    zod.object({
-      id: zod.number(),
-      question: zod.string(),
-      answer: zod.boolean(),
-      explanation: zod.string(),
-      scheduledDate: zod.string().nullable(),
-      isActive: zod.boolean(),
-      createdAt: zod.coerce.date(),
-    }),
+    zod
+      .object({
+        id: zod.number(),
+        question: zod.string(),
+        answer: zod.boolean(),
+        explanation: zod.string(),
+        scheduledDate: zod.string().nullable(),
+        isActive: zod.boolean(),
+        createdAt: zod.coerce.date(),
+      })
+      .and(
+        zod.object({
+          participantCount: zod.number(),
+          correctCount: zod.number(),
+          correctRate: zod.number(),
+        }),
+      ),
     zod.null(),
   ]),
   attempt: zod

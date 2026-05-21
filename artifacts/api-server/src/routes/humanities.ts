@@ -39,7 +39,24 @@ router.get("/humanities/quiz/today", async (req, res) => {
     attempt = found ?? null;
   }
 
-  res.json({ quiz, attempt });
+  const stats = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      correct: sql<number>`sum(case when ${humanitiesQuizAttemptsTable.isCorrect} then 1 else 0 end)::int`,
+    })
+    .from(humanitiesQuizAttemptsTable)
+    .where(eq(humanitiesQuizAttemptsTable.quizId, quiz.id));
+
+  const s = stats[0];
+  const total = s?.total ?? 0;
+  const correct = s?.correct ?? 0;
+  const quizWithStats = {
+    ...quiz,
+    participantCount: total,
+    correctRate: total > 0 ? Math.round((correct / total) * 100) : 0,
+  };
+
+  res.json({ quiz: quizWithStats, attempt });
 });
 
 // ── Quiz: Submit attempt ────────────────────────────────────

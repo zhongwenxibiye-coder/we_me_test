@@ -1604,7 +1604,7 @@ components:
       properties:
         quiz:
           oneOf:
-            - $ref: "#/components/schemas/HumanitiesQuiz"
+            - $ref: "#/components/schemas/HumanitiesQuizWithStats"
             - type: "null"
         attempt:
           type: object

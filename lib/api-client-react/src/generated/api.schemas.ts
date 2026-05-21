@@ -246,7 +246,7 @@ export type HumanitiesQuizTodayResponseAttempt = {
 } | null;
 
 export interface HumanitiesQuizTodayResponse {
-  quiz: HumanitiesQuiz | null;
+  quiz: HumanitiesQuizWithStats | null;
   attempt: HumanitiesQuizTodayResponseAttempt;
 }
 

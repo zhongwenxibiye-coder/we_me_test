@@ -5,10 +5,10 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { HumanitiesQuiz } from "./humanitiesQuiz";
 import type { HumanitiesQuizTodayResponseAttempt } from "./humanitiesQuizTodayResponseAttempt";
+import type { HumanitiesQuizWithStats } from "./humanitiesQuizWithStats";
 
 export interface HumanitiesQuizTodayResponse {
-  quiz: HumanitiesQuiz | null;
+  quiz: HumanitiesQuizWithStats | null;
   attempt: HumanitiesQuizTodayResponseAttempt;
 }

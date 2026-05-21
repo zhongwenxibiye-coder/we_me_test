@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { BookOpen, CheckCircle2, XCircle, HelpCircle, RefreshCcw } from "lucide-react";
+import { BookOpen, CheckCircle2, XCircle, HelpCircle, Users } from "lucide-react";
 import {
   useGetTodayQuiz,
   useSubmitQuizAttempt,
+  getGetTodayQuizQueryKey,
   useListHumanitiesArticles,
   type HumanitiesArticle,
 } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 
 const SESSION_KEY_STORAGE = "wemi-session-key";
@@ -24,6 +26,7 @@ function getOrCreateSessionKey(): string {
 
 function QuizSection() {
   const sessionKey = useMemo(() => getOrCreateSessionKey(), []);
+  const queryClient = useQueryClient();
   const quizQuery = useGetTodayQuiz({ sessionKey });
   const submitAttempt = useSubmitQuizAttempt();
 
@@ -31,7 +34,6 @@ function QuizSection() {
   const serverAttempt = quizQuery.data?.attempt ?? null;
 
   const [localAttempt, setLocalAttempt] = useState<{ isCorrect: boolean } | null>(null);
-  const [selected, setSelected] = useState<boolean | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
@@ -49,7 +51,6 @@ function QuizSection() {
 
   function handleAnswer(answer: boolean) {
     if (!quiz || alreadyAttempted) return;
-    setSelected(answer);
     const isCorrect = answer === quiz.answer;
     submitAttempt.mutate(
       { data: { quizId: quiz.id, sessionKey, isCorrect } },
@@ -59,12 +60,14 @@ function QuizSection() {
           localStorage.setItem(QUIZ_ATTEMPT_PREFIX + quiz.id, JSON.stringify(result));
           setLocalAttempt(result);
           setSubmitted(true);
+          queryClient.invalidateQueries({ queryKey: getGetTodayQuizQueryKey({ sessionKey }) });
         },
         onError: () => {
           const result = { isCorrect };
           localStorage.setItem(QUIZ_ATTEMPT_PREFIX + quiz.id, JSON.stringify(result));
           setLocalAttempt(result);
           setSubmitted(true);
+          queryClient.invalidateQueries({ queryKey: getGetTodayQuizQueryKey({ sessionKey }) });
         },
       },
     );
@@ -133,9 +136,20 @@ function QuizSection() {
                   <p className="text-sm leading-relaxed">{quiz.explanation || "해설이 준비 중입니다."}</p>
                 </div>
 
-                <p className="mt-3 text-xs text-muted-foreground text-center">
-                  정답: <span className="font-bold">{quiz.answer ? "O" : "X"}</span>
-                </p>
+                <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    정답: <span className="font-bold">{quiz.answer ? "O" : "X"}</span>
+                  </p>
+                  {quiz.participantCount > 0 && (
+                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Users size={12} />
+                      <span>
+                        참여자 <span className="font-bold text-foreground">{quiz.participantCount}명</span> 중{" "}
+                        <span className="font-bold text-foreground">{quiz.correctRate}%</span>가 정답
+                      </span>
+                    </p>
+                  )}
+                </div>
               </motion.div>
             )}
           </div>
