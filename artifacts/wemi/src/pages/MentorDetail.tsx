@@ -86,7 +86,7 @@ export default function MentorDetail() {
             <p className="mt-2 text-base font-semibold text-foreground/75 leading-relaxed max-w-2xl">{mentor.sublineText}</p>
           )}
           {mentor.bio && (
-            <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-2xl">{mentor.bio}</p>
+            <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-2xl whitespace-pre-wrap">{mentor.bio}</p>
           )}
         </div>
       </motion.section>
