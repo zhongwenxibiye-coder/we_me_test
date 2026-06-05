@@ -9,7 +9,6 @@ router.get("/job-listings", async (_req, res) => {
   const rows = await db
     .select()
     .from(jobListingsTable)
-    .where(eq(jobListingsTable.isActive, true))
     .orderBy(asc(jobListingsTable.displayOrder), asc(jobListingsTable.id));
   res.json(rows);
 });

@@ -13,7 +13,7 @@ export default function Jobs() {
   const { data: allJobs = [], isLoading } = useListJobListings<JobListing[]>();
 
   const subJobs = allJobs
-    .filter((j) => j.category === active)
+    .filter((j) => j.isActive && j.category === active)
     .sort((a, b) => a.displayOrder - b.displayOrder);
 
   return (
