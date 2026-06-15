@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Inbox, Lock, Mail, CheckCircle2, Clock, LogOut, Users, Briefcase,
   Rocket, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Eye, PenLine, ImageIcon,
-  BookOpen, HelpCircle, FileText, Send,
+  BookOpen, HelpCircle, FileText, Send, UserCheck, UserX, RefreshCw,
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -102,7 +102,7 @@ function ImageUpload({
   );
 }
 
-type Tab = "applications" | "mentors" | "jobs" | "startup" | "creative" | "humanities";
+type Tab = "applications" | "mentors" | "jobs" | "startup" | "creative" | "humanities" | "users";
 
 function formatDate(value: string | Date): string {
   const d = new Date(value as string);
@@ -1302,6 +1302,207 @@ function HumanitiesTab({ password }: { password: string }) {
   );
 }
 
+// ── Tab: 회원 현황 ───────────────────────────────────────────
+
+interface SupabaseUser {
+  id: string;
+  email?: string;
+  created_at: string;
+  last_sign_in_at?: string;
+  email_confirmed_at?: string;
+  user_metadata?: Record<string, unknown>;
+  app_metadata?: Record<string, unknown>;
+}
+
+function UsersTab({ password }: { password: string }) {
+  const [users, setUsers] = useState<SupabaseUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/users", { headers: { "x-admin-password": password } });
+      if (!res.ok) throw new Error("회원 목록을 불러오지 못했습니다.");
+      const data = await res.json() as SupabaseUser[];
+      setUsers(data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void fetchUsers(); }, []);
+
+  const handleCreate = async () => {
+    if (!newEmail || !newPw) return;
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": password },
+        body: JSON.stringify({ email: newEmail, password: newPw }),
+      });
+      const data = await res.json() as { error?: string };
+      if (!res.ok) throw new Error(data.error ?? "계정 생성 실패");
+      setNewEmail("");
+      setNewPw("");
+      await fetchUsers();
+    } catch (e) {
+      setCreateError((e as Error).message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/users/${id}`, {
+        method: "DELETE",
+        headers: { "x-admin-password": password },
+      });
+      if (!res.ok) throw new Error("삭제 실패");
+      setDeleteConfirm(null);
+      await fetchUsers();
+    } catch (e) {
+      alert((e as Error).message);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* 새 계정 만들기 */}
+      <div className="bg-card border border-border rounded-2xl p-5">
+        <h3 className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
+          <UserCheck size={15} className="text-primary" />새 계정 만들기
+        </h3>
+        <div className="flex gap-2 flex-wrap">
+          <input
+            type="email"
+            placeholder="이메일"
+            value={newEmail}
+            onChange={e => setNewEmail(e.target.value)}
+            className="border border-border rounded-xl px-3 py-2 text-sm bg-background flex-1 min-w-[160px] focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          <input
+            type="text"
+            placeholder="비밀번호"
+            value={newPw}
+            onChange={e => setNewPw(e.target.value)}
+            className="border border-border rounded-xl px-3 py-2 text-sm bg-background flex-1 min-w-[160px] focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          <button
+            onClick={handleCreate}
+            disabled={creating || !newEmail || !newPw}
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity"
+          >
+            {creating ? "생성 중…" : "생성"}
+          </button>
+        </div>
+        {createError && <p className="mt-2 text-xs text-destructive">{createError}</p>}
+      </div>
+
+      {/* 회원 목록 */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+          <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+            <Users size={15} className="text-primary" />
+            전체 회원 <span className="text-muted-foreground font-normal">({users.length}명)</span>
+          </h3>
+          <button onClick={fetchUsers} className="text-muted-foreground hover:text-foreground transition-colors">
+            <RefreshCw size={14} />
+          </button>
+        </div>
+
+        {loading && (
+          <div className="p-8 text-center text-sm text-muted-foreground">불러오는 중…</div>
+        )}
+        {error && (
+          <div className="p-8 text-center text-sm text-destructive">{error}</div>
+        )}
+        {!loading && !error && users.length === 0 && (
+          <div className="p-8 text-center text-sm text-muted-foreground">회원이 없습니다.</div>
+        )}
+
+        {!loading && users.map((u, i) => (
+          <div key={u.id} className={`border-b border-border last:border-0 ${i % 2 === 0 ? "bg-background/50" : ""}`}>
+            <button
+              className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-primary/5 transition-colors"
+              onClick={() => setExpanded(expanded === u.id ? null : u.id)}
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                  {(u.email ?? "?")[0].toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">{u.email ?? "(이메일 없음)"}</p>
+                  <p className="text-xs text-muted-foreground">가입: {formatDate(u.created_at)}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {u.email_confirmed_at
+                  ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">이메일 인증됨</span>
+                  : <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">미인증</span>
+                }
+                {expanded === u.id ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+              </div>
+            </button>
+
+            {expanded === u.id && (
+              <div className="px-5 pb-4 space-y-3">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs bg-muted/30 rounded-xl p-4">
+                  <span className="text-muted-foreground">ID</span>
+                  <span className="font-mono text-foreground break-all">{u.id}</span>
+                  <span className="text-muted-foreground">마지막 로그인</span>
+                  <span className="text-foreground">{u.last_sign_in_at ? formatDate(u.last_sign_in_at) : "—"}</span>
+                  <span className="text-muted-foreground">이메일 인증</span>
+                  <span className="text-foreground">{u.email_confirmed_at ? formatDate(u.email_confirmed_at) : "미인증"}</span>
+                  {u.user_metadata && Object.keys(u.user_metadata).length > 0 && (
+                    <>
+                      <span className="text-muted-foreground col-span-2 mt-1 font-semibold">추가 정보 (user_metadata)</span>
+                      {Object.entries(u.user_metadata).map(([k, v]) => (
+                        <>
+                          <span key={`k-${k}`} className="text-muted-foreground">{k}</span>
+                          <span key={`v-${k}`} className="text-foreground break-all">{String(v)}</span>
+                        </>
+                      ))}
+                    </>
+                  )}
+                </div>
+                <div className="flex justify-end">
+                  {deleteConfirm === u.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-destructive">정말 삭제할까요?</span>
+                      <button onClick={() => handleDelete(u.id)} className="text-xs px-3 py-1.5 bg-destructive text-white rounded-lg font-semibold">삭제</button>
+                      <button onClick={() => setDeleteConfirm(null)} className="text-xs px-3 py-1.5 border border-border rounded-lg text-muted-foreground">취소</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteConfirm(u.id)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors border border-border hover:border-destructive/50 px-3 py-1.5 rounded-lg"
+                    >
+                      <UserX size={12} />계정 삭제
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Admin Shell ─────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string; icon: typeof Inbox }[] = [
@@ -1311,6 +1512,7 @@ const TABS: { id: Tab; label: string; icon: typeof Inbox }[] = [
   { id: "startup", label: "창업 아이디어", icon: Rocket },
   { id: "creative", label: "창작 공간", icon: PenLine },
   { id: "humanities", label: "인문학 콘텐츠", icon: BookOpen },
+  { id: "users", label: "회원 현황", icon: UserCheck },
 ];
 
 function AdminShell({ password, onLogout }: { password: string; onLogout: () => void }) {
@@ -1338,6 +1540,7 @@ function AdminShell({ password, onLogout }: { password: string; onLogout: () => 
       {tab === "startup" && <StartupTab password={password} />}
       {tab === "creative" && <CreativeTab password={password} />}
       {tab === "humanities" && <HumanitiesTab password={password} />}
+      {tab === "users" && <UsersTab password={password} />}
     </div>
   );
 }
