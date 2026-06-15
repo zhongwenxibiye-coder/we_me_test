@@ -66,44 +66,14 @@ function renderBlock(text: string, idx: number): React.ReactNode {
 
 // ── 본문 가독성 컴포넌트 ─────────────────────────────────────
 function RichContent({ content }: { content: string }) {
-  // 이중 줄바꿈(\n\n) 기준으로 단락 분리
   const blocks = content
     .split(/\n{2,}/)
     .map((b) => b.trim())
     .filter(Boolean);
 
-  // 첫 단락 → 요약 박스 (제목 형식이 아닐 때만)
-  const firstIsHeading = blocks[0]?.startsWith("##") || blocks[0]?.startsWith("###");
-  const summaryText = !firstIsHeading ? blocks[0] : null;
-  const bodyBlocks = summaryText ? blocks.slice(1) : blocks;
-
   return (
-    <div className="max-w-2xl space-y-4">
-      {/* 요약 박스 */}
-      {summaryText ? (
-        <div className="rounded-2xl border border-amber-200/70 bg-amber-50/60 px-5 py-4">
-          <p className="text-[11px] font-bold tracking-widest uppercase text-amber-700/70 mb-2 flex items-center gap-1.5">
-            <BookOpen size={11} />핵심 요약
-          </p>
-          <p className="text-sm leading-[1.85] text-foreground/80 whitespace-pre-line">
-            {renderInline(summaryText)}
-          </p>
-        </div>
-      ) : (
-        /* 본문 없이 제목만 있을 때도 빈 요약 프레임 표시 */
-        <div className="rounded-2xl border border-dashed border-muted-foreground/25 bg-muted/30 px-5 py-4">
-          <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground/50 flex items-center gap-1.5">
-            <BookOpen size={11} />핵심 요약
-          </p>
-        </div>
-      )}
-
-      {/* 본문 단락들 */}
-      {bodyBlocks.length > 0 && (
-        <div className="space-y-3 pt-1">
-          {bodyBlocks.map((block, idx) => renderBlock(block, idx))}
-        </div>
-      )}
+    <div className="max-w-2xl space-y-3">
+      {blocks.map((block, idx) => renderBlock(block, idx))}
     </div>
   );
 }
