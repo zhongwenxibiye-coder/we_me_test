@@ -31,7 +31,11 @@ export default function SignUp() {
 
     setLoading(true);
     const supabase = getSupabase();
-    const { error: err } = await supabase.auth.signUp({ email, password });
+    const { error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    });
     setLoading(false);
 
     if (err) {
