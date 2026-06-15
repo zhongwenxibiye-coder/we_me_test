@@ -42,7 +42,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "인문·창작",
     items: [
-      { href: "/humanities", label: "인문학 콘텐츠", badge: "준비중" },
+      { href: "/humanities", label: "인문학 콘텐츠" },
       { href: "/creative-space", label: "창작 공간" },
     ],
   },

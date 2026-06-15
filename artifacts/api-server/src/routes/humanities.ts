@@ -16,11 +16,21 @@ router.get("/humanities/quiz/today", async (req, res) => {
   const sessionKey = req.query.sessionKey as string | undefined;
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-  const [quiz] = await db
+  // 오늘 날짜로 예약된 퀴즈 우선, 없으면 가장 최근 활성 퀴즈로 폴백
+  let [quiz] = await db
     .select()
     .from(humanitiesQuizzesTable)
     .where(eq(humanitiesQuizzesTable.scheduledDate, today))
     .limit(1);
+
+  if (!quiz) {
+    [quiz] = await db
+      .select()
+      .from(humanitiesQuizzesTable)
+      .where(eq(humanitiesQuizzesTable.isActive, true))
+      .orderBy(desc(humanitiesQuizzesTable.scheduledDate), desc(humanitiesQuizzesTable.createdAt))
+      .limit(1);
+  }
 
   if (!quiz) {
     res.json({ quiz: null, attempt: null });
