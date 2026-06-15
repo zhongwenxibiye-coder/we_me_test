@@ -27,11 +27,11 @@ router.get("/humanities/quiz/today", async (req, res) => {
     return;
   }
 
-  // 오늘 날짜(YYYY-MM-DD)를 고정 시드로 사용해 하루에 한 문제씩 순환
-  const today = new Date().toISOString().slice(0, 10);
-  const epoch = new Date("2026-01-01").getTime();
-  const dayIndex = Math.floor((new Date(today).getTime() - epoch) / 86400000);
-  const quiz = allQuizzes[((dayIndex % allQuizzes.length) + allQuizzes.length) % allQuizzes.length];
+  // KST(UTC+9) 기준 오늘 날짜를 시드로 해시 → 랜덤처럼 보이지만 하루 내 고정, 자정에 교체
+  const kstDate = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  let hash = 0;
+  for (const ch of kstDate) hash = Math.imul(hash * 31 + ch.charCodeAt(0), 1) >>> 0;
+  const quiz = allQuizzes[hash % allQuizzes.length];
 
   let attempt = null;
   if (sessionKey) {
