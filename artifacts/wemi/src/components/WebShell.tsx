@@ -19,6 +19,7 @@ const NAV = [
   { href: "/career-matching", label: "커리어 매칭" },
   { href: "/creative-space", label: "창작 공간" },
   { href: "/humanities", label: "인문학 콘텐츠" },
+  { href: "/community", label: "커뮤니티" },
 ];
 
 export function WebShell({ children }: WebShellProps) {
@@ -73,12 +74,7 @@ export function WebShell({ children }: WebShellProps) {
                   <span className="hidden lg:block text-xs text-muted-foreground max-w-[140px] truncate">
                     {user.email}
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-muted-foreground"
-                    onClick={signOut}
-                  >
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={signOut}>
                     <LogOut size={15} />
                     <span className="hidden sm:inline">로그아웃</span>
                   </Button>

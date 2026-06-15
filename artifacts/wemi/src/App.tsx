@@ -22,10 +22,8 @@ import HumanitiesContent from "@/pages/HumanitiesContent";
 import HumanitiesArticle from "@/pages/HumanitiesArticle";
 import SignUp from "@/pages/SignUp";
 import Login from "@/pages/Login";
-import {
-  CareerMatchingPage,
-  ProjectsPage,
-} from "@/pages/ComingSoon";
+import Community from "@/pages/Community";
+import { CareerMatchingPage, ProjectsPage } from "@/pages/ComingSoon";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -37,6 +35,7 @@ function Router() {
         <Route path="/" component={Landing} />
         <Route path="/signup" component={SignUp} />
         <Route path="/login" component={Login} />
+        <Route path="/community" component={Community} />
         <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/:id" component={JobDetail} />
         <Route path="/mentors" component={Mentors} />
