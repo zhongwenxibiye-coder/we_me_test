@@ -12,13 +12,30 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
+  const checkNickname = async (value: string) => {
+    setNicknameError(null);
+    if (!value.trim()) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("nickname", value.trim())
+      .maybeSingle();
+    if (data) setNicknameError("이미 사용 중인 닉네임입니다.");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!nickname.trim()) { setError("닉네임을 입력해 주세요."); return; }
+    if (nicknameError) { setError(nicknameError); return; }
     if (password !== confirm) { setError("비밀번호가 일치하지 않습니다."); return; }
     if (password.length < 6) { setError("비밀번호는 6자 이상이어야 합니다."); return; }
 
@@ -26,14 +43,30 @@ export default function SignUp() {
     if (!supabase) { setError("서비스를 불러오는 중입니다. 잠시 후 다시 시도해 주세요."); return; }
 
     setLoading(true);
-    const { error: err } = await supabase.auth.signUp({
+
+    const { data, error: signUpErr } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: window.location.origin },
     });
+
+    if (signUpErr) { setLoading(false); setError(signUpErr.message); return; }
+
+    if (data.user) {
+      const { error: profileErr } = await supabase
+        .from("profiles")
+        .insert({ id: data.user.id, nickname: nickname.trim() });
+      if (profileErr) {
+        setLoading(false);
+        setError(profileErr.code === "23505"
+          ? "이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해 주세요."
+          : "닉네임 저장 중 오류가 발생했습니다.");
+        return;
+      }
+    }
+
     setLoading(false);
-    if (err) setError(err.message);
-    else setDone(true);
+    setDone(true);
   };
 
   if (done) {
@@ -61,6 +94,24 @@ export default function SignUp() {
         </div>
         <form onSubmit={handleSubmit} className="space-y-5 bg-card border border-card-border rounded-3xl p-8">
           <div className="space-y-2">
+            <Label htmlFor="nickname">닉네임</Label>
+            <Input
+              id="nickname"
+              type="text"
+              placeholder="커뮤니티에서 사용할 이름"
+              value={nickname}
+              onChange={(e) => { setNickname(e.target.value); setNicknameError(null); }}
+              onBlur={() => checkNickname(nickname)}
+              required
+              maxLength={20}
+              autoComplete="username"
+            />
+            {nicknameError && (
+              <p className="text-xs text-destructive">{nicknameError}</p>
+            )}
+            <p className="text-xs text-muted-foreground">커뮤니티 글쓰기, 마이페이지에서 사용됩니다.</p>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="email">이메일</Label>
             <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
           </div>
@@ -73,7 +124,9 @@ export default function SignUp() {
             <Input id="confirm" type="password" placeholder="비밀번호를 다시 입력하세요" value={confirm} onChange={(e) => setConfirm(e.target.value)} required autoComplete="new-password" />
           </div>
           {error && <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-2">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>{loading ? "가입 중..." : "회원가입"}</Button>
+          <Button type="submit" className="w-full" disabled={loading || !!nicknameError}>
+            {loading ? "가입 중..." : "회원가입"}
+          </Button>
           <p className="text-center text-sm text-muted-foreground">
             이미 계정이 있으신가요?{" "}
             <Link href="/login"><span className="font-semibold text-foreground hover:underline cursor-pointer">로그인</span></Link>

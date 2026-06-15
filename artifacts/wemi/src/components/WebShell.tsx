@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { LogIn, LogOut, UserPlus } from "lucide-react";
+import { LogIn, LogOut, UserPlus, User } from "lucide-react";
 import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,7 +24,7 @@ const NAV = [
 
 export function WebShell({ children }: WebShellProps) {
   const [location] = useLocation();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, nickname, signOut } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/") return location === "/";
@@ -71,9 +71,12 @@ export function WebShell({ children }: WebShellProps) {
             <div className="flex items-center gap-2 shrink-0">
               {user ? (
                 <>
-                  <span className="hidden lg:block text-xs text-muted-foreground max-w-[140px] truncate">
-                    {user.email}
-                  </span>
+                  <Link href="/mypage">
+                    <button className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-foreground bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-full transition-colors max-w-[140px] truncate">
+                      <User size={12} className="shrink-0" />
+                      <span className="truncate">{nickname ?? user.email}</span>
+                    </button>
+                  </Link>
                   <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={signOut}>
                     <LogOut size={15} />
                     <span className="hidden sm:inline">로그아웃</span>

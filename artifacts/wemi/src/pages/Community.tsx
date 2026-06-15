@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PenLine, ChevronDown, ChevronUp, Loader2, Clock } from "lucide-react";
+import { PenLine, ChevronDown, ChevronUp, Loader2, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,8 @@ interface Post {
   title: string;
   content: string;
   created_at: string;
+  user_id: string;
+  nickname: string | null;
 }
 
 function timeAgo(dateStr: string): string {
@@ -29,7 +31,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function Community() {
-  const { user } = useAuth();
+  const { user, nickname } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -44,7 +46,7 @@ export default function Community() {
     if (!supabase) { setLoading(false); return; }
     const { data, error: err } = await supabase
       .from("posts")
-      .select("id, title, content, created_at")
+      .select("id, title, content, created_at, user_id, nickname")
       .order("created_at", { ascending: false });
     if (!err && data) setPosts(data as Post[]);
     setLoading(false);
@@ -61,7 +63,12 @@ export default function Community() {
     setSubmitting(true);
     const { error: err } = await supabase
       .from("posts")
-      .insert({ title: title.trim(), content: content.trim(), user_id: user.id });
+      .insert({
+        title: title.trim(),
+        content: content.trim(),
+        user_id: user.id,
+        nickname: nickname ?? null,
+      });
     setSubmitting(false);
     if (err) {
       setError("글 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
@@ -100,6 +107,7 @@ export default function Community() {
           >
             <span className="flex items-center gap-2 font-semibold text-sm">
               <PenLine size={16} className="text-primary" />새 글 쓰기
+              {nickname && <span className="text-xs text-muted-foreground font-normal">({nickname} 으로 게시)</span>}
             </span>
             {showForm ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
           </button>
@@ -113,14 +121,14 @@ export default function Community() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="post-content">내용</Label>
-                    <Textarea id="post-content" placeholder="자유롭게 고민을 적어보세요. 익명으로 게시됩니다." value={content} onChange={(e) => setContent(e.target.value)} required rows={5} className="resize-none" />
+                    <Textarea id="post-content" placeholder="자유롭게 고민을 적어보세요." value={content} onChange={(e) => setContent(e.target.value)} required rows={5} className="resize-none" />
                   </div>
                   {error && <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-2">{error}</p>}
                   <div className="flex gap-2 justify-end">
                     <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>취소</Button>
                     <Button type="submit" disabled={submitting || !title.trim() || !content.trim()}>
                       {submitting && <Loader2 size={14} className="mr-1.5 animate-spin" />}
-                      익명으로 등록
+                      등록
                     </Button>
                   </div>
                 </form>
@@ -160,7 +168,12 @@ export default function Community() {
                     ? <ChevronUp size={15} className="text-muted-foreground shrink-0 mt-0.5" />
                     : <ChevronDown size={15} className="text-muted-foreground shrink-0 mt-0.5" />}
                 </div>
-                <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <User size={10} />
+                    {post.nickname ?? "익명"}
+                  </span>
+                  <span>·</span>
                   <Clock size={11} />
                   <span>{timeAgo(post.created_at)}</span>
                   {expanded !== post.id && (
@@ -175,7 +188,7 @@ export default function Community() {
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} className="border-t border-border/60">
                     <div className="px-6 py-4">
                       <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/85">{post.content}</p>
-                      {user && (
+                      {user && user.id === post.user_id && (
                         <div className="mt-4 flex justify-end">
                           <button onClick={() => handleDelete(post.id)} className="text-xs text-muted-foreground hover:text-destructive transition-colors">삭제</button>
                         </div>

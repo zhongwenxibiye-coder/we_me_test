@@ -23,6 +23,7 @@ import HumanitiesArticle from "@/pages/HumanitiesArticle";
 import SignUp from "@/pages/SignUp";
 import Login from "@/pages/Login";
 import Community from "@/pages/Community";
+import MyPage from "@/pages/MyPage";
 import { CareerMatchingPage, ProjectsPage } from "@/pages/ComingSoon";
 import NotFound from "@/pages/not-found";
 
@@ -36,6 +37,7 @@ function Router() {
         <Route path="/signup" component={SignUp} />
         <Route path="/login" component={Login} />
         <Route path="/community" component={Community} />
+        <Route path="/mypage" component={MyPage} />
         <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/:id" component={JobDetail} />
         <Route path="/mentors" component={Mentors} />
