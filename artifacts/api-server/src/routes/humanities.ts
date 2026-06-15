@@ -14,28 +14,24 @@ const router: IRouter = Router();
 
 router.get("/humanities/quiz/today", async (req, res) => {
   const sessionKey = req.query.sessionKey as string | undefined;
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-  // 오늘 날짜로 예약된 퀴즈 우선, 없으면 가장 최근 활성 퀴즈로 폴백
-  let [quiz] = await db
+  // 활성 퀴즈 전체를 id 순으로 가져와 날짜 기반으로 순환
+  const allQuizzes = await db
     .select()
     .from(humanitiesQuizzesTable)
-    .where(eq(humanitiesQuizzesTable.scheduledDate, today))
-    .limit(1);
+    .where(eq(humanitiesQuizzesTable.isActive, true))
+    .orderBy(asc(humanitiesQuizzesTable.id));
 
-  if (!quiz) {
-    [quiz] = await db
-      .select()
-      .from(humanitiesQuizzesTable)
-      .where(eq(humanitiesQuizzesTable.isActive, true))
-      .orderBy(desc(humanitiesQuizzesTable.scheduledDate), desc(humanitiesQuizzesTable.createdAt))
-      .limit(1);
-  }
-
-  if (!quiz) {
+  if (allQuizzes.length === 0) {
     res.json({ quiz: null, attempt: null });
     return;
   }
+
+  // 오늘 날짜(YYYY-MM-DD)를 고정 시드로 사용해 하루에 한 문제씩 순환
+  const today = new Date().toISOString().slice(0, 10);
+  const epoch = new Date("2026-01-01").getTime();
+  const dayIndex = Math.floor((new Date(today).getTime() - epoch) / 86400000);
+  const quiz = allQuizzes[((dayIndex % allQuizzes.length) + allQuizzes.length) % allQuizzes.length];
 
   let attempt = null;
   if (sessionKey) {
