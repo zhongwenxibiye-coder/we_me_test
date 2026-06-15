@@ -1,7 +1,10 @@
 import { Link, useLocation } from "wouter";
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
+import { LogIn, LogOut, UserPlus } from "lucide-react";
 import { Mascot } from "@/components/Mascot";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 interface WebShellProps {
@@ -20,6 +23,7 @@ const NAV = [
 
 export function WebShell({ children }: WebShellProps) {
   const [location] = useLocation();
+  const { user, loading, signOut } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/") return location === "/";
@@ -61,6 +65,42 @@ export function WebShell({ children }: WebShellProps) {
               );
             })}
           </nav>
+
+          {!loading && (
+            <div className="flex items-center gap-2 shrink-0">
+              {user ? (
+                <>
+                  <span className="hidden lg:block text-xs text-muted-foreground max-w-[140px] truncate">
+                    {user.email}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-muted-foreground"
+                    onClick={signOut}
+                  >
+                    <LogOut size={15} />
+                    <span className="hidden sm:inline">로그아웃</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+                      <LogIn size={15} />
+                      <span className="hidden sm:inline">로그인</span>
+                    </Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button size="sm" className="gap-1.5">
+                      <UserPlus size={15} />
+                      <span className="hidden sm:inline">회원가입</span>
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

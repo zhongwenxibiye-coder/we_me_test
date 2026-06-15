@@ -1,8 +1,11 @@
+import { useEffect, useState } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { WebShell } from "@/components/WebShell";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { initSupabase } from "@/lib/supabase";
 import Landing from "@/pages/Landing";
 import Jobs from "@/pages/Jobs";
 import JobDetail from "@/pages/JobDetail";
@@ -17,6 +20,8 @@ import CreativeSpace from "@/pages/CreativeSpace";
 import CreativeEpisode from "@/pages/CreativeEpisode";
 import HumanitiesContent from "@/pages/HumanitiesContent";
 import HumanitiesArticle from "@/pages/HumanitiesArticle";
+import SignUp from "@/pages/SignUp";
+import Login from "@/pages/Login";
 import {
   CareerMatchingPage,
   ProjectsPage,
@@ -30,6 +35,8 @@ function Router() {
     <WebShell>
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/signup" component={SignUp} />
+        <Route path="/login" component={Login} />
         <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/:id" component={JobDetail} />
         <Route path="/mentors" component={Mentors} />
@@ -52,13 +59,29 @@ function Router() {
 }
 
 function App() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}api/config`)
+      .then((r) => r.json())
+      .then(({ supabaseUrl, supabaseAnonKey }: { supabaseUrl: string; supabaseAnonKey: string }) => {
+        if (supabaseUrl && supabaseAnonKey) initSupabase(supabaseUrl, supabaseAnonKey);
+      })
+      .catch(() => {})
+      .finally(() => setReady(true));
+  }, []);
+
+  if (!ready) return null;
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
+        <AuthProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

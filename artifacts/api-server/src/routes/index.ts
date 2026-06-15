@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
+import configRouter from "./config";
 import mentorApplicationsRouter from "./mentor-applications";
 import mentorsRouter from "./mentors";
 import jobListingsRouter from "./job-listings";
@@ -11,6 +12,7 @@ import humanitiesRouter from "./humanities";
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(configRouter);
 router.use(mentorApplicationsRouter);
 router.use(mentorsRouter);
 router.use(jobListingsRouter);
