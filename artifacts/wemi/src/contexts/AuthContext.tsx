@@ -7,6 +7,7 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   nickname: string | null;
+  department: string | null;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextValue>({
   session: null,
   loading: true,
   nickname: null,
+  department: null,
   refreshProfile: async () => {},
   signOut: async () => {},
 });
@@ -24,16 +26,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [nickname, setNickname] = useState<string | null>(null);
+  const [department, setDepartment] = useState<string | null>(null);
 
   const fetchProfile = useCallback(async (userId: string) => {
     const supabase = getSupabase();
     if (!supabase) return;
     const { data } = await supabase
       .from("profiles")
-      .select("nickname")
+      .select("nickname, department")
       .eq("id", userId)
       .single();
-    setNickname((data as { nickname: string } | null)?.nickname ?? null);
+    const profile = data as { nickname: string; department: string } | null;
+    setNickname(profile?.nickname ?? null);
+    setDepartment(profile?.department ?? null);
   }, []);
 
   const refreshProfile = useCallback(async () => {
@@ -64,10 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await getSupabase()?.auth.signOut();
     setNickname(null);
+    setDepartment(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, nickname, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, nickname, department, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );
