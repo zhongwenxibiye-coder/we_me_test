@@ -1,11 +1,112 @@
 import { useState } from "react";
 import { Link, useRoute } from "wouter";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronLeft } from "lucide-react";
+import { ChevronDown, ChevronLeft, BookOpen } from "lucide-react";
 import { useListJobListings, type JobListing } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/utils";
+
+// ── 인라인 마크다운 렌더러 ────────────────────────────────────
+function renderInline(text: string): React.ReactNode[] {
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
+    if (part.startsWith("`") && part.endsWith("`"))
+      return (
+        <code key={i} className="px-1.5 py-0.5 rounded-md bg-muted text-xs font-mono text-foreground/80">
+          {part.slice(1, -1)}
+        </code>
+      );
+    return <span key={i}>{part}</span>;
+  });
+}
+
+// ── 단락 렌더러 ──────────────────────────────────────────────
+function renderBlock(text: string, idx: number): React.ReactNode {
+  // 소제목 ##
+  if (text.startsWith("## ")) {
+    return (
+      <h3 key={idx} className="text-base font-extrabold text-foreground mt-5 mb-1.5 first:mt-0">
+        {text.slice(3)}
+      </h3>
+    );
+  }
+  // 소소제목 ###
+  if (text.startsWith("### ")) {
+    return (
+      <h4 key={idx} className="text-sm font-bold text-foreground mt-4 mb-1 first:mt-0">
+        {text.slice(4)}
+      </h4>
+    );
+  }
+  // 불릿 리스트 (모든 줄이 -·•로 시작하는 경우)
+  const lines = text.split("\n").filter(Boolean);
+  const isList = lines.length > 1 && lines.every((l) => /^[\-•·]\s/.test(l.trim()) || l.trim() === "");
+  if (isList) {
+    return (
+      <ul key={idx} className="space-y-1.5 list-none pl-0">
+        {lines.filter(Boolean).map((l, i) => (
+          <li key={i} className="flex items-start gap-2 text-sm leading-[1.8] text-foreground/75">
+            <span className="mt-[5px] size-1.5 rounded-full bg-primary/70 shrink-0" />
+            <span>{renderInline(l.replace(/^[\-•·]\s*/, ""))}</span>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  // 일반 단락
+  return (
+    <p key={idx} className="text-sm leading-[1.85] text-foreground/75 whitespace-pre-line">
+      {renderInline(text)}
+    </p>
+  );
+}
+
+// ── 본문 가독성 컴포넌트 ─────────────────────────────────────
+function RichContent({ content }: { content: string }) {
+  // 이중 줄바꿈(\n\n) 기준으로 단락 분리
+  const blocks = content
+    .split(/\n{2,}/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+
+  // 첫 단락 → 요약 박스 (제목 형식이 아닐 때만)
+  const firstIsHeading = blocks[0]?.startsWith("##") || blocks[0]?.startsWith("###");
+  const summaryText = !firstIsHeading ? blocks[0] : null;
+  const bodyBlocks = summaryText ? blocks.slice(1) : blocks;
+
+  return (
+    <div className="max-w-2xl space-y-4">
+      {/* 요약 박스 */}
+      {summaryText ? (
+        <div className="rounded-2xl border border-amber-200/70 bg-amber-50/60 px-5 py-4">
+          <p className="text-[11px] font-bold tracking-widest uppercase text-amber-700/70 mb-2 flex items-center gap-1.5">
+            <BookOpen size={11} />핵심 요약
+          </p>
+          <p className="text-sm leading-[1.85] text-foreground/80 whitespace-pre-line">
+            {renderInline(summaryText)}
+          </p>
+        </div>
+      ) : (
+        /* 본문 없이 제목만 있을 때도 빈 요약 프레임 표시 */
+        <div className="rounded-2xl border border-dashed border-muted-foreground/25 bg-muted/30 px-5 py-4">
+          <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground/50 flex items-center gap-1.5">
+            <BookOpen size={11} />핵심 요약
+          </p>
+        </div>
+      )}
+
+      {/* 본문 단락들 */}
+      {bodyBlocks.length > 0 && (
+        <div className="space-y-3 pt-1">
+          {bodyBlocks.map((block, idx) => renderBlock(block, idx))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");
@@ -110,11 +211,15 @@ export default function JobDetail() {
                     transition={{ duration: 0.25 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-5 pb-5 pl-16 text-sm leading-relaxed text-foreground/85 whitespace-pre-wrap">
+                    <div className="px-6 pb-6 pt-1 pl-16">
                       {empty ? (
-                        <span className="text-muted-foreground italic">내용 추가 예정</span>
+                        <div className="rounded-2xl border border-dashed border-muted-foreground/25 bg-muted/30 px-5 py-4">
+                          <p className="text-xs text-muted-foreground/50 italic flex items-center gap-1.5">
+                            <BookOpen size={12} />내용 추가 예정
+                          </p>
+                        </div>
                       ) : (
-                        item.content
+                        <RichContent content={item.content ?? ""} />
                       )}
                     </div>
                   </motion.div>
