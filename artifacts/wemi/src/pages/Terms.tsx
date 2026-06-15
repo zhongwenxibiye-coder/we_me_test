@@ -138,8 +138,8 @@ export default function Terms() {
           </section>
 
           <div className="rounded-2xl bg-muted/40 border border-border px-5 py-4 space-y-1 text-xs text-muted-foreground">
-            <p><span className="font-semibold text-foreground">서비스명:</span> 위미 (Wemi)</p>
-            <p><span className="font-semibold text-foreground">문의 이메일:</span> contact@wemi.kr</p>
+            <p><span className="font-semibold text-foreground">서비스명:</span> 위미 (We me)</p>
+            <p><span className="font-semibold text-foreground">문의 이메일:</span> zhongwenxibeye@gmail.com</p>
           </div>
 
         </div>

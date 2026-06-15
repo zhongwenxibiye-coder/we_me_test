@@ -138,8 +138,8 @@ export default function Privacy() {
           <section>
             <h2 className="text-lg font-bold text-foreground mb-3">8. 개인정보 보호책임자 및 문의</h2>
             <div className="rounded-2xl bg-muted/40 border border-border px-5 py-4 space-y-1">
-              <p><span className="font-semibold">서비스명:</span> 위미 (Wemi)</p>
-              <p><span className="font-semibold">이메일:</span> contact@wemi.kr</p>
+              <p><span className="font-semibold">서비스명:</span> 위미 (We me)</p>
+              <p><span className="font-semibold">이메일:</span> zhongwenxibeye@gmail.com</p>
             </div>
             <p className="mt-3">
               개인정보 관련 불만·문의는 위 이메일로 접수하시면 영업일 기준 3일 이내 답변드립니다. 또한 개인정보 침해에 관한 신고·상담은 개인정보 보호위원회(privacy.go.kr) 또는 한국인터넷진흥원(118)에 문의하실 수 있습니다.
