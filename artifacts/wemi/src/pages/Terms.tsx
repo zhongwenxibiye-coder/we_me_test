@@ -125,9 +125,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-lg font-bold text-foreground mb-3">제9조 (회원 탈퇴)</h2>
-            <p>
-              회원은 언제든지 탈퇴를 요청할 수 있으며, 운영자는 즉시 처리합니다. 탈퇴 시 관련 법령에 따라 보존이 필요한 정보를 제외한 개인정보는 지체 없이 삭제됩니다. 탈퇴 문의는 contact@wemi.kr로 연락 주십시오.
-            </p>
+            <p>회원은 언제든지 탈퇴를 요청할 수 있으며, 운영자는 즉시 처리합니다. 탈퇴 시 관련 법령에 따라 보존이 필요한 정보를 제외한 개인정보는 지체 없이 삭제됩니다. 탈퇴 문의는 zhongwenxibiye@gmail.com로 연락 주십시오.</p>
           </section>
 
           <section>
