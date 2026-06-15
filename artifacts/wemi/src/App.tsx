@@ -25,6 +25,8 @@ import Login from "@/pages/Login";
 import Community from "@/pages/Community";
 import MyPage from "@/pages/MyPage";
 import { CareerMatchingPage, ProjectsPage } from "@/pages/ComingSoon";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ function Router() {
         <Route path="/humanities/articles/:id" component={HumanitiesArticle} />
         <Route path="/humanities" component={HumanitiesContent} />
         <Route path="/projects" component={ProjectsPage} />
+        <Route path="/privacy" component={Privacy} />
+        <Route path="/terms" component={Terms} />
         <Route path="/admin" component={Admin} />
         <Route component={NotFound} />
       </Switch>

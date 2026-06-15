@@ -258,7 +258,14 @@ export function WebShell({ children }: WebShellProps) {
               <p className="text-xs text-muted-foreground">인문계열을 위한 취업 플랫폼</p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 We me. All rights reserved.</p>
+          <div className="flex flex-col md:items-end gap-2">
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <Link href="/privacy" className="hover:text-foreground transition-colors">개인정보처리방침</Link>
+              <span className="opacity-30">|</span>
+              <Link href="/terms" className="hover:text-foreground transition-colors">이용약관</Link>
+            </div>
+            <p className="text-xs text-muted-foreground">© 2026 We me. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
