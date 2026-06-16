@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { useListJobListings, type JobListing } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { JOB_CATEGORIES, type JobCategory } from "@/data/jobs";
 import { cn } from "@/lib/utils";
+import { useJobLikes } from "@/hooks/useJobLikes";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Jobs() {
   const [active, setActive] = useState<JobCategory>("영업");
   const { data: allJobs = [], isLoading } = useListJobListings<JobListing[]>();
+  const { likes, userLikes, toggleLike } = useJobLikes();
+  const { user } = useAuth();
 
   const subJobs = allJobs
     .filter((j) => j.isActive && j.category === active)
@@ -99,12 +103,29 @@ export default function Jobs() {
                   <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed line-clamp-3 flex-1">
                     {job.shortDescription}
                   </p>
-                  <Link href={`/jobs/${job.id}`}>
-                    <Button className="mt-3 w-full rounded-xl h-9 text-sm font-semibold">
-                      자세히 보기
-                      <ArrowRight size={14} className="ml-1" />
-                    </Button>
-                  </Link>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Link href={`/jobs/${job.id}`} className="flex-1">
+                      <Button className="w-full rounded-xl h-9 text-sm font-semibold">
+                        자세히 보기
+                        <ArrowRight size={14} className="ml-1" />
+                      </Button>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => { if (!user) return; void toggleLike(job.id); }}
+                      title={user ? (userLikes.has(String(job.id)) ? "관심 해제" : "관심 직무 추가") : "로그인 후 이용 가능"}
+                      className={cn(
+                        "flex items-center gap-1 h-9 px-3 rounded-xl border text-xs font-semibold transition-colors shrink-0",
+                        userLikes.has(String(job.id))
+                          ? "border-red-300 bg-red-50 text-red-500"
+                          : "border-border text-muted-foreground hover:border-red-300 hover:text-red-400",
+                        !user && "opacity-40 cursor-not-allowed",
+                      )}
+                    >
+                      <Heart size={13} className={userLikes.has(String(job.id)) ? "fill-red-500" : ""} />
+                      <span>{likes[String(job.id)] ?? 0}</span>
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>

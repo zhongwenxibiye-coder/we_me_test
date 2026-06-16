@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Lock, GraduationCap, CheckCircle2, Loader2 } from "lucide-react";
+import { User, Lock, GraduationCap, CheckCircle2, Loader2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSupabase } from "@/lib/supabase";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
+import { useJobLikes } from "@/hooks/useJobLikes";
+import { useListJobListings, type JobListing } from "@workspace/api-client-react";
 
 export default function MyPage() {
   const { user, nickname, department, refreshProfile } = useAuth();
   const [, navigate] = useLocation();
+  const { userLikes, likes, toggleLike } = useJobLikes();
+  const { data: allJobs = [] } = useListJobListings<JobListing[]>();
 
   // 닉네임
   const [newNickname, setNewNickname] = useState(nickname ?? "");
@@ -227,6 +231,40 @@ export default function MyPage() {
                 </Button>
               </div>
             </form>
+          </div>
+
+          {/* 관심 직무 */}
+          <div className="bg-card border border-card-border rounded-3xl p-6">
+            <h2 className="font-bold text-base mb-4 flex items-center gap-2">
+              <Heart size={16} className="text-red-400" />관심 직무
+            </h2>
+            {userLikes.size === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                아직 관심 직무가 없습니다.{" "}
+                <Link href="/jobs" className="underline underline-offset-2 hover:text-foreground transition-colors">직무 학습</Link>에서 하트를 눌러 추가해보세요.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {allJobs
+                  .filter((j) => userLikes.has(String(j.id)))
+                  .map((j) => (
+                    <div key={j.id} className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-xl px-3 py-1.5">
+                      <Heart size={12} className="fill-red-400 text-red-400 shrink-0" />
+                      <Link href={`/jobs/${j.id}`} className="text-sm font-semibold text-red-700 hover:underline">
+                        {j.title}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => void toggleLike(j.id)}
+                        className="ml-1 text-red-300 hover:text-red-500 transition-colors text-xs leading-none"
+                        title="관심 해제"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
 
           {/* 비밀번호 변경 */}

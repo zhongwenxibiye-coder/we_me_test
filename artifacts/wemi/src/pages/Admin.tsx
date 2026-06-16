@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import {
   Inbox, Lock, Mail, CheckCircle2, Clock, LogOut, Users, Briefcase,
   Rocket, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Eye, PenLine, ImageIcon,
-  BookOpen, HelpCircle, FileText, Send, UserCheck, UserX, RefreshCw,
+  BookOpen, HelpCircle, FileText, Send, UserCheck, UserX, RefreshCw, Heart,
 } from "lucide-react";
+import { getSupabase } from "@/lib/supabase";
 import { Link } from "wouter";
 import {
   useListMentorApplications, useUpdateMentorApplicationStatus,
@@ -1314,8 +1315,44 @@ interface SupabaseUser {
   app_metadata?: Record<string, unknown>;
 }
 
+function UserLikedJobs({ userId, allJobs }: { userId: string; allJobs: JobListing[] }) {
+  const [likedJobIds, setLikedJobIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from("job_likes")
+      .select("job_id")
+      .eq("user_id", userId)
+      .then(({ data }) => {
+        setLikedJobIds(data ? data.map((d: { job_id: string }) => d.job_id) : []);
+        setLoading(false);
+      });
+  }, [userId]);
+
+  if (loading) return <p className="text-xs text-muted-foreground">불러오는 중…</p>;
+  if (likedJobIds.length === 0) return <p className="text-xs text-muted-foreground">관심 직무 없음</p>;
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {likedJobIds.map(id => {
+        const job = allJobs.find(j => String(j.id) === id);
+        return (
+          <span key={id} className="inline-flex items-center gap-1 text-xs bg-red-50 border border-red-200 text-red-700 rounded-lg px-2 py-0.5">
+            <Heart size={10} className="fill-red-400" />
+            {job ? job.title : `직무 #${id}`}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 function UsersTab({ password }: { password: string }) {
   const [users, setUsers] = useState<SupabaseUser[]>([]);
+  const { data: allJobs = [] } = useListJobListings<JobListing[]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -1477,6 +1514,12 @@ function UsersTab({ password }: { password: string }) {
                       ))}
                     </>
                   )}
+                </div>
+                <div className="bg-muted/30 rounded-xl p-4 space-y-2">
+                  <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Heart size={12} className="text-red-400" />관심 직무
+                  </p>
+                  <UserLikedJobs userId={u.id} allJobs={allJobs} />
                 </div>
                 <div className="flex justify-end">
                   {deleteConfirm === u.id ? (
