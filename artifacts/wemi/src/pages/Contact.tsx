@@ -18,6 +18,14 @@ export default function Contact() {
   return (
     <div className="mx-auto max-w-2xl px-6 lg:px-8 py-16 lg:py-24">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+        <motion.img
+          src="/wemi-character.png"
+          alt="위미 캐릭터"
+          className="mx-auto mb-6 w-28 h-28 object-contain drop-shadow-md"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        />
         <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: "hsl(88 45% 38%)" }}>
           Contact
         </p>
