@@ -595,10 +595,9 @@ export default function Community() {
     <div className="mx-auto max-w-3xl px-6 lg:px-8 py-12 lg:py-16">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
         <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: "hsl(88 45% 38%)" }}>Community</p>
-        <h1 className="text-3xl font-extrabold tracking-tight mb-2">익명 취업 고민 게시판</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">커뮤니티</h1>
         <p className="text-muted-foreground text-sm">인문계 취준생끼리 솔직하게 고민을 나눠요. 이름 없이, 부담 없이.</p>
       </motion.div>
-
       {/* 글쓰기 폼 */}
       {user ? (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8 rounded-3xl border border-card-border bg-card overflow-hidden">
@@ -639,7 +638,6 @@ export default function Community() {
           <Link href="/login"><Button size="sm">로그인</Button></Link>
         </motion.div>
       )}
-
       {/* 게시글 목록 */}
       {loading ? (
         <div className="flex justify-center py-20">
