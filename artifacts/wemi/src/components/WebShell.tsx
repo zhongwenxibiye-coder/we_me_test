@@ -50,6 +50,10 @@ const NAV_GROUPS: NavGroup[] = [
     label: "커뮤니티",
     href: "/community",
   },
+  {
+    label: "문의하기",
+    href: "/contact",
+  },
 ];
 
 function DropdownGroup({
