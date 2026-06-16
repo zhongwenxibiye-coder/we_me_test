@@ -99,11 +99,12 @@ export default function MyPage() {
     setDeptSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .upsert({ id: user.id, department: newDepartment.trim() || null });
+      .update({ department: newDepartment.trim() || null })
+      .eq("id", user.id);
 
     setDeptSaving(false);
     if (error) {
-      setDeptError("저장 중 오류가 발생했습니다.");
+      setDeptError(`저장 중 오류가 발생했습니다. (${error.message})`);
     } else {
       await refreshProfile();
       setDeptDone(true);
