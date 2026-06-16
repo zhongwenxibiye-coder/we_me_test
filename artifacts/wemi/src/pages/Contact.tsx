@@ -56,22 +56,14 @@ export default function Contact() {
             </a>
           </div>
 
-          <div className="flex gap-3">
-            <Button asChild variant="outline" className="rounded-xl gap-2">
-              <a href={`mailto:${EMAIL}`}>
-                <Mail size={14} />
-                메일 보내기
-              </a>
-            </Button>
-            <Button
-              variant="ghost"
-              className="rounded-xl gap-2 text-muted-foreground"
-              onClick={handleCopy}
-            >
-              {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
-              {copied ? "복사됨" : "주소 복사"}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            className="rounded-xl gap-2 text-muted-foreground"
+            onClick={handleCopy}
+          >
+            {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+            {copied ? "복사됨" : "주소 복사"}
+          </Button>
         </motion.div>
 
         <p className="mt-8 text-xs text-muted-foreground">
