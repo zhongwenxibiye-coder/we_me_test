@@ -19,6 +19,7 @@ interface Post {
   created_at: string;
   user_id: string;
   nickname: string | null;
+  department: string | null;
   comment_count?: number;
 }
 
@@ -490,7 +491,13 @@ function PostCard({
             : <ChevronDown size={15} className="text-muted-foreground shrink-0 mt-0.5" />}
         </div>
         <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><User size={10} />{post.nickname ?? "익명"}</span>
+          <span className="flex items-center gap-1">
+            <User size={10} />
+            {post.nickname ?? "익명"}
+            {post.department && (
+              <span className="ml-0.5 text-[10px] bg-primary/10 text-primary/80 rounded px-1 py-px font-medium">{post.department}</span>
+            )}
+          </span>
           <span>·</span>
           <Clock size={11} /><span>{timeAgo(post.created_at)}</span>
           {!expanded && (
@@ -534,7 +541,7 @@ function PostCard({
 // ── 메인 페이지 ──────────────────────────────────────────────
 
 export default function Community() {
-  const { user, nickname } = useAuth();
+  const { user, nickname, department } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -548,7 +555,7 @@ export default function Community() {
     if (!supabase) { setLoading(false); return; }
     const { data, error: err } = await supabase
       .from("posts")
-      .select("id, title, content, created_at, user_id, nickname, comments(count)")
+      .select("id, title, content, created_at, user_id, nickname, department, comments(count)")
       .order("created_at", { ascending: false });
     if (!err && data) {
       setPosts(
@@ -572,7 +579,7 @@ export default function Community() {
     setSubmitting(true);
     const { error: err } = await supabase
       .from("posts")
-      .insert({ title: title.trim(), content: content.trim(), user_id: user.id, nickname: nickname ?? null });
+      .insert({ title: title.trim(), content: content.trim(), user_id: user.id, nickname: nickname ?? null, department: department ?? null });
     setSubmitting(false);
     if (err) { setError("글 등록 중 오류가 발생했습니다. 다시 시도해 주세요."); }
     else { setTitle(""); setContent(""); setShowForm(false); fetchPosts(); }
