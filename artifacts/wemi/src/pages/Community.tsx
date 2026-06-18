@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextArea } from "@/components/RichTextArea";
+import { RichContent } from "@/components/RichContent";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSupabase } from "@/lib/supabase";
 import { Link } from "wouter";
@@ -469,7 +470,7 @@ function PostDetail({
 
       {/* 게시글 본문 */}
       <div className="px-5 py-5">
-        <p className="text-sm leading-loose whitespace-pre-wrap text-foreground/85 min-h-[80px]">{post.content}</p>
+        <RichContent content={post.content} className="min-h-[80px]" />
         {currentUserId === post.user_id && (
           <div className="mt-4 flex justify-end border-t border-border/40 pt-3">
             <button

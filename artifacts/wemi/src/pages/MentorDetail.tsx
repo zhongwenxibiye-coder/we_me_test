@@ -6,6 +6,7 @@ import { useGetMentor, type MentorArticle } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/utils";
+import { RichContent } from "@/components/RichContent";
 
 // ── 아티클 인라인 확장 아이템 ──────────────────────────────────
 
@@ -42,13 +43,9 @@ function ArticleItem({
             className="overflow-hidden"
           >
             <div className="px-6 lg:px-8 pb-6 pt-1 bg-muted/20 border-t border-border/40">
-              {article.content ? (
-                <p className="text-sm leading-loose text-foreground/85 whitespace-pre-wrap">
-                  {article.content}
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">내용이 아직 없습니다.</p>
-              )}
+              {article.content
+                ? <RichContent content={article.content} />
+                : <p className="text-sm text-muted-foreground italic">내용이 아직 없습니다.</p>}
             </div>
           </motion.div>
         )}

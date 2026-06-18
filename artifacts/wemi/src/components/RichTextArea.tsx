@@ -1,80 +1,133 @@
-import { useRef } from "react";
-
-type FormatType = "bold" | "italic" | "h2" | "h3" | "bullet";
+import { useEffect } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import { Bold, Italic, Heading2, Heading3, List } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface RichTextAreaProps {
   value: string;
   onChange: (val: string) => void;
   placeholder?: string;
+  minHeight?: number;
   rows?: number;
   className?: string;
 }
 
-export function RichTextArea({ value, onChange, placeholder, rows = 5, className = "" }: RichTextAreaProps) {
-  const ref = useRef<HTMLTextAreaElement>(null);
+export function RichTextArea({
+  value,
+  onChange,
+  placeholder = "내용을 입력하세요...",
+  minHeight,
+  rows,
+  className = "",
+}: RichTextAreaProps) {
+  const computedMinHeight = minHeight ?? (rows ? rows * 24 : 120);
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [2, 3] },
+      }),
+      Placeholder.configure({
+        placeholder,
+        emptyEditorClass: "is-editor-empty",
+      }),
+    ],
+    content: value || "",
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      const empty = editor.isEmpty;
+      onChange(empty ? "" : html);
+    },
+    editorProps: {
+      attributes: {
+        class: "rich-editor-content focus:outline-none",
+        style: `min-height:${computedMinHeight}px`,
+      },
+    },
+  });
 
-  function applyFormat(type: FormatType) {
-    const el = ref.current;
-    if (!el) return;
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const selected = value.slice(start, end);
-    let newVal = value;
-    let newStart = start;
-    let newEnd = end;
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.isEmpty ? "" : editor.getHTML();
+    if (current === value) return;
+    editor.commands.setContent(value || "");
+  }, [value, editor]);
 
-    if (type === "bold") {
-      newVal = value.slice(0, start) + `**${selected}**` + value.slice(end);
-      newStart = start + 2; newEnd = end + 2;
-    } else if (type === "italic") {
-      newVal = value.slice(0, start) + `*${selected}*` + value.slice(end);
-      newStart = start + 1; newEnd = end + 1;
-    } else {
-      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
-      const prefix = type === "h2" ? "## " : type === "h3" ? "### " : "- ";
-      newVal = value.slice(0, lineStart) + prefix + value.slice(lineStart);
-      newStart = start + prefix.length; newEnd = end + prefix.length;
-    }
+  if (!editor) return null;
 
-    onChange(newVal);
-    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(newStart, newEnd); });
-  }
-
-  const toolbarBtns: { label: string; type: FormatType; title: string; className?: string }[] = [
-    { label: "B", type: "bold", title: "볼드 — 텍스트 선택 후 클릭", className: "font-extrabold" },
-    { label: "I", type: "italic", title: "기울임 — 텍스트 선택 후 클릭", className: "italic" },
-    { label: "H2", type: "h2", title: "큰 소제목 (## )" },
-    { label: "H3", type: "h3", title: "작은 소제목 (### )" },
-    { label: "• 목록", type: "bullet", title: "글머리 기호 (- )" },
-  ];
+  const toolbarItems = [
+    {
+      label: <Bold size={13} />,
+      title: "볼드 (B)",
+      action: () => editor.chain().focus().toggleBold().run(),
+      active: editor.isActive("bold"),
+    },
+    {
+      label: <Italic size={13} />,
+      title: "기울임 (I)",
+      action: () => editor.chain().focus().toggleItalic().run(),
+      active: editor.isActive("italic"),
+    },
+    { sep: true },
+    {
+      label: <Heading2 size={13} />,
+      title: "큰 소제목",
+      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      active: editor.isActive("heading", { level: 2 }),
+    },
+    {
+      label: <Heading3 size={13} />,
+      title: "작은 소제목",
+      action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+      active: editor.isActive("heading", { level: 3 }),
+    },
+    { sep: true },
+    {
+      label: <List size={13} />,
+      title: "글머리 목록",
+      action: () => editor.chain().focus().toggleBulletList().run(),
+      active: editor.isActive("bulletList"),
+    },
+  ] as const;
 
   return (
-    <div className={`rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/40 ${className}`}>
+    <div
+      className={cn(
+        "rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/40",
+        className,
+      )}
+    >
+      {/* 툴바 */}
       <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-border/60 bg-muted/40 flex-wrap">
-        {toolbarBtns.map((btn, i) => (
-          <>
-            {(i === 2 || i === 4) && <div key={`sep-${i}`} className="w-px h-4 bg-border/60 mx-0.5" />}
+        {toolbarItems.map((item, i) => {
+          if ("sep" in item) {
+            return <div key={`sep-${i}`} className="w-px h-4 bg-border/60 mx-0.5" />;
+          }
+          return (
             <button
-              key={btn.type}
+              key={i}
               type="button"
-              title={btn.title}
-              onClick={() => applyFormat(btn.type)}
-              className={`px-2 py-0.5 rounded text-xs hover:bg-primary/20 transition-colors text-foreground/80 ${btn.className ?? ""}`}
+              title={item.title}
+              onClick={item.action}
+              className={cn(
+                "p-1.5 rounded text-xs transition-colors",
+                item.active
+                  ? "bg-primary/25 text-foreground"
+                  : "hover:bg-primary/15 text-foreground/70",
+              )}
             >
-              {btn.label}
+              {item.label}
             </button>
-          </>
-        ))}
-        <span className="ml-auto text-[10px] text-muted-foreground/40 hidden sm:inline">텍스트 선택 → 버튼 클릭</span>
+          );
+        })}
+        <span className="ml-auto text-[10px] text-muted-foreground/40 hidden sm:inline">
+          선택 후 버튼 클릭 · 다시 클릭하면 해제
+        </span>
       </div>
-      <textarea
-        ref={ref}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        className="w-full resize-y px-3 py-2.5 text-sm bg-transparent focus:outline-none placeholder:text-muted-foreground/40 leading-relaxed"
-      />
+
+      {/* 에디터 */}
+      <EditorContent editor={editor} className="rich-editor-wrap" />
     </div>
   );
 }

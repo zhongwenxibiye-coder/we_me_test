@@ -319,3 +319,42 @@
     animation: wemi-bob 2.4s ease-in-out infinite;
   }
 }
+
+/* ── TipTap WYSIWYG 에디터 스타일 ─────────────────────────── */
+.rich-editor-wrap .ProseMirror {
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.75;
+  outline: none;
+}
+.rich-editor-wrap .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground) / 0.4);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+.rich-editor-wrap .ProseMirror > * + * {
+  margin-top: 0.5rem;
+}
+.rich-editor-wrap .ProseMirror strong { font-weight: 700; }
+.rich-editor-wrap .ProseMirror em { font-style: italic; }
+.rich-editor-wrap .ProseMirror h2 {
+  font-size: 1.05em;
+  font-weight: 800;
+  margin-top: 1rem;
+  margin-bottom: 0.2rem;
+}
+.rich-editor-wrap .ProseMirror h3 {
+  font-size: 0.95em;
+  font-weight: 700;
+  margin-top: 0.75rem;
+  margin-bottom: 0.1rem;
+}
+.rich-editor-wrap .ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+.rich-editor-wrap .ProseMirror li { margin: 0.1rem 0; }
+.rich-editor-wrap .ProseMirror li p { margin: 0; }

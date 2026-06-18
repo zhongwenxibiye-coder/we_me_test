@@ -6,6 +6,7 @@ import {
   useListCreativeWorks,
   useListCreativeEpisodes,
 } from "@workspace/api-client-react";
+import { RichContent } from "@/components/RichContent";
 
 export default function CreativeEpisode() {
   const [, params] = useRoute("/creative-space/:workId/episodes/:episodeId");
@@ -54,9 +55,7 @@ export default function CreativeEpisode() {
 
           <div className="bg-card rounded-2xl border border-border px-6 py-8 lg:px-10 lg:py-10 space-y-6">
             {episode.content && (
-              <p className="leading-8 text-base whitespace-pre-wrap font-[Pretendard,sans-serif]">
-                {episode.content}
-              </p>
+              <RichContent content={episode.content} className="text-base" />
             )}
 
             {Array.isArray(episode.images) && episode.images.length > 0 && (

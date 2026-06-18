@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { useGetMentor } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
+import { RichContent } from "@/components/RichContent";
 
 export default function ArticleDetail() {
   const [, params] = useRoute("/mentors/:mentorId/articles/:articleId");
@@ -53,9 +54,7 @@ export default function ArticleDetail() {
 
         <div className="mt-8 rounded-3xl bg-card border border-card-border p-6 lg:p-8 min-h-48">
           {article.content ? (
-            <p className="text-base leading-relaxed whitespace-pre-wrap text-foreground/90">
-              {article.content}
-            </p>
+            <RichContent content={article.content} />
           ) : (
             <div className="text-center py-10">
               <Mascot size={80} animate="bob" />

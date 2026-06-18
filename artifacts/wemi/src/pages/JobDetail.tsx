@@ -6,77 +6,7 @@ import { useListJobListings, type JobListing } from "@workspace/api-client-react
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/utils";
-
-// ── 인라인 마크다운 렌더러 ────────────────────────────────────
-function renderInline(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**"))
-      return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
-    if (part.startsWith("`") && part.endsWith("`"))
-      return (
-        <code key={i} className="px-1.5 py-0.5 rounded-md bg-muted text-xs font-mono text-foreground/80">
-          {part.slice(1, -1)}
-        </code>
-      );
-    return <span key={i}>{part}</span>;
-  });
-}
-
-// ── 단락 렌더러 ──────────────────────────────────────────────
-function renderBlock(text: string, idx: number): React.ReactNode {
-  // 소제목 ##
-  if (text.startsWith("## ")) {
-    return (
-      <h3 key={idx} className="text-base font-extrabold text-foreground mt-5 mb-1.5 first:mt-0">
-        {text.slice(3)}
-      </h3>
-    );
-  }
-  // 소소제목 ###
-  if (text.startsWith("### ")) {
-    return (
-      <h4 key={idx} className="text-sm font-bold text-foreground mt-4 mb-1 first:mt-0">
-        {text.slice(4)}
-      </h4>
-    );
-  }
-  // 불릿 리스트 (모든 줄이 -·•로 시작하는 경우)
-  const lines = text.split("\n").filter(Boolean);
-  const isList = lines.length > 1 && lines.every((l) => /^[\-•·]\s/.test(l.trim()) || l.trim() === "");
-  if (isList) {
-    return (
-      <ul key={idx} className="space-y-1.5 list-none pl-0">
-        {lines.filter(Boolean).map((l, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm leading-[1.8] text-foreground/75">
-            <span className="mt-[5px] size-1.5 rounded-full bg-primary/70 shrink-0" />
-            <span>{renderInline(l.replace(/^[\-•·]\s*/, ""))}</span>
-          </li>
-        ))}
-      </ul>
-    );
-  }
-  // 일반 단락
-  return (
-    <p key={idx} className="text-sm leading-[1.85] text-foreground/75 whitespace-pre-line">
-      {renderInline(text)}
-    </p>
-  );
-}
-
-// ── 본문 가독성 컴포넌트 ─────────────────────────────────────
-function RichContent({ content }: { content: string }) {
-  const blocks = content
-    .split(/\n{2,}/)
-    .map((b) => b.trim())
-    .filter(Boolean);
-
-  return (
-    <div className="max-w-2xl space-y-3">
-      {blocks.map((block, idx) => renderBlock(block, idx))}
-    </div>
-  );
-}
+import { RichContent } from "@/components/RichContent";
 
 export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");

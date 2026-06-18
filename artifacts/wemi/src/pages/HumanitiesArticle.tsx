@@ -2,6 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, User, BookOpen } from "lucide-react";
 import { useGetHumanitiesArticle } from "@workspace/api-client-react";
+import { RichContent } from "@/components/RichContent";
 
 export default function HumanitiesArticle() {
   const [, params] = useRoute("/humanities/articles/:id");
@@ -68,9 +69,9 @@ export default function HumanitiesArticle() {
           </div>
 
           <div className="bg-card rounded-2xl border border-border px-6 py-8 lg:px-10 lg:py-10">
-            <p className="leading-8 text-base whitespace-pre-wrap font-[Pretendard,sans-serif]">
-              {article.content || <span className="italic text-muted-foreground">내용이 준비 중입니다.</span>}
-            </p>
+            {article.content
+              ? <RichContent content={article.content} className="text-base" />
+              : <p className="italic text-muted-foreground text-sm">내용이 준비 중입니다.</p>}
           </div>
         </motion.article>
       )}
