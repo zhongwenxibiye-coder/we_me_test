@@ -49,13 +49,6 @@ function ArticleItem({
               ) : (
                 <p className="text-sm text-muted-foreground italic">내용이 아직 없습니다.</p>
               )}
-              <div className="mt-4">
-                <Link href={`/mentors/${mentorId}/articles/${article.id}`}>
-                  <Button size="sm" variant="outline" className="rounded-xl text-xs gap-1">
-                    전체 글 보기
-                  </Button>
-                </Link>
-              </div>
             </div>
           </motion.div>
         )}
