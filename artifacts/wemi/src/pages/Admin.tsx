@@ -33,6 +33,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextArea } from "@/components/RichTextArea";
 import { Mascot } from "@/components/Mascot";
 
 const STORAGE_KEY = "wemi-admin-password";
@@ -403,7 +404,7 @@ function ArticleManager({ mentorId, password }: { mentorId: number; password: st
           </div>
           <div>
             <label className="text-xs font-semibold">내용</label>
-            <Textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} rows={4} className="mt-1 rounded-xl bg-card" />
+            <RichTextArea value={form.content} onChange={(val) => setForm((f) => ({ ...f, content: val }))} rows={6} className="mt-1" />
           </div>
           <div className="flex items-center gap-3">
             <label className="text-xs flex items-center gap-1.5 cursor-pointer">
@@ -444,87 +445,6 @@ const JOB_CATEGORIES = ["영업", "마케팅", "홍보", "기획", "일반사무
 type LearningItem = { title: string; content: string };
 type JobFormData = { category: string; title: string; shortDescription: string; imageUrl: string; isActive: boolean; displayOrder: string; learning: LearningItem[] };
 const JOB_FORM_DEFAULTS: JobFormData = { category: "영업", title: "", shortDescription: "", imageUrl: "", isActive: true, displayOrder: "1", learning: [] };
-
-// ── 리치 텍스트 에디터 (마크다운 툴바) ──────────────────────
-type FormatType = "bold" | "italic" | "h2" | "h3" | "bullet";
-
-function RichTextArea({
-  value, onChange, placeholder, rows = 5,
-}: {
-  value: string;
-  onChange: (val: string) => void;
-  placeholder?: string;
-  rows?: number;
-}) {
-  const ref = useRef<HTMLTextAreaElement>(null);
-
-  function applyFormat(type: FormatType) {
-    const el = ref.current;
-    if (!el) return;
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const selected = value.slice(start, end);
-    let newVal = value;
-    let newStart = start;
-    let newEnd = end;
-
-    if (type === "bold") {
-      newVal = value.slice(0, start) + `**${selected}**` + value.slice(end);
-      newStart = start + 2; newEnd = end + 2;
-    } else if (type === "italic") {
-      newVal = value.slice(0, start) + `*${selected}*` + value.slice(end);
-      newStart = start + 1; newEnd = end + 1;
-    } else {
-      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
-      const prefix = type === "h2" ? "## " : type === "h3" ? "### " : "- ";
-      newVal = value.slice(0, lineStart) + prefix + value.slice(lineStart);
-      newStart = start + prefix.length; newEnd = end + prefix.length;
-    }
-
-    onChange(newVal);
-    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(newStart, newEnd); });
-  }
-
-  const toolbarBtns: { label: string; type: FormatType; title: string; className?: string }[] = [
-    { label: "B", type: "bold", title: "볼드 — 텍스트 선택 후 클릭", className: "font-extrabold" },
-    { label: "I", type: "italic", title: "기울임 — 텍스트 선택 후 클릭", className: "italic" },
-    { label: "H2", type: "h2", title: "큰 소제목 (## )" },
-    { label: "H3", type: "h3", title: "작은 소제목 (### )" },
-    { label: "• 목록", type: "bullet", title: "글머리 기호 (- )" },
-  ];
-
-  return (
-    <div className="rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/40">
-      {/* 툴바 */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-border/60 bg-muted/40 flex-wrap">
-        {toolbarBtns.map((btn, i) => (
-          <>
-            {(i === 2 || i === 4) && <div key={`sep-${i}`} className="w-px h-4 bg-border/60 mx-0.5" />}
-            <button
-              key={btn.type}
-              type="button"
-              title={btn.title}
-              onClick={() => applyFormat(btn.type)}
-              className={`px-2 py-0.5 rounded text-xs hover:bg-primary/20 transition-colors text-foreground/80 ${btn.className ?? ""}`}
-            >
-              {btn.label}
-            </button>
-          </>
-        ))}
-        <span className="ml-auto text-[10px] text-muted-foreground/40 hidden sm:inline">텍스트 선택 → 버튼 클릭</span>
-      </div>
-      {/* 텍스트 영역 */}
-      <textarea
-        ref={ref}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        className="w-full resize-y px-3 py-2.5 text-sm bg-transparent focus:outline-none placeholder:text-muted-foreground/40 leading-relaxed"
-      />
-    </div>
-  );
-}
 
 function JobsTab({ password }: { password: string }) {
   const queryClient = useQueryClient();
@@ -891,8 +811,7 @@ function EpisodeManager({ work, password }: { work: CreativeWork; password: stri
           </div>
           <div>
             <label className="text-xs font-semibold">내용</label>
-            <Textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-              rows={8} className="mt-1 rounded-xl bg-card font-mono text-sm" placeholder="본문 내용을 입력하세요..." />
+            <RichTextArea value={form.content} onChange={(val) => setForm((f) => ({ ...f, content: val }))} rows={8} placeholder="본문 내용을 입력하세요..." className="mt-1" />
           </div>
 
           {/* 이미지 업로드 */}
@@ -1273,8 +1192,7 @@ function HumanitiesTab({ password }: { password: string }) {
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">해설</label>
-                <Textarea value={quizForm.explanation} onChange={(e) => setQuizForm((f) => ({ ...f, explanation: e.target.value }))}
-                  rows={3} className="mt-1.5 rounded-xl bg-background" placeholder="정/오답 해설" />
+                <RichTextArea value={quizForm.explanation} onChange={(val) => setQuizForm((f) => ({ ...f, explanation: val }))} rows={3} placeholder="정/오답 해설" className="mt-1.5" />
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">출제 날짜 (YYYY-MM-DD)</label>
@@ -1359,7 +1277,7 @@ function HumanitiesTab({ password }: { password: string }) {
               />
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">본문</label>
-                <Textarea value={articleForm.content} onChange={(e) => setArticleForm((f) => ({ ...f, content: e.target.value }))} rows={10} className="mt-1.5 rounded-xl bg-background font-mono text-sm" placeholder="아티클 본문을 입력하세요..." />
+                <RichTextArea value={articleForm.content} onChange={(val) => setArticleForm((f) => ({ ...f, content: val }))} rows={10} placeholder="아티클 본문을 입력하세요..." className="mt-1.5" />
               </div>
               <label className="text-xs flex items-center gap-1.5 cursor-pointer">
                 <input type="checkbox" checked={articleForm.isActive} onChange={(e) => setArticleForm((f) => ({ ...f, isActive: e.target.checked }))} />활성

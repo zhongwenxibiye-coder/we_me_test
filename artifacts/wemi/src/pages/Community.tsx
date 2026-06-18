@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextArea } from "@/components/RichTextArea";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSupabase } from "@/lib/supabase";
 import { Link } from "wouter";
@@ -659,7 +660,7 @@ export default function Community() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="post-content" className="text-xs">내용</Label>
-                  <Textarea id="post-content" placeholder="자유롭게 고민을 적어보세요." value={content} onChange={(e) => setContent(e.target.value)} required rows={5} className="resize-none" />
+                  <RichTextArea value={content} onChange={setContent} rows={5} placeholder="자유롭게 고민을 적어보세요." />
                 </div>
                 {error && <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-2">{error}</p>}
                 <div className="flex gap-2 justify-end">
