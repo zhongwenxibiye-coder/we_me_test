@@ -1,11 +1,70 @@
 import { useState } from "react";
 import { Link, useRoute } from "wouter";
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, GraduationCap, Briefcase, Heart } from "lucide-react";
-import { useGetMentor } from "@workspace/api-client-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronDown, ChevronUp, GraduationCap, Briefcase, Heart } from "lucide-react";
+import { useGetMentor, type MentorArticle } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/utils";
+
+// ── 아티클 인라인 확장 아이템 ──────────────────────────────────
+
+function ArticleItem({
+  article,
+  mentorId,
+  isLast,
+}: {
+  article: MentorArticle;
+  mentorId: number;
+  isLast: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className={cn(!isLast && "border-b border-border/60")}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-6 lg:px-8 py-5 text-left hover:bg-primary/5 transition-colors"
+      >
+        <span className="font-semibold text-base">{article.title}</span>
+        {open
+          ? <ChevronUp size={18} className="text-muted-foreground shrink-0" />
+          : <ChevronDown size={18} className="text-muted-foreground shrink-0" />}
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 lg:px-8 pb-6 pt-1 bg-muted/20 border-t border-border/40">
+              {article.content ? (
+                <p className="text-sm leading-loose text-foreground/85 whitespace-pre-wrap">
+                  {article.content}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">내용이 아직 없습니다.</p>
+              )}
+              <div className="mt-4">
+                <Link href={`/mentors/${mentorId}/articles/${article.id}`}>
+                  <Button size="sm" variant="outline" className="rounded-xl text-xs gap-1">
+                    전체 글 보기
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── 메인 ─────────────────────────────────────────────────────
 
 export default function MentorDetail() {
   const [, params] = useRoute("/mentors/:id");
@@ -36,7 +95,9 @@ export default function MentorDetail() {
 
   if (!mentor) return null;
 
-  const activeArticles = mentor.articles.filter((a) => a.isActive);
+  const activeArticles = mentor.articles
+    .filter((a: MentorArticle) => a.isActive)
+    .sort((a: MentorArticle, b: MentorArticle) => a.displayOrder - b.displayOrder);
 
   return (
     <div className="mx-auto max-w-4xl px-6 lg:px-10 py-12 lg:py-16">
@@ -47,13 +108,12 @@ export default function MentorDetail() {
         </button>
       </Link>
 
-      {/* Profile */}
+      {/* 프로필 */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         className="mt-4 rounded-3xl bg-card border border-card-border p-6 lg:p-8"
       >
-        {/* Photo */}
         <div className="flex flex-col items-center text-center">
           {mentor.photoUrl ? (
             <img
@@ -91,25 +151,20 @@ export default function MentorDetail() {
         </div>
       </motion.section>
 
-      {/* 멘토링 목록 */}
+      {/* 아티클 목록 + 신청 + 후원 */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.08 }}
         className="mt-6 rounded-3xl bg-card border border-card-border overflow-hidden"
       >
-        {activeArticles.map((article, i) => (
-          <Link key={article.id} href={`/mentors/${id}/articles/${article.id}`}>
-            <button
-              className={cn(
-                "w-full flex items-center justify-between px-6 lg:px-8 py-5 text-left hover:bg-primary/5 transition-colors",
-                i < activeArticles.length - 1 && "border-b border-border/60",
-              )}
-            >
-              <span className="font-semibold text-base">{article.title}</span>
-              <ChevronRight size={18} className="text-muted-foreground shrink-0" />
-            </button>
-          </Link>
+        {activeArticles.map((article: MentorArticle, i: number) => (
+          <ArticleItem
+            key={article.id}
+            article={article}
+            mentorId={id}
+            isLast={i === activeArticles.length - 1}
+          />
         ))}
 
         {/* 1:1 멘토링 신청 */}
@@ -122,7 +177,7 @@ export default function MentorDetail() {
             style={{ color: "hsl(35 60% 28%)" }}
           >
             1:1 멘토링 신청
-            <ChevronRight size={18} className="shrink-0" style={{ color: "hsl(35 60% 28%)" }} />
+            <ChevronDown size={18} className="shrink-0 -rotate-90" style={{ color: "hsl(35 60% 28%)" }} />
           </button>
         </Link>
 
@@ -134,13 +189,25 @@ export default function MentorDetail() {
           <span className="font-semibold text-base flex items-center gap-2">
             <Heart size={16} className="text-rose-400" /> 멘토 후원하기
           </span>
-          <ChevronRight size={18} className="text-muted-foreground shrink-0" />
+          {showDonation
+            ? <ChevronUp size={18} className="text-muted-foreground shrink-0" />
+            : <ChevronDown size={18} className="text-muted-foreground shrink-0" />}
         </button>
-        {showDonation && (
-          <div className="px-6 lg:px-8 pb-5 pt-1 text-sm text-muted-foreground bg-muted/30 border-t border-border/40">
-            현재는 후원을 받지 않고 있습니다.
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {showDonation && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="overflow-hidden"
+            >
+              <div className="px-6 lg:px-8 pb-5 pt-1 text-sm text-muted-foreground bg-muted/30 border-t border-border/40">
+                현재는 후원을 받지 않고 있습니다.
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.section>
     </div>
   );
