@@ -121,9 +121,15 @@ function ApplicationsTab({ password }: { password: string }) {
 
   const query = useListMentorApplications<MentorApplication[]>({ request: ro });
   const updateStatus = useUpdateMentorApplicationStatus({ request: ro });
+  const { data: mentors = [] } = useListMentors<MentorProfile[]>();
 
   const applications = query.data ?? [];
   const newCount = applications.filter((a) => a.status === "new").length;
+
+  function getMentorName(mentorId: string): string {
+    const m = (mentors as MentorProfile[]).find((m) => String(m.id) === mentorId);
+    return m ? m.name : `멘토 #${mentorId}`;
+  }
 
   if (query.isLoading) return <div className="py-10 text-center text-muted-foreground">불러오는 중...</div>;
 
@@ -159,6 +165,11 @@ function ApplicationsTab({ password }: { password: string }) {
                     {app.status === "new"
                       ? <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-primary" style={{ color: "hsl(35 60% 20%)" }}>새 신청</span>
                       : <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground">확인함</span>}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold bg-secondary/30 text-secondary-foreground rounded-full px-2.5 py-0.5">
+                      <UserCheck size={11} />→ {getMentorName(app.mentorId)}
+                    </span>
                   </div>
                   <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Clock size={11} />{formatDate(app.createdAt)}</span>
