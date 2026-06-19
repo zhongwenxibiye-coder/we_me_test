@@ -1,62 +1,6 @@
-import { Link } from "wouter";
 import { motion } from "framer-motion";
-import {
-  Briefcase,
-  Users,
-  Lightbulb,
-  Sparkles,
-  PenTool,
-  BookOpen,
-  ArrowRight,
-} from "lucide-react";
 import { Mascot, WemiWordmark } from "@/components/Mascot";
 import { QuizSection } from "@/components/QuizSection";
-
-interface FeatureCard {
-  icon: typeof Briefcase;
-  title: string;
-  desc: string;
-  href: string;
-}
-
-const FEATURES: FeatureCard[] = [
-  {
-    icon: Briefcase,
-    title: "인문계열이 선택 가능한 직무",
-    desc: "인문계열이 할 수 있는 직무와 준비 방법을 소개하고 있어요.",
-    href: "/jobs",
-  },
-  {
-    icon: Users,
-    title: "졸업생 멘토링",
-    desc: "실제 현업에 종사하고 있는 졸업생 선배의 따뜻한 멘토링.",
-    href: "/mentors",
-  },
-  {
-    icon: Lightbulb,
-    title: "프로젝트 참여",
-    desc: "실제 기업에서 내 준 과제를 수행하여 경험을 쌓아요.",
-    href: "/career-match",
-  },
-  {
-    icon: Sparkles,
-    title: "커리어 매칭",
-    desc: "AI가 가장 적합한 직무를 찾아주어요.",
-    href: "/career-matching",
-  },
-  {
-    icon: PenTool,
-    title: "창작 공간",
-    desc: "전공을 살려 다양한 창작물(소설, 에세이 등)을 창작해 보세요.",
-    href: "/creative-space",
-  },
-  {
-    icon: BookOpen,
-    title: "인문학 콘텐츠",
-    desc: "하루 한번 인문학 상식 쌓기!",
-    href: "/humanities",
-  },
-];
 
 export default function Landing() {
   return (
@@ -104,8 +48,7 @@ export default function Landing() {
             transition={{ duration: 0.6, type: "spring", stiffness: 120, damping: 18 }}
             className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[280px]"
           >
-            <Mascot size={160} animate="float" className="sm:hidden" />
-            <Mascot size={200} animate="float" className="hidden sm:block" />
+            <Mascot size={200} animate="float" />
             <div className="mt-2">
               <WemiWordmark height={56} />
             </div>
@@ -136,48 +79,6 @@ export default function Landing() {
         >
           <QuizSection />
         </motion.div>
-      </section>
-
-      {/* Features */}
-      <section className="mx-auto max-w-6xl px-6 lg:px-10 py-10 lg:py-14">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          className="text-center max-w-2xl mx-auto"
-        >
-          <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "hsl(88 45% 38%)" }}>
-            Features
-          </p>
-          <h2 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
-            위미의 주요 기능을 소개합니다
-          </h2>
-        </motion.div>
-
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FEATURES.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: i * 0.06 }}
-            >
-              <Link href={f.href}>
-                <button className="w-full text-left rounded-3xl bg-card border border-card-border p-6 sm:p-7 hover-elevate group block">
-                  <div className="size-12 sm:size-14 rounded-2xl bg-primary/15 flex items-center justify-center">
-                    <f.icon size={24} style={{ color: "hsl(35 60% 30%)" }} />
-                  </div>
-                  <h3 className="mt-4 sm:mt-5 font-extrabold text-lg sm:text-xl tracking-tight">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{f.desc}</p>
-                  <span className="mt-4 inline-flex items-center text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "hsl(35 60% 30%)" }}>
-                    바로 가기 <ArrowRight size={14} className="ml-1" />
-                  </span>
-                </button>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
       </section>
     </div>
   );
