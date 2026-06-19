@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { BookOpen } from "lucide-react";
 import { useListHumanitiesArticles, type HumanitiesArticle } from "@workspace/api-client-react";
-import { QuizSection } from "@/components/QuizSection";
 
 const CATEGORIES = ["전체", "문학", "문화", "역사", "지리", "예술", "기타"];
 
@@ -99,11 +98,8 @@ export default function HumanitiesContent() {
           HUMANITIES
         </p>
         <h1 className="mt-1 text-3xl lg:text-4xl font-extrabold tracking-tight">인문학 콘텐츠</h1>
-        <p className="mt-2 text-muted-foreground">매일 O/X 퀴즈와 다양한 인문학 콘텐츠를 만나보세요.</p>
+        <p className="mt-2 text-muted-foreground">다양한 인문학 콘텐츠를 만나보세요.</p>
       </motion.div>
-      <div className="mb-16">
-        <QuizSection />
-      </div>
       <ArticlesSection />
     </div>
   );
