@@ -8,10 +8,9 @@ import {
   PenTool,
   BookOpen,
   ArrowRight,
-  Heart,
-  TrendingUp,
 } from "lucide-react";
 import { Mascot, WemiWordmark } from "@/components/Mascot";
+import { QuizSection } from "@/components/QuizSection";
 
 interface FeatureCard {
   icon: typeof Briefcase;
@@ -59,26 +58,6 @@ const FEATURES: FeatureCard[] = [
   },
 ];
 
-interface ValueItem {
-  icon: typeof Heart;
-  text: string;
-}
-
-const VALUES: ValueItem[] = [
-  {
-    icon: Users,
-    text: "다같이 고민하고 해결합니다",
-  },
-  {
-    icon: Heart,
-    text: "진심을 전달합니다",
-  },
-  {
-    icon: TrendingUp,
-    text: "인문학의 가치를 높입니다",
-  },
-];
-
 export default function Landing() {
   return (
     <div>
@@ -95,17 +74,17 @@ export default function Landing() {
           style={{ background: "radial-gradient(circle, hsl(88 60% 75%) 0%, transparent 70%)" }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-6 lg:px-10 pt-16 pb-12 lg:pt-24 lg:pb-16 grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-16 items-center">
+        <div className="relative mx-auto max-w-6xl px-6 lg:px-10 pt-10 pb-8 lg:pt-24 lg:pb-16 grid lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-xl lg:text-2xl font-semibold text-foreground/80 leading-snug">
+            <p className="text-base sm:text-xl lg:text-2xl font-semibold text-foreground/80 leading-snug">
               인문계열을 위한 취업 플랫폼
             </p>
             <h1
-              className="mt-3 text-7xl lg:text-8xl xl:text-9xl font-extrabold tracking-tight leading-none"
+              className="mt-3 text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-extrabold tracking-tight leading-none"
               style={{
                 background: "linear-gradient(135deg, hsl(45 95% 50%), hsl(35 90% 55%))",
                 WebkitBackgroundClip: "text",
@@ -114,7 +93,7 @@ export default function Landing() {
             >
               위미
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl">
+            <p className="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl">
               전공에 얽매이지 않고 진로의 폭을 넓혀보세요.
             </p>
           </motion.div>
@@ -123,9 +102,10 @@ export default function Landing() {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, type: "spring", stiffness: 120, damping: 18 }}
-            className="relative flex flex-col items-center justify-center min-h-[280px]"
+            className="relative flex flex-col items-center justify-center min-h-[220px] sm:min-h-[280px]"
           >
-            <Mascot size={200} animate="float" />
+            <Mascot size={160} animate="float" className="sm:hidden" />
+            <Mascot size={200} animate="float" className="hidden sm:block" />
             <div className="mt-2">
               <WemiWordmark height={56} />
             </div>
@@ -133,46 +113,33 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 위미의 가치 */}
-      <section className="mx-auto max-w-6xl px-6 lg:px-10 py-12 lg:py-16">
+      {/* O/X 퀴즈 + 스탬프 바 */}
+      <section className="mx-auto max-w-6xl px-6 lg:px-10 py-10 lg:py-14">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          className="text-center max-w-2xl mx-auto"
+          className="text-center max-w-2xl mx-auto mb-8"
         >
           <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "hsl(45 80% 40%)" }}>
-            Values
+            Daily Quiz
           </p>
-          <h2 className="mt-3 text-3xl lg:text-4xl font-extrabold tracking-tight">
-            위미의 가치
+          <h2 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
+            오늘의 인문학 퀴즈
           </h2>
+          <p className="mt-2 text-sm text-muted-foreground">매일 새 퀴즈가 올라와요. 연속 출석으로 스탬프를 모아보세요!</p>
         </motion.div>
-
-        <div className="mt-10 grid sm:grid-cols-3 gap-5">
-          {VALUES.map((v, i) => (
-            <motion.div
-              key={v.text}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-3xl bg-card border border-card-border p-8 text-center flex flex-col items-center gap-4"
-            >
-              <div
-                className="size-16 rounded-2xl flex items-center justify-center"
-                style={{ background: "hsl(45 92% 55% / 0.18)" }}
-              >
-                <v.icon size={28} style={{ color: "hsl(35 60% 30%)" }} />
-              </div>
-              <p className="text-lg font-extrabold tracking-tight leading-snug">{v.text}</p>
-            </motion.div>
-          ))}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <QuizSection />
+        </motion.div>
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-6xl px-6 lg:px-10 py-12 lg:py-16">
+      <section className="mx-auto max-w-6xl px-6 lg:px-10 py-10 lg:py-14">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -182,12 +149,12 @@ export default function Landing() {
           <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "hsl(88 45% 38%)" }}>
             Features
           </p>
-          <h2 className="mt-3 text-3xl lg:text-4xl font-extrabold tracking-tight">
+          <h2 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
             위미의 주요 기능을 소개합니다
           </h2>
         </motion.div>
 
-        <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map((f, i) => (
             <motion.div
               key={f.title}
@@ -197,11 +164,11 @@ export default function Landing() {
               transition={{ delay: i * 0.06 }}
             >
               <Link href={f.href}>
-                <button className="w-full text-left rounded-3xl bg-card border border-card-border p-7 hover-elevate group block">
-                  <div className="size-14 rounded-2xl bg-primary/15 flex items-center justify-center">
-                    <f.icon size={26} style={{ color: "hsl(35 60% 30%)" }} />
+                <button className="w-full text-left rounded-3xl bg-card border border-card-border p-6 sm:p-7 hover-elevate group block">
+                  <div className="size-12 sm:size-14 rounded-2xl bg-primary/15 flex items-center justify-center">
+                    <f.icon size={24} style={{ color: "hsl(35 60% 30%)" }} />
                   </div>
-                  <h3 className="mt-5 font-extrabold text-xl tracking-tight">{f.title}</h3>
+                  <h3 className="mt-4 sm:mt-5 font-extrabold text-lg sm:text-xl tracking-tight">{f.title}</h3>
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{f.desc}</p>
                   <span className="mt-4 inline-flex items-center text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "hsl(35 60% 30%)" }}>
                     바로 가기 <ArrowRight size={14} className="ml-1" />
