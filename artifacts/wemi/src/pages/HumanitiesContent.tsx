@@ -47,15 +47,6 @@ function ArticlesSection() {
 
   return (
     <section>
-      <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            HUMANITIES CONTENTS
-          </p>
-          <h2 className="mt-0.5 text-2xl font-extrabold tracking-tight">인문학 콘텐츠</h2>
-        </div>
-      </div>
-
       <div className="flex gap-2 flex-wrap mb-5">
         {CATEGORIES.map((c) => (
           <button
