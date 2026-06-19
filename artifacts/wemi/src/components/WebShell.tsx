@@ -250,9 +250,7 @@ export function WebShell({ children }: WebShellProps) {
           )}
         </div>
       </header>
-
       <main className="flex-1">{children}</main>
-
       <footer className="border-t border-border/60 mt-16">
         <div className="mx-auto max-w-6xl px-6 lg:px-10 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-3">
@@ -268,7 +266,7 @@ export function WebShell({ children }: WebShellProps) {
               <span className="opacity-30">|</span>
               <Link href="/terms" className="hover:text-foreground transition-colors">이용약관</Link>
             </div>
-            <p className="text-xs text-muted-foreground">© 2026 We me. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground">© 2026 We Me. All rights reserved.</p>
           </div>
         </div>
       </footer>
