@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useRoute } from "wouter";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronLeft, BookOpen } from "lucide-react";
@@ -12,6 +12,15 @@ export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");
   const id = params?.id ? parseInt(params.id, 10) : NaN;
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (openIdx === null) return;
+    const el = itemRefs.current[openIdx];
+    if (el) {
+      setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+    }
+  }, [openIdx]);
 
   const { data: allJobs = [], isLoading } = useListJobListings<JobListing[]>();
   const job = isNaN(id) ? undefined : allJobs.find((j) => j.id === id);
@@ -87,7 +96,7 @@ export default function JobDetail() {
               const open = openIdx === idx;
               const empty = !item.content;
               return (
-                <div key={idx}>
+                <div key={idx} ref={(el) => { itemRefs.current[idx] = el; }}>
                   <button
                     type="button"
                     onClick={() => setOpenIdx(open ? null : idx)}
