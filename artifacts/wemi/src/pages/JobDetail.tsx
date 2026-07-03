@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Link, useRoute } from "wouter";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronLeft, BookOpen } from "lucide-react";
@@ -14,17 +14,32 @@ export default function JobDetail() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  useEffect(() => {
-    if (openIdx === null) return;
-    const el = itemRefs.current[openIdx];
-    if (el) {
-      setTimeout(() => {
-        const headerHeight = 64;
-        const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 8;
-        window.scrollTo({ top, behavior: "smooth" });
-      }, 50);
+  function scrollToItem(idx: number) {
+    const el = itemRefs.current[idx];
+    if (!el) return;
+    const headerHeight = 64;
+    const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 8;
+    window.scrollTo({ top, behavior: "smooth" });
+  }
+
+  function handleToggle(idx: number) {
+    if (openIdx === idx) {
+      setOpenIdx(null);
+      return;
     }
-  }, [openIdx]);
+    if (openIdx !== null) {
+      // 1) Close current item first
+      setOpenIdx(null);
+      // 2) After collapse animation (250ms), open new item and scroll
+      setTimeout(() => {
+        setOpenIdx(idx);
+        setTimeout(() => scrollToItem(idx), 30);
+      }, 270);
+    } else {
+      setOpenIdx(idx);
+      setTimeout(() => scrollToItem(idx), 30);
+    }
+  }
 
   const { data: allJobs = [], isLoading } = useListJobListings<JobListing[]>();
   const job = isNaN(id) ? undefined : allJobs.find((j) => j.id === id);
@@ -103,7 +118,7 @@ export default function JobDetail() {
                 <div key={idx} ref={(el) => { itemRefs.current[idx] = el; }}>
                   <button
                     type="button"
-                    onClick={() => setOpenIdx(open ? null : idx)}
+                    onClick={() => handleToggle(idx)}
                     className="w-full flex items-center gap-3 px-5 py-5 text-left hover-elevate"
                   >
                     <span
