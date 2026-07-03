@@ -18,7 +18,11 @@ export default function JobDetail() {
     if (openIdx === null) return;
     const el = itemRefs.current[openIdx];
     if (el) {
-      setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+      setTimeout(() => {
+        const headerHeight = 64;
+        const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 8;
+        window.scrollTo({ top, behavior: "smooth" });
+      }, 50);
     }
   }, [openIdx]);
 
