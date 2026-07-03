@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
@@ -26,6 +27,10 @@ export default function CreativeEpisode() {
   const nextEpisode = currentIndex < episodes.length - 1 ? episodes[currentIndex + 1] : null;
 
   const isLoading = worksQuery.isLoading || episodesQuery.isLoading;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [episodeId]);
 
   return (
     <div className="mx-auto max-w-2xl px-6 lg:px-10 py-12">
