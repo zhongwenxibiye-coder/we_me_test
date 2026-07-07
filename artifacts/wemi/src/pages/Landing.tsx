@@ -1,91 +1,218 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { Mascot, WemiWordmark } from "@/components/Mascot";
 import { QuizSection } from "@/components/QuizSection";
 import { useListStartupPosts, useListHumanitiesArticles, useListCreativeWorks } from "@workspace/api-client-react";
+import type { StartupPost, HumanitiesArticle, CreativeWork } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import { Rocket, BookOpen, PenLine, ArrowRight } from "lucide-react";
+import { Rocket, BookOpen, PenLine, ArrowRight, Clock } from "lucide-react";
 
-function LatestSection() {
+type FeedItem =
+  | { kind: "startup"; data: StartupPost }
+  | { kind: "humanities"; data: HumanitiesArticle }
+  | { kind: "creative"; data: CreativeWork };
+
+const TABS = [
+  { id: "all", label: "전체" },
+  { id: "startup", label: "창업 프로젝트" },
+  { id: "humanities", label: "인문학" },
+  { id: "creative", label: "창작 공간" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
+const META = {
+  startup: { icon: <Rocket size={14} />, color: "hsl(45 92% 45%)", bg: "hsl(45 85% 93%)", href: "/career-match", label: "창업 프로젝트" },
+  humanities: { icon: <BookOpen size={14} />, color: "hsl(88 50% 38%)", bg: "hsl(88 35% 92%)", href: "/humanities", label: "인문학" },
+  creative: { icon: <PenLine size={14} />, color: "hsl(200 65% 38%)", bg: "hsl(200 45% 92%)", href: "/creative-space", label: "창작 공간" },
+};
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const d = Math.floor(diff / 86400000);
+  if (d === 0) return "오늘";
+  if (d === 1) return "어제";
+  if (d < 7) return `${d}일 전`;
+  const w = Math.floor(d / 7);
+  if (w < 5) return `${w}주 전`;
+  return `${Math.floor(d / 30)}개월 전`;
+}
+
+function FeedCard({ item }: { item: FeedItem }) {
+  if (item.kind === "startup") {
+    const d = item.data;
+    const meta = META.startup;
+    return (
+      <Link href={meta.href}>
+        <div className="flex gap-4 p-4 rounded-2xl border border-border bg-card hover:shadow-md transition-all cursor-pointer group">
+          <span className="size-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: meta.bg, color: meta.color }}>
+            {meta.icon}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${d.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                {d.isActive ? "진행중" : "마감"}
+              </span>
+            </div>
+            <p className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">{d.title}</p>
+            <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+              {d.organizationName && <span>{d.organizationName}</span>}
+              <span className="flex items-center gap-1"><Clock size={10} />{timeAgo(d.createdAt)}</span>
+            </div>
+          </div>
+          <ArrowRight size={14} className="shrink-0 self-center text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+        </div>
+      </Link>
+    );
+  }
+
+  if (item.kind === "humanities") {
+    const d = item.data;
+    const meta = META.humanities;
+    return (
+      <Link href={meta.href}>
+        <div className="flex gap-4 p-4 rounded-2xl border border-border bg-card hover:shadow-md transition-all cursor-pointer group">
+          {d.imageUrl ? (
+            <img src={d.imageUrl} alt={d.title} className="size-12 rounded-xl object-cover shrink-0" />
+          ) : (
+            <span className="size-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: meta.bg, color: meta.color }}>
+              {meta.icon}
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>
+              {d.category && <span className="text-[11px] text-muted-foreground">{d.category}</span>}
+            </div>
+            <p className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">{d.title}</p>
+            <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+              {d.authorName && <span>{d.authorName}</span>}
+              <span className="flex items-center gap-1"><Clock size={10} />{timeAgo(d.createdAt)}</span>
+            </div>
+          </div>
+          <ArrowRight size={14} className="shrink-0 self-center text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+        </div>
+      </Link>
+    );
+  }
+
+  const d = item.data;
+  const meta = META.creative;
+  return (
+    <Link href={meta.href}>
+      <div className="flex gap-4 p-4 rounded-2xl border border-border bg-card hover:shadow-md transition-all cursor-pointer group">
+        {d.thumbnailUrl ? (
+          <img src={d.thumbnailUrl} alt={d.title} className="size-12 rounded-xl object-cover shrink-0" />
+        ) : (
+          <span className="size-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: meta.bg, color: meta.color }}>
+            {meta.icon}
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>
+            {d.category && <span className="text-[11px] text-muted-foreground">{d.category}</span>}
+          </div>
+          <p className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">{d.title}</p>
+          <span className="mt-1.5 text-xs text-muted-foreground flex items-center gap-1"><Clock size={10} />최신 업데이트</span>
+        </div>
+        <ArrowRight size={14} className="shrink-0 self-center text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+      </div>
+    </Link>
+  );
+}
+
+function CommunitySection() {
+  const [activeTab, setActiveTab] = useState<TabId>("all");
+
   const { data: startupPosts = [] } = useListStartupPosts();
   const { data: articles = [] } = useListHumanitiesArticles();
   const { data: works = [] } = useListCreativeWorks();
 
-  const latestPost = startupPosts[0];
-  const latestArticle = articles[0];
-  const latestWork = works[0];
+  const startupItems: FeedItem[] = startupPosts.slice(0, 5).map((d) => ({ kind: "startup", data: d }));
+  const humanitiesItems: FeedItem[] = articles.slice(0, 5).map((d) => ({ kind: "humanities", data: d }));
+  const creativeItems: FeedItem[] = works.slice(0, 5).map((d) => ({ kind: "creative", data: d }));
 
-  const cards = [
-    {
-      icon: <Rocket size={18} />,
-      label: "창업 프로젝트",
-      href: "/career-match",
-      title: latestPost?.title ?? null,
-      sub: latestPost?.organizationName ?? null,
-      badge: latestPost ? (latestPost.isActive ? "진행중" : "마감") : null,
-      badgeColor: latestPost?.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground",
-      color: "hsl(45 92% 55%)",
-      bg: "hsl(45 60% 97%)",
-    },
-    {
-      icon: <BookOpen size={18} />,
-      label: "인문학 콘텐츠",
-      href: "/humanities",
-      title: latestArticle?.title ?? null,
-      sub: latestArticle?.authorName ?? null,
-      badge: latestArticle?.category ?? null,
-      badgeColor: "bg-primary/15 text-foreground",
-      color: "hsl(88 45% 45%)",
-      bg: "hsl(88 30% 97%)",
-    },
-    {
-      icon: <PenLine size={18} />,
-      label: "창작 공간",
-      href: "/creative-space",
-      title: latestWork?.title ?? null,
-      sub: latestWork?.category ?? null,
-      badge: null,
-      badgeColor: "",
-      color: "hsl(200 60% 45%)",
-      bg: "hsl(200 40% 97%)",
-    },
-  ];
+  const allItems: FeedItem[] = [...startupItems, ...humanitiesItems, ...creativeItems]
+    .sort((a, b) => {
+      const dateA = a.kind === "creative" ? 0 : new Date(a.data.createdAt).getTime();
+      const dateB = b.kind === "creative" ? 0 : new Date(b.data.createdAt).getTime();
+      return dateB - dateA;
+    })
+    .slice(0, 8);
+
+  const filtered: FeedItem[] =
+    activeTab === "all" ? allItems :
+    activeTab === "startup" ? startupItems :
+    activeTab === "humanities" ? humanitiesItems :
+    creativeItems;
+
+  const moreHref =
+    activeTab === "startup" ? "/career-match" :
+    activeTab === "humanities" ? "/humanities" :
+    activeTab === "creative" ? "/creative-space" : undefined;
+
+  const isEmpty = filtered.length === 0;
 
   return (
-    <section className="mx-auto max-w-6xl px-6 lg:px-10 py-8">
+    <section className="mx-auto max-w-6xl px-6 lg:px-10 py-10">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.15 }}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-extrabold tracking-tight">위미 최신글</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-xl font-extrabold tracking-tight">커뮤니티 최신글</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">창업 프로젝트 · 인문학 콘텐츠 · 창작 공간의 최신 소식</p>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-muted/60 rounded-xl p-1 self-start sm:self-auto">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  activeTab === tab.id
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="grid sm:grid-cols-3 gap-4">
-          {cards.map((card) => (
-            <Link key={card.label} href={card.href}>
-              <div className="rounded-3xl border border-border bg-card hover:shadow-md transition-shadow p-5 h-full cursor-pointer group">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="size-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: card.bg, color: card.color }}>
-                    {card.icon}
-                  </span>
-                  <span className="text-xs font-semibold text-muted-foreground">{card.label}</span>
-                  <ArrowRight size={12} className="ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                </div>
-                {card.title ? (
-                  <>
-                    <p className="font-extrabold text-sm leading-snug line-clamp-2">{card.title}</p>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      {card.badge && <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${card.badgeColor}`}>{card.badge}</span>}
-                      {card.sub && <span className="text-xs text-muted-foreground">{card.sub}</span>}
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">곧 새 콘텐츠가 올라와요</p>
-                )}
-              </div>
+
+        {isEmpty ? (
+          <div className="text-center py-16 text-muted-foreground text-sm">
+            아직 등록된 콘텐츠가 없어요 🌱
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {filtered.map((item, i) => (
+              <motion.div
+                key={`${item.kind}-${item.data.id}-${i}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+              >
+                <FeedCard item={item} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {moreHref && (
+          <div className="mt-5 text-center">
+            <Link href={moreHref}>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                전체 보기 <ArrowRight size={14} />
+              </span>
             </Link>
-          ))}
-        </div>
+          </div>
+        )}
       </motion.div>
     </section>
   );
@@ -145,8 +272,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 최신글 섹션 */}
-      <LatestSection />
+      {/* 커뮤니티 최신글 */}
+      <CommunitySection />
 
       {/* O/X 퀴즈 + 스탬프 바 */}
       <section className="mx-auto max-w-6xl px-6 lg:px-10 py-10 lg:py-14">
