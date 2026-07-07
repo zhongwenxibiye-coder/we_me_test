@@ -301,7 +301,7 @@ export default function CareerMatchPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold">아이디어 창업 도전하기</DialogTitle>
+            <DialogTitle className="text-xl font-extrabold">창업 멘토링 신청하기</DialogTitle>
           </DialogHeader>
           <StartupForm onClose={() => setOpen(false)} />
         </DialogContent>
