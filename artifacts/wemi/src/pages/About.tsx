@@ -97,8 +97,8 @@ const FEATURES: FeatureCard[] = [
   },
   {
     icon: Lightbulb,
-    title: "프로젝트 참여",
-    desc: "실제 기업에서 내 준 과제를 수행하여 경험을 쌓아요.",
+    title: "창업 프로젝트",
+    desc: "창업에 도전해 보세요.",
     href: "/career-match",
   },
   {

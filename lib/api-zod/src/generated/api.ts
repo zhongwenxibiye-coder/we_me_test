@@ -385,6 +385,67 @@ export const DeleteJobListingHeader = zod.object({
 });
 
 /**
+ * @summary List all job categories
+ */
+export const ListJobCategoriesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+});
+export const ListJobCategoriesResponse = zod.array(
+  ListJobCategoriesResponseItem,
+);
+
+/**
+ * @summary Create a job category (admin)
+ */
+export const CreateJobCategoryHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateJobCategoryBody = zod.object({
+  name: zod.string().min(1),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+/**
+ * @summary Update a job category (admin)
+ */
+export const UpdateJobCategoryParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateJobCategoryHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateJobCategoryBody = zod.object({
+  name: zod.string().min(1),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+export const UpdateJobCategoryResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+});
+
+/**
+ * @summary Delete a job category (admin)
+ */
+export const DeleteJobCategoryParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteJobCategoryHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+/**
  * @summary Submit a startup application
  */
 
@@ -479,6 +540,110 @@ export const GetStartupApplicationResponse = zod.object({
   result: zod.string().nullable(),
   resultReason: zod.string().nullable(),
   createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List active startup posts (public)
+ */
+export const ListStartupPostsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  organizationName: zod.string(),
+  applicationUrl: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListStartupPostsResponse = zod.array(ListStartupPostsResponseItem);
+
+/**
+ * @summary Create a startup post (admin)
+ */
+export const CreateStartupPostHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateStartupPostBody = zod.object({
+  title: zod.string().min(1),
+  content: zod.string().optional(),
+  organizationName: zod.string().optional(),
+  applicationUrl: zod.string().optional(),
+  startDate: zod.string().optional(),
+  endDate: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+/**
+ * @summary List all startup posts including inactive (admin)
+ */
+export const ListAllStartupPostsHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const ListAllStartupPostsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  organizationName: zod.string(),
+  applicationUrl: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListAllStartupPostsResponse = zod.array(
+  ListAllStartupPostsResponseItem,
+);
+
+/**
+ * @summary Update a startup post (admin)
+ */
+export const UpdateStartupPostParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateStartupPostHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateStartupPostBody = zod.object({
+  title: zod.string().min(1),
+  content: zod.string().optional(),
+  organizationName: zod.string().optional(),
+  applicationUrl: zod.string().optional(),
+  startDate: zod.string().optional(),
+  endDate: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+  displayOrder: zod.number().optional(),
+});
+
+export const UpdateStartupPostResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  content: zod.string(),
+  organizationName: zod.string(),
+  applicationUrl: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  isActive: zod.boolean(),
+  displayOrder: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a startup post (admin)
+ */
+export const DeleteStartupPostParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteStartupPostHeader = zod.object({
+  "x-admin-password": zod.string(),
 });
 
 /**
@@ -828,7 +993,9 @@ export const ListHumanitiesArticlesResponseItem = zod.object({
   id: zod.number(),
   category: zod.string(),
   title: zod.string(),
+  contentType: zod.string(),
   content: zod.string(),
+  cardPages: zod.array(zod.string()),
   authorName: zod.string(),
   imageUrl: zod.string(),
   isActive: zod.boolean(),
@@ -849,7 +1016,9 @@ export const CreateHumanitiesArticleHeader = zod.object({
 export const CreateHumanitiesArticleBody = zod.object({
   category: zod.string().min(1),
   title: zod.string().min(1),
+  contentType: zod.string().optional(),
   content: zod.string().optional(),
+  cardPages: zod.array(zod.string()).optional(),
   authorName: zod.string().optional(),
   imageUrl: zod.string().optional(),
   isActive: zod.boolean().optional(),
@@ -867,7 +1036,9 @@ export const GetHumanitiesArticleResponse = zod.object({
   id: zod.number(),
   category: zod.string(),
   title: zod.string(),
+  contentType: zod.string(),
   content: zod.string(),
+  cardPages: zod.array(zod.string()),
   authorName: zod.string(),
   imageUrl: zod.string(),
   isActive: zod.boolean(),
@@ -889,7 +1060,9 @@ export const UpdateHumanitiesArticleHeader = zod.object({
 export const UpdateHumanitiesArticleBody = zod.object({
   category: zod.string().min(1),
   title: zod.string().min(1),
+  contentType: zod.string().optional(),
   content: zod.string().optional(),
+  cardPages: zod.array(zod.string()).optional(),
   authorName: zod.string().optional(),
   imageUrl: zod.string().optional(),
   isActive: zod.boolean().optional(),
@@ -900,7 +1073,9 @@ export const UpdateHumanitiesArticleResponse = zod.object({
   id: zod.number(),
   category: zod.string(),
   title: zod.string(),
+  contentType: zod.string(),
   content: zod.string(),
+  cardPages: zod.array(zod.string()),
   authorName: zod.string(),
   imageUrl: zod.string(),
   isActive: zod.boolean(),

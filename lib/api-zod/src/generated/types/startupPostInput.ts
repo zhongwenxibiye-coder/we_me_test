@@ -6,16 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HumanitiesArticleInput {
-  /** @minLength 1 */
-  category: string;
+export interface StartupPostInput {
   /** @minLength 1 */
   title: string;
-  contentType?: string;
   content?: string;
-  cardPages?: string[];
-  authorName?: string;
-  imageUrl?: string;
+  organizationName?: string;
+  applicationUrl?: string;
+  startDate?: string;
+  endDate?: string;
   isActive?: boolean;
   displayOrder?: number;
 }

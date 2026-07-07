@@ -35,6 +35,8 @@ import type {
   HumanitiesQuizInput,
   HumanitiesQuizTodayResponse,
   HumanitiesQuizWithStats,
+  JobCategory,
+  JobCategoryInput,
   JobListing,
   JobListingInput,
   MentorApplication,
@@ -46,6 +48,8 @@ import type {
   NotFoundResponse,
   StartupApplication,
   StartupApplicationPublic,
+  StartupPost,
+  StartupPostInput,
   UnauthorizedResponse,
   UpdateCreativeWorkSubmissionStatusBody,
   UpdateMentorApplicationStatusBody,
@@ -1501,6 +1505,342 @@ export const useDeleteJobListing = <
 };
 
 /**
+ * @summary List all job categories
+ */
+export const getListJobCategoriesUrl = () => {
+  return `/api/job-categories`;
+};
+
+export const listJobCategories = async (
+  options?: RequestInit,
+): Promise<JobCategory[]> => {
+  return customFetch<JobCategory[]>(getListJobCategoriesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListJobCategoriesQueryKey = () => {
+  return [`/api/job-categories`] as const;
+};
+
+export const getListJobCategoriesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listJobCategories>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listJobCategories>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListJobCategoriesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listJobCategories>>
+  > = ({ signal }) => listJobCategories({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listJobCategories>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListJobCategoriesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listJobCategories>>
+>;
+export type ListJobCategoriesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all job categories
+ */
+
+export function useListJobCategories<
+  TData = Awaited<ReturnType<typeof listJobCategories>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listJobCategories>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListJobCategoriesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a job category (admin)
+ */
+export const getCreateJobCategoryUrl = () => {
+  return `/api/job-categories`;
+};
+
+export const createJobCategory = async (
+  jobCategoryInput: JobCategoryInput,
+  options?: RequestInit,
+): Promise<JobCategory> => {
+  return customFetch<JobCategory>(getCreateJobCategoryUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(jobCategoryInput),
+  });
+};
+
+export const getCreateJobCategoryMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createJobCategory>>,
+    TError,
+    { data: BodyType<JobCategoryInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createJobCategory>>,
+  TError,
+  { data: BodyType<JobCategoryInput> },
+  TContext
+> => {
+  const mutationKey = ["createJobCategory"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createJobCategory>>,
+    { data: BodyType<JobCategoryInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createJobCategory(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateJobCategoryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createJobCategory>>
+>;
+export type CreateJobCategoryMutationBody = BodyType<JobCategoryInput>;
+export type CreateJobCategoryMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create a job category (admin)
+ */
+export const useCreateJobCategory = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createJobCategory>>,
+    TError,
+    { data: BodyType<JobCategoryInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createJobCategory>>,
+  TError,
+  { data: BodyType<JobCategoryInput> },
+  TContext
+> => {
+  return useMutation(getCreateJobCategoryMutationOptions(options));
+};
+
+/**
+ * @summary Update a job category (admin)
+ */
+export const getUpdateJobCategoryUrl = (id: number) => {
+  return `/api/job-categories/${id}`;
+};
+
+export const updateJobCategory = async (
+  id: number,
+  jobCategoryInput: JobCategoryInput,
+  options?: RequestInit,
+): Promise<JobCategory> => {
+  return customFetch<JobCategory>(getUpdateJobCategoryUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(jobCategoryInput),
+  });
+};
+
+export const getUpdateJobCategoryMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJobCategory>>,
+    TError,
+    { id: number; data: BodyType<JobCategoryInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateJobCategory>>,
+  TError,
+  { id: number; data: BodyType<JobCategoryInput> },
+  TContext
+> => {
+  const mutationKey = ["updateJobCategory"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateJobCategory>>,
+    { id: number; data: BodyType<JobCategoryInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateJobCategory(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateJobCategoryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateJobCategory>>
+>;
+export type UpdateJobCategoryMutationBody = BodyType<JobCategoryInput>;
+export type UpdateJobCategoryMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update a job category (admin)
+ */
+export const useUpdateJobCategory = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJobCategory>>,
+    TError,
+    { id: number; data: BodyType<JobCategoryInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateJobCategory>>,
+  TError,
+  { id: number; data: BodyType<JobCategoryInput> },
+  TContext
+> => {
+  return useMutation(getUpdateJobCategoryMutationOptions(options));
+};
+
+/**
+ * @summary Delete a job category (admin)
+ */
+export const getDeleteJobCategoryUrl = (id: number) => {
+  return `/api/job-categories/${id}`;
+};
+
+export const deleteJobCategory = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteJobCategoryUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteJobCategoryMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJobCategory>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteJobCategory>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteJobCategory"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteJobCategory>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteJobCategory(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteJobCategoryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteJobCategory>>
+>;
+
+export type DeleteJobCategoryMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete a job category (admin)
+ */
+export const useDeleteJobCategory = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJobCategory>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteJobCategory>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteJobCategoryMutationOptions(options));
+};
+
+/**
  * @summary Submit a startup application
  */
 export const getCreateStartupApplicationUrl = () => {
@@ -1846,6 +2186,417 @@ export function useGetStartupApplication<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List active startup posts (public)
+ */
+export const getListStartupPostsUrl = () => {
+  return `/api/startup-posts`;
+};
+
+export const listStartupPosts = async (
+  options?: RequestInit,
+): Promise<StartupPost[]> => {
+  return customFetch<StartupPost[]>(getListStartupPostsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListStartupPostsQueryKey = () => {
+  return [`/api/startup-posts`] as const;
+};
+
+export const getListStartupPostsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listStartupPosts>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listStartupPosts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListStartupPostsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listStartupPosts>>
+  > = ({ signal }) => listStartupPosts({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listStartupPosts>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListStartupPostsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listStartupPosts>>
+>;
+export type ListStartupPostsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active startup posts (public)
+ */
+
+export function useListStartupPosts<
+  TData = Awaited<ReturnType<typeof listStartupPosts>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listStartupPosts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListStartupPostsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a startup post (admin)
+ */
+export const getCreateStartupPostUrl = () => {
+  return `/api/startup-posts`;
+};
+
+export const createStartupPost = async (
+  startupPostInput: StartupPostInput,
+  options?: RequestInit,
+): Promise<StartupPost> => {
+  return customFetch<StartupPost>(getCreateStartupPostUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(startupPostInput),
+  });
+};
+
+export const getCreateStartupPostMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createStartupPost>>,
+    TError,
+    { data: BodyType<StartupPostInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createStartupPost>>,
+  TError,
+  { data: BodyType<StartupPostInput> },
+  TContext
+> => {
+  const mutationKey = ["createStartupPost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createStartupPost>>,
+    { data: BodyType<StartupPostInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createStartupPost(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateStartupPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createStartupPost>>
+>;
+export type CreateStartupPostMutationBody = BodyType<StartupPostInput>;
+export type CreateStartupPostMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create a startup post (admin)
+ */
+export const useCreateStartupPost = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createStartupPost>>,
+    TError,
+    { data: BodyType<StartupPostInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createStartupPost>>,
+  TError,
+  { data: BodyType<StartupPostInput> },
+  TContext
+> => {
+  return useMutation(getCreateStartupPostMutationOptions(options));
+};
+
+/**
+ * @summary List all startup posts including inactive (admin)
+ */
+export const getListAllStartupPostsUrl = () => {
+  return `/api/startup-posts/all`;
+};
+
+export const listAllStartupPosts = async (
+  options?: RequestInit,
+): Promise<StartupPost[]> => {
+  return customFetch<StartupPost[]>(getListAllStartupPostsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListAllStartupPostsQueryKey = () => {
+  return [`/api/startup-posts/all`] as const;
+};
+
+export const getListAllStartupPostsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listAllStartupPosts>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAllStartupPosts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListAllStartupPostsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listAllStartupPosts>>
+  > = ({ signal }) => listAllStartupPosts({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listAllStartupPosts>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListAllStartupPostsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listAllStartupPosts>>
+>;
+export type ListAllStartupPostsQueryError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary List all startup posts including inactive (admin)
+ */
+
+export function useListAllStartupPosts<
+  TData = Awaited<ReturnType<typeof listAllStartupPosts>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAllStartupPosts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListAllStartupPostsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a startup post (admin)
+ */
+export const getUpdateStartupPostUrl = (id: number) => {
+  return `/api/startup-posts/${id}`;
+};
+
+export const updateStartupPost = async (
+  id: number,
+  startupPostInput: StartupPostInput,
+  options?: RequestInit,
+): Promise<StartupPost> => {
+  return customFetch<StartupPost>(getUpdateStartupPostUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(startupPostInput),
+  });
+};
+
+export const getUpdateStartupPostMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateStartupPost>>,
+    TError,
+    { id: number; data: BodyType<StartupPostInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateStartupPost>>,
+  TError,
+  { id: number; data: BodyType<StartupPostInput> },
+  TContext
+> => {
+  const mutationKey = ["updateStartupPost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateStartupPost>>,
+    { id: number; data: BodyType<StartupPostInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateStartupPost(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateStartupPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateStartupPost>>
+>;
+export type UpdateStartupPostMutationBody = BodyType<StartupPostInput>;
+export type UpdateStartupPostMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update a startup post (admin)
+ */
+export const useUpdateStartupPost = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateStartupPost>>,
+    TError,
+    { id: number; data: BodyType<StartupPostInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateStartupPost>>,
+  TError,
+  { id: number; data: BodyType<StartupPostInput> },
+  TContext
+> => {
+  return useMutation(getUpdateStartupPostMutationOptions(options));
+};
+
+/**
+ * @summary Delete a startup post (admin)
+ */
+export const getDeleteStartupPostUrl = (id: number) => {
+  return `/api/startup-posts/${id}`;
+};
+
+export const deleteStartupPost = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteStartupPostUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteStartupPostMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteStartupPost>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteStartupPost>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteStartupPost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteStartupPost>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteStartupPost(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteStartupPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteStartupPost>>
+>;
+
+export type DeleteStartupPostMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete a startup post (admin)
+ */
+export const useDeleteStartupPost = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteStartupPost>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteStartupPost>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteStartupPostMutationOptions(options));
+};
 
 /**
  * @summary List all creative works

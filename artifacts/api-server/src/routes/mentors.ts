@@ -5,11 +5,12 @@ import { requireAdmin } from "../lib/admin-auth";
 
 const router: IRouter = Router();
 
-router.get("/mentors", async (_req, res) => {
+router.get("/mentors", async (req, res) => {
+  const isAdmin = req.headers["x-admin-password"] === process.env.ADMIN_PASSWORD && !!process.env.ADMIN_PASSWORD;
   const rows = await db
     .select()
     .from(mentorsTable)
-    .where(eq(mentorsTable.isActive, true))
+    .where(isAdmin ? undefined : eq(mentorsTable.isActive, true))
     .orderBy(asc(mentorsTable.displayOrder), asc(mentorsTable.id));
   res.json(rows);
 });

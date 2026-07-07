@@ -48,7 +48,7 @@ export default function CreativeEpisode() {
         <div className="text-center py-24 text-muted-foreground">콘텐츠를 찾을 수 없습니다.</div>
       ) : (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-8">
+          <div className="mb-6">
             <p className="text-xs font-semibold" style={{ color: "hsl(45 92% 38%)" }}>
               [{work.category}] {work.title}
               {work.authorName ? ` · ${work.authorName}` : ""}
@@ -56,6 +56,37 @@ export default function CreativeEpisode() {
             <h1 className="mt-1 text-2xl lg:text-3xl font-extrabold tracking-tight">
               {episode.episodeNumber}화: {episode.title}
             </h1>
+          </div>
+
+          {/* 제목 아래 이전/다음화 */}
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <Button
+              variant="outline"
+              className="rounded-full bg-card"
+              disabled={!prevEpisode}
+              onClick={() =>
+                prevEpisode &&
+                navigate(`/creative-space/${workId}/episodes/${prevEpisode.id}`)
+              }
+            >
+              <ChevronLeft size={16} className="mr-1" />
+              이전화
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {episode.episodeNumber} / {episodes.length}화
+            </span>
+            <Button
+              variant="outline"
+              className="rounded-full bg-card"
+              disabled={!nextEpisode}
+              onClick={() =>
+                nextEpisode &&
+                navigate(`/creative-space/${workId}/episodes/${nextEpisode.id}`)
+              }
+            >
+              다음화
+              <ChevronRight size={16} className="ml-1" />
+            </Button>
           </div>
 
           <div className="bg-card rounded-2xl border border-border px-6 py-8 lg:px-10 lg:py-10 space-y-6">

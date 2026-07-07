@@ -264,11 +264,52 @@ export interface HumanitiesQuizAttempt {
   attemptedAt: string;
 }
 
+export interface JobCategory {
+  id: number;
+  name: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface JobCategoryInput {
+  /** @minLength 1 */
+  name: string;
+  isActive?: boolean;
+  displayOrder?: number;
+}
+
+export interface StartupPost {
+  id: number;
+  title: string;
+  content: string;
+  organizationName: string;
+  applicationUrl: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+}
+
+export interface StartupPostInput {
+  /** @minLength 1 */
+  title: string;
+  content?: string;
+  organizationName?: string;
+  applicationUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  displayOrder?: number;
+}
+
 export interface HumanitiesArticle {
   id: number;
   category: string;
   title: string;
+  contentType: string;
   content: string;
+  cardPages: string[];
   authorName: string;
   imageUrl: string;
   isActive: boolean;
@@ -281,7 +322,9 @@ export interface HumanitiesArticleInput {
   category: string;
   /** @minLength 1 */
   title: string;
+  contentType?: string;
   content?: string;
+  cardPages?: string[];
   authorName?: string;
   imageUrl?: string;
   isActive?: boolean;

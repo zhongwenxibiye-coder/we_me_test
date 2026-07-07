@@ -194,7 +194,9 @@ router.post("/humanities/articles", requireAdmin, async (req, res) => {
   const body = req.body as {
     category: string;
     title: string;
+    contentType?: string;
     content?: string;
+    cardPages?: string[];
     authorName?: string;
     imageUrl?: string;
     isActive?: boolean;
@@ -209,7 +211,9 @@ router.post("/humanities/articles", requireAdmin, async (req, res) => {
     .values({
       category: body.category,
       title: body.title,
+      contentType: body.contentType ?? "text",
       content: body.content ?? "",
+      cardPages: body.cardPages ?? [],
       authorName: body.authorName ?? "",
       imageUrl: body.imageUrl ?? "",
       isActive: body.isActive ?? true,

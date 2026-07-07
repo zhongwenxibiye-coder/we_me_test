@@ -1,6 +1,95 @@
 import { motion } from "framer-motion";
 import { Mascot, WemiWordmark } from "@/components/Mascot";
 import { QuizSection } from "@/components/QuizSection";
+import { useListStartupPosts, useListHumanitiesArticles, useListCreativeWorks } from "@workspace/api-client-react";
+import { Link } from "wouter";
+import { Rocket, BookOpen, PenLine, ArrowRight } from "lucide-react";
+
+function LatestSection() {
+  const { data: startupPosts = [] } = useListStartupPosts();
+  const { data: articles = [] } = useListHumanitiesArticles();
+  const { data: works = [] } = useListCreativeWorks();
+
+  const latestPost = startupPosts[0];
+  const latestArticle = articles[0];
+  const latestWork = works[0];
+
+  const cards = [
+    {
+      icon: <Rocket size={18} />,
+      label: "창업 프로젝트",
+      href: "/career-match",
+      title: latestPost?.title ?? null,
+      sub: latestPost?.organizationName ?? null,
+      badge: latestPost ? (latestPost.isActive ? "진행중" : "마감") : null,
+      badgeColor: latestPost?.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground",
+      color: "hsl(45 92% 55%)",
+      bg: "hsl(45 60% 97%)",
+    },
+    {
+      icon: <BookOpen size={18} />,
+      label: "인문학 콘텐츠",
+      href: "/humanities",
+      title: latestArticle?.title ?? null,
+      sub: latestArticle?.authorName ?? null,
+      badge: latestArticle?.category ?? null,
+      badgeColor: "bg-primary/15 text-foreground",
+      color: "hsl(88 45% 45%)",
+      bg: "hsl(88 30% 97%)",
+    },
+    {
+      icon: <PenLine size={18} />,
+      label: "창작 공간",
+      href: "/creative-space",
+      title: latestWork?.title ?? null,
+      sub: latestWork?.category ?? null,
+      badge: null,
+      badgeColor: "",
+      color: "hsl(200 60% 45%)",
+      bg: "hsl(200 40% 97%)",
+    },
+  ];
+
+  return (
+    <section className="mx-auto max-w-6xl px-6 lg:px-10 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-extrabold tracking-tight">위미 최신글</h2>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-4">
+          {cards.map((card) => (
+            <Link key={card.label} href={card.href}>
+              <div className="rounded-3xl border border-border bg-card hover:shadow-md transition-shadow p-5 h-full cursor-pointer group">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="size-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: card.bg, color: card.color }}>
+                    {card.icon}
+                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground">{card.label}</span>
+                  <ArrowRight size={12} className="ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                </div>
+                {card.title ? (
+                  <>
+                    <p className="font-extrabold text-sm leading-snug line-clamp-2">{card.title}</p>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {card.badge && <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${card.badgeColor}`}>{card.badge}</span>}
+                      {card.sub && <span className="text-xs text-muted-foreground">{card.sub}</span>}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">곧 새 콘텐츠가 올라와요</p>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </motion.div>
+    </section>
+  );
+}
 
 export default function Landing() {
   return (
@@ -55,6 +144,9 @@ export default function Landing() {
           </motion.div>
         </div>
       </section>
+
+      {/* 최신글 섹션 */}
+      <LatestSection />
 
       {/* O/X 퀴즈 + 스탬프 바 */}
       <section className="mx-auto max-w-6xl px-6 lg:px-10 py-10 lg:py-14">

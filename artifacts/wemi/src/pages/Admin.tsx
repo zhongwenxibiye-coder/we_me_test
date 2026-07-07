@@ -18,6 +18,10 @@ import {
   getListJobListingsQueryKey,
   useListStartupApplications, useUpdateStartupApplicationResult, type StartupApplication,
   getListStartupApplicationsQueryKey,
+  useListAllStartupPosts, useCreateStartupPost, useUpdateStartupPost, useDeleteStartupPost,
+  getListAllStartupPostsQueryKey, type StartupPost,
+  useListJobCategories, useCreateJobCategory, useUpdateJobCategory, useDeleteJobCategory,
+  getListJobCategoriesQueryKey, type JobCategory,
   useListCreativeWorks, useCreateCreativeWork, useUpdateCreativeWork, useDeleteCreativeWork,
   getListCreativeWorksQueryKey, type CreativeWork,
   useListCreativeEpisodes, useCreateCreativeEpisode, useUpdateCreativeEpisode, useDeleteCreativeEpisode,
@@ -217,7 +221,7 @@ function MentorsTab({ password }: { password: string }) {
   const queryClient = useQueryClient();
   const ro = useMemo(() => ({ headers: { "x-admin-password": password } }), [password]);
 
-  const { data: mentors = [], isLoading } = useListMentors<MentorProfile[]>();
+  const { data: mentors = [], isLoading } = useListMentors<MentorProfile[]>({ request: ro });
   const createMentor = useCreateMentor({ request: ro });
   const updateMentor = useUpdateMentor({ request: ro });
   const deleteMentor = useDeleteMentor({ request: ro });
@@ -440,11 +444,9 @@ function ArticleManager({ mentorId, password }: { mentorId: number; password: st
 
 // ── Tab: 직무 학습 ──────────────────────────────────────────
 
-const JOB_CATEGORIES = ["영업", "마케팅", "홍보", "기획", "일반사무/공공기관", "IR", "기타"];
-
 type LearningItem = { title: string; content: string };
 type JobFormData = { category: string; title: string; shortDescription: string; imageUrl: string; isActive: boolean; displayOrder: string; learning: LearningItem[] };
-const JOB_FORM_DEFAULTS: JobFormData = { category: "영업", title: "", shortDescription: "", imageUrl: "", isActive: true, displayOrder: "1", learning: [] };
+const JOB_FORM_DEFAULTS: JobFormData = { category: "", title: "", shortDescription: "", imageUrl: "", isActive: true, displayOrder: "1", learning: [] };
 
 function JobsTab({ password }: { password: string }) {
   const queryClient = useQueryClient();
@@ -455,10 +457,21 @@ function JobsTab({ password }: { password: string }) {
   const updateJob = useUpdateJobListing({ request: ro });
   const deleteJob = useDeleteJobListing({ request: ro });
 
+  const { data: categories = [] } = useListJobCategories<JobCategory[]>();
+  const createCategory = useCreateJobCategory({ request: ro });
+  const updateCategory = useUpdateJobCategory({ request: ro });
+  const deleteCategory = useDeleteJobCategory({ request: ro });
+  const [newCatName, setNewCatName] = useState("");
+  const [catSubTab, setCatSubTab] = useState<"jobs" | "categories">("jobs");
+
   const [editing, setEditing] = useState<number | "new" | null>(null);
   const [form, setForm] = useState<JobFormData>(JOB_FORM_DEFAULTS);
 
-  function startNew() { setForm(JOB_FORM_DEFAULTS); setEditing("new"); }
+  function startNew() {
+    const firstCat = categories[0]?.name ?? "";
+    setForm({ ...JOB_FORM_DEFAULTS, category: firstCat });
+    setEditing("new");
+  }
   function startEdit(j: JobListing) {
     setForm({
       category: j.category, title: j.title,
@@ -494,118 +507,185 @@ function JobsTab({ password }: { password: string }) {
     });
   }
 
+  function handleAddCategory() {
+    if (!newCatName.trim()) return;
+    createCategory.mutate({ data: { name: newCatName.trim(), isActive: true, displayOrder: categories.length } }, {
+      onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListJobCategoriesQueryKey() }); setNewCatName(""); },
+    });
+  }
+
+  function handleToggleCategory(cat: JobCategory) {
+    updateCategory.mutate({ id: cat.id, data: { name: cat.name, isActive: !cat.isActive } }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListJobCategoriesQueryKey() }),
+    });
+  }
+
+  function handleDeleteCategory(id: number) {
+    if (!confirm("카테고리를 삭제하면 해당 카테고리의 직무가 카테고리 없이 남습니다. 계속할까요?")) return;
+    deleteCategory.mutate({ id }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListJobCategoriesQueryKey() }),
+    });
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">DB 직무 {jobs.length}개</p>
-        <Button size="sm" className="rounded-full" onClick={startNew}><Plus size={14} className="mr-1" />직무 추가</Button>
+      <div className="flex gap-2">
+        <button onClick={() => setCatSubTab("jobs")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${catSubTab === "jobs" ? "bg-foreground text-background border-foreground" : "bg-card text-muted-foreground border-border"}`}>
+          <Briefcase size={13} />직무 목록
+        </button>
+        <button onClick={() => setCatSubTab("categories")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${catSubTab === "categories" ? "bg-foreground text-background border-foreground" : "bg-card text-muted-foreground border-border"}`}>
+          <BookOpen size={13} />카테고리 관리
+        </button>
       </div>
 
-      {editing !== null && (
-        <div className="rounded-3xl bg-card border-2 border-primary/30 p-5 space-y-4">
-          <h3 className="font-extrabold text-lg">{editing === "new" ? "새 직무 추가" : "직무 수정"}</h3>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">카테고리</label>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              {JOB_CATEGORIES.map((c) => (
-                <button key={c} type="button" onClick={() => setForm((f) => ({ ...f, category: c }))}
-                  className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${form.category === c ? "bg-primary/20 border-primary/50" : "bg-card border-border"}`}>
-                  {c}
-                </button>
-              ))}
-            </div>
+      {catSubTab === "categories" && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="새 카테고리명" className="h-9 rounded-xl bg-background flex-1" onKeyDown={(e) => e.key === "Enter" && handleAddCategory()} />
+            <Button size="sm" className="rounded-full h-9" onClick={handleAddCategory} disabled={!newCatName.trim()}><Plus size={13} className="mr-1" />추가</Button>
           </div>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">직무명</label>
-            <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" />
-          </div>
-          <ImageUpload label="이미지 (선택)" value={form.imageUrl} onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))} />
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">짧은 설명</label>
-            <Textarea value={form.shortDescription} onChange={(e) => setForm((f) => ({ ...f, shortDescription: e.target.value }))} rows={2} className="mt-1 rounded-xl bg-background" />
-          </div>
-          <div className="border border-border rounded-2xl p-4 bg-background/50 space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-extrabold">학습 목록</label>
-              <button type="button"
-                onClick={() => setForm((f) => ({ ...f, learning: [...f.learning, { title: "", content: "" }] }))}
-                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-primary/15 font-semibold hover:bg-primary/25 transition-colors">
-                <Plus size={11} />항목 추가
-              </button>
-            </div>
-            {form.learning.length === 0 && (
-              <p className="text-xs text-muted-foreground italic">학습 항목이 없습니다. [항목 추가]를 눌러주세요.</p>
-            )}
-            <div className="space-y-3">
-              {form.learning.map((item, idx) => (
-                <div key={idx} className="rounded-xl border border-border p-3 bg-card space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="size-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                      style={{ background: "hsl(45 80% 88%)", color: "hsl(35 60% 25%)" }}>{idx + 1}</span>
-                    <Input value={item.title}
-                      onChange={(e) => setForm((f) => ({ ...f, learning: f.learning.map((it, i) => i === idx ? { ...it, title: e.target.value } : it) }))}
-                      placeholder="학습 항목 제목" className="h-8 rounded-lg bg-background flex-1 text-sm" />
-                    <button type="button" onClick={() => setForm((f) => ({ ...f, learning: f.learning.filter((_, i) => i !== idx) }))}
-                      className="text-muted-foreground hover:text-destructive transition-colors shrink-0">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                  <RichTextArea
-                    value={item.content}
-                    onChange={(val) => setForm((f) => ({ ...f, learning: f.learning.map((it, i) => i === idx ? { ...it, content: val } : it) }))}
-                    placeholder={"내용을 입력하세요.\n\n팁: 텍스트를 선택한 뒤 위 버튼을 클릭하면 서식이 적용돼요.\nB = 볼드, I = 기울임, H2/H3 = 제목, • 목록 = 리스트"}
-                    rows={6}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-semibold flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />활성
-            </label>
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-muted-foreground">순서</label>
-              <Input type="number" min="1" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-8 w-20 rounded-xl bg-background" />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" className="rounded-full" onClick={handleSave} disabled={!form.title}>저장</Button>
-            <Button size="sm" variant="outline" className="rounded-full bg-card" onClick={() => setEditing(null)}>취소</Button>
-          </div>
-        </div>
-      )}
-
-      {isLoading ? <div className="py-8 text-center text-muted-foreground">불러오는 중...</div> : (
-        jobs.length === 0
-          ? <div className="rounded-3xl bg-card border border-card-border p-8 text-center text-muted-foreground">아직 직무가 없어요. 추가해보세요.</div>
-          : <ul className="space-y-3">
-            {jobs.map((j: JobListing) => (
-              <li key={j.id} className="rounded-2xl bg-card border border-card-border px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
-                <div>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 font-medium" style={{ color: "hsl(35 60% 25%)" }}>{j.category}</span>
-                  <p className="mt-1 font-extrabold">{j.title}</p>
-                  {j.shortDescription && <p className="text-xs text-muted-foreground mt-0.5">{j.shortDescription}</p>}
-                  <p className="text-xs text-muted-foreground mt-0.5">{j.isActive ? "활성" : "비활성"} · 순서 {j.displayOrder}</p>
+          <ul className="space-y-2">
+            {categories.map((cat: JobCategory) => (
+              <li key={cat.id} className="rounded-2xl bg-card border border-card-border px-4 py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className={`font-semibold text-sm ${!cat.isActive ? "text-muted-foreground line-through" : ""}`}>{cat.name}</span>
+                  <span className="text-xs text-muted-foreground">{cat.isActive ? "활성" : "비활성"}</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="h-8 rounded-full bg-card" onClick={() => startEdit(j)}><Pencil size={13} /></Button>
-                  <Button size="sm" variant="outline" className="h-8 rounded-full bg-card text-destructive" onClick={() => handleDelete(j.id)}><Trash2 size={13} /></Button>
+                  <Button size="sm" variant="outline" className="h-7 rounded-full bg-card text-xs" onClick={() => handleToggleCategory(cat)}>
+                    {cat.isActive ? "비활성화" : "활성화"}
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 rounded-full bg-card text-destructive" onClick={() => handleDeleteCategory(cat.id)}><Trash2 size={12} /></Button>
                 </div>
               </li>
             ))}
+            {categories.length === 0 && <li className="text-sm text-muted-foreground text-center py-4">카테고리가 없습니다. 추가해주세요.</li>}
           </ul>
+        </div>
+      )}
+
+      {catSubTab === "jobs" && (
+        <>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">DB 직무 {jobs.length}개</p>
+            <Button size="sm" className="rounded-full" onClick={startNew}><Plus size={14} className="mr-1" />직무 추가</Button>
+          </div>
+
+          {editing !== null && (
+            <div className="rounded-3xl bg-card border-2 border-primary/30 p-5 space-y-4">
+              <h3 className="font-extrabold text-lg">{editing === "new" ? "새 직무 추가" : "직무 수정"}</h3>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">카테고리</label>
+                <div className="mt-1.5 flex flex-wrap gap-2">
+                  {categories.map((c: JobCategory) => (
+                    <button key={c.id} type="button" onClick={() => setForm((f) => ({ ...f, category: c.name }))}
+                      className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${form.category === c.name ? "bg-primary/20 border-primary/50" : "bg-card border-border"}`}>
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">직무명</label>
+                <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" />
+              </div>
+              <ImageUpload label="이미지 (선택)" value={form.imageUrl} onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))} />
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">짧은 설명</label>
+                <Textarea value={form.shortDescription} onChange={(e) => setForm((f) => ({ ...f, shortDescription: e.target.value }))} rows={2} className="mt-1 rounded-xl bg-background" />
+              </div>
+              <div className="border border-border rounded-2xl p-4 bg-background/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-extrabold">학습 목록</label>
+                  <button type="button"
+                    onClick={() => setForm((f) => ({ ...f, learning: [...f.learning, { title: "", content: "" }] }))}
+                    className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-primary/15 font-semibold hover:bg-primary/25 transition-colors">
+                    <Plus size={11} />항목 추가
+                  </button>
+                </div>
+                {form.learning.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">학습 항목이 없습니다. [항목 추가]를 눌러주세요.</p>
+                )}
+                <div className="space-y-3">
+                  {form.learning.map((item, idx) => (
+                    <div key={idx} className="rounded-xl border border-border p-3 bg-card space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="size-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                          style={{ background: "hsl(45 80% 88%)", color: "hsl(35 60% 25%)" }}>{idx + 1}</span>
+                        <Input value={item.title}
+                          onChange={(e) => setForm((f) => ({ ...f, learning: f.learning.map((it, i) => i === idx ? { ...it, title: e.target.value } : it) }))}
+                          placeholder="학습 항목 제목" className="h-8 rounded-lg bg-background flex-1 text-sm" />
+                        <button type="button" onClick={() => setForm((f) => ({ ...f, learning: f.learning.filter((_, i) => i !== idx) }))}
+                          className="text-muted-foreground hover:text-destructive transition-colors shrink-0">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                      <RichTextArea
+                        value={item.content}
+                        onChange={(val) => setForm((f) => ({ ...f, learning: f.learning.map((it, i) => i === idx ? { ...it, content: val } : it) }))}
+                        placeholder={"내용을 입력하세요.\n\n팁: 텍스트를 선택한 뒤 위 버튼을 클릭하면 서식이 적용돼요.\nB = 볼드, I = 기울임, H2/H3 = 제목, • 목록 = 리스트"}
+                        rows={6}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-semibold flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />활성
+                </label>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-muted-foreground">순서</label>
+                  <Input type="number" min="1" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-8 w-20 rounded-xl bg-background" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" className="rounded-full" onClick={handleSave} disabled={!form.title}>저장</Button>
+                <Button size="sm" variant="outline" className="rounded-full bg-card" onClick={() => setEditing(null)}>취소</Button>
+              </div>
+            </div>
+          )}
+
+          {isLoading ? <div className="py-8 text-center text-muted-foreground">불러오는 중...</div> : (
+            jobs.length === 0
+              ? <div className="rounded-3xl bg-card border border-card-border p-8 text-center text-muted-foreground">아직 직무가 없어요. 추가해보세요.</div>
+              : <ul className="space-y-3">
+                {jobs.map((j: JobListing) => (
+                  <li key={j.id} className="rounded-2xl bg-card border border-card-border px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 font-medium" style={{ color: "hsl(35 60% 25%)" }}>{j.category}</span>
+                      <p className="mt-1 font-extrabold">{j.title}</p>
+                      {j.shortDescription && <p className="text-xs text-muted-foreground mt-0.5">{j.shortDescription}</p>}
+                      <p className="text-xs text-muted-foreground mt-0.5">{j.isActive ? "활성" : "비활성"} · 순서 {j.displayOrder}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="h-8 rounded-full bg-card" onClick={() => startEdit(j)}><Pencil size={13} /></Button>
+                      <Button size="sm" variant="outline" className="h-8 rounded-full bg-card text-destructive" onClick={() => handleDelete(j.id)}><Trash2 size={13} /></Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+          )}
+        </>
       )}
     </div>
   );
 }
 
-// ── Tab: 창업 아이디어 ──────────────────────────────────────
+// ── Tab: 창업 프로젝트 ──────────────────────────────────────
+
+type PostFormData = { title: string; content: string; organizationName: string; applicationUrl: string; startDate: string; endDate: string; isActive: boolean; displayOrder: string };
+const POST_FORM_DEFAULTS: PostFormData = { title: "", content: "", organizationName: "", applicationUrl: "", startDate: "", endDate: "", isActive: true, displayOrder: "1" };
 
 function StartupTab({ password }: { password: string }) {
   const queryClient = useQueryClient();
   const ro = useMemo(() => ({ headers: { "x-admin-password": password } }), [password]);
 
+  const [subTab, setSubTab] = useState<"apps" | "posts">("apps");
+
+  // 신청함
   const { data: apps = [], isLoading } = useListStartupApplications<StartupApplication[]>({ request: ro });
   const setResult = useUpdateStartupApplicationResult({ request: ro });
 
@@ -625,8 +705,125 @@ function StartupTab({ password }: { password: string }) {
     );
   }
 
+  // 정부지원글
+  const { data: posts = [], isLoading: postsLoading } = useListAllStartupPosts<StartupPost[]>({ request: ro });
+  const createPost = useCreateStartupPost({ request: ro });
+  const updatePost = useUpdateStartupPost({ request: ro });
+  const deletePost = useDeleteStartupPost({ request: ro });
+  const [postEditing, setPostEditing] = useState<number | "new" | null>(null);
+  const [postForm, setPostForm] = useState<PostFormData>(POST_FORM_DEFAULTS);
+
+  function startNewPost() { setPostForm(POST_FORM_DEFAULTS); setPostEditing("new"); }
+  function startEditPost(p: StartupPost) {
+    setPostForm({
+      title: p.title, content: p.content ?? "",
+      organizationName: p.organizationName ?? "", applicationUrl: p.applicationUrl ?? "",
+      startDate: p.startDate ?? "", endDate: p.endDate ?? "",
+      isActive: p.isActive, displayOrder: String(p.displayOrder),
+    });
+    setPostEditing(p.id);
+  }
+  function handleSavePost() {
+    const payload = {
+      title: postForm.title, content: postForm.content,
+      organizationName: postForm.organizationName, applicationUrl: postForm.applicationUrl,
+      startDate: postForm.startDate, endDate: postForm.endDate,
+      isActive: postForm.isActive, displayOrder: Number(postForm.displayOrder),
+    };
+    if (postEditing === "new") {
+      createPost.mutate({ data: payload }, {
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListAllStartupPostsQueryKey() }); setPostEditing(null); },
+      });
+    } else if (typeof postEditing === "number") {
+      updatePost.mutate({ id: postEditing, data: payload }, {
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListAllStartupPostsQueryKey() }); setPostEditing(null); },
+      });
+    }
+  }
+  function handleDeletePost(id: number) {
+    if (!confirm("정말 삭제하시겠어요?")) return;
+    deletePost.mutate({ id }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListAllStartupPostsQueryKey() }),
+    });
+  }
+
   return (
-    <>
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <button onClick={() => setSubTab("apps")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${subTab === "apps" ? "bg-foreground text-background border-foreground" : "bg-card text-muted-foreground border-border"}`}>
+          <Inbox size={13} />창업 신청함
+        </button>
+        <button onClick={() => setSubTab("posts")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${subTab === "posts" ? "bg-foreground text-background border-foreground" : "bg-card text-muted-foreground border-border"}`}>
+          <Rocket size={13} />정부 지원 글 관리
+        </button>
+      </div>
+
+      {subTab === "posts" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">지원 공고 {posts.length}개</p>
+            <Button size="sm" className="rounded-full" onClick={startNewPost}><Plus size={14} className="mr-1" />공고 추가</Button>
+          </div>
+          {postEditing !== null && (
+            <div className="rounded-3xl bg-card border-2 border-primary/30 p-5 space-y-4">
+              <h3 className="font-extrabold text-lg">{postEditing === "new" ? "새 공고 추가" : "공고 수정"}</h3>
+              <div><label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">제목</label>
+                <Input value={postForm.title} onChange={(e) => setPostForm((f) => ({ ...f, title: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" /></div>
+              <div><label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">신청 기관</label>
+                <Input value={postForm.organizationName} onChange={(e) => setPostForm((f) => ({ ...f, organizationName: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" /></div>
+              <div><label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">신청 URL</label>
+                <Input value={postForm.applicationUrl} onChange={(e) => setPostForm((f) => ({ ...f, applicationUrl: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" placeholder="https://..." /></div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div><label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">신청 시작일</label>
+                  <Input type="date" value={postForm.startDate} onChange={(e) => setPostForm((f) => ({ ...f, startDate: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" /></div>
+                <div><label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">신청 마감일</label>
+                  <Input type="date" value={postForm.endDate} onChange={(e) => setPostForm((f) => ({ ...f, endDate: e.target.value }))} className="mt-1 h-9 rounded-xl bg-background" /></div>
+              </div>
+              <div><label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">내용</label>
+                <Textarea value={postForm.content} onChange={(e) => setPostForm((f) => ({ ...f, content: e.target.value }))} rows={4} className="mt-1 rounded-xl bg-background" /></div>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-semibold flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={postForm.isActive} onChange={(e) => setPostForm((f) => ({ ...f, isActive: e.target.checked }))} />진행중
+                </label>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-muted-foreground">순서</label>
+                  <Input type="number" min="1" value={postForm.displayOrder} onChange={(e) => setPostForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-8 w-20 rounded-xl bg-background" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" className="rounded-full" onClick={handleSavePost} disabled={!postForm.title}>저장</Button>
+                <Button size="sm" variant="outline" className="rounded-full bg-card" onClick={() => setPostEditing(null)}>취소</Button>
+              </div>
+            </div>
+          )}
+          {postsLoading ? <div className="py-8 text-center text-muted-foreground">불러오는 중...</div> : (
+            posts.length === 0
+              ? <div className="rounded-3xl bg-card border border-card-border p-8 text-center text-muted-foreground">공고가 없습니다. 추가해주세요.</div>
+              : <ul className="space-y-3">
+                {posts.map((p: StartupPost) => (
+                  <li key={p.id} className="rounded-2xl bg-card border border-card-border px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-extrabold">{p.title}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>{p.isActive ? "진행중" : "마감"}</span>
+                      </div>
+                      {p.organizationName && <p className="text-xs text-muted-foreground mt-0.5">{p.organizationName}</p>}
+                      {(p.startDate || p.endDate) && <p className="text-xs text-muted-foreground mt-0.5">{p.startDate} ~ {p.endDate}</p>}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="h-8 rounded-full bg-card" onClick={() => startEditPost(p)}><Pencil size={13} /></Button>
+                      <Button size="sm" variant="outline" className="h-8 rounded-full bg-card text-destructive" onClick={() => handleDeletePost(p.id)}><Trash2 size={13} /></Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+          )}
+        </div>
+      )}
+
+      {subTab === "apps" && (<>
       <div className="mb-4">
         <p className="text-sm text-muted-foreground">전체 {apps.length}건</p>
       </div>
@@ -703,7 +900,8 @@ function StartupTab({ password }: { password: string }) {
           })}
         </ul>
       )}
-    </>
+      </>)}
+    </div>
   );
 }
 
@@ -1129,20 +1327,32 @@ function HumanitiesTab({ password }: { password: string }) {
   const deleteArticle = useDeleteHumanitiesArticle({ request: ro });
 
   const [articleEditing, setArticleEditing] = useState<number | "new" | null>(null);
-  const [articleForm, setArticleForm] = useState({ category: "문학", title: "", content: "", authorName: "", imageUrl: "", isActive: true, displayOrder: "0" });
+  const [articleForm, setArticleForm] = useState({ category: "문학", title: "", contentType: "text", content: "", cardPages: [] as string[], authorName: "", imageUrl: "", isActive: true, displayOrder: "0" });
+  const cardPageImgRef = useRef<HTMLInputElement>(null);
 
-  function startNewArticle() { setArticleForm({ category: "문학", title: "", content: "", authorName: "", imageUrl: "", isActive: true, displayOrder: "0" }); setArticleEditing("new"); }
+  function startNewArticle() { setArticleForm({ category: "문학", title: "", contentType: "text", content: "", cardPages: [], authorName: "", imageUrl: "", isActive: true, displayOrder: "0" }); setArticleEditing("new"); }
   function startEditArticle(a: (typeof articles)[0]) {
-    setArticleForm({ category: a.category, title: a.title, content: a.content, authorName: a.authorName, imageUrl: a.imageUrl, isActive: a.isActive, displayOrder: String(a.displayOrder) });
+    setArticleForm({ category: a.category, title: a.title, contentType: a.contentType ?? "text", content: a.content, cardPages: Array.isArray(a.cardPages) ? (a.cardPages as string[]) : [], authorName: a.authorName, imageUrl: a.imageUrl, isActive: a.isActive, displayOrder: String(a.displayOrder) });
     setArticleEditing(a.id);
   }
   function handleSaveArticle() {
-    const payload = { category: articleForm.category, title: articleForm.title, content: articleForm.content, authorName: articleForm.authorName, imageUrl: articleForm.imageUrl, isActive: articleForm.isActive, displayOrder: Number(articleForm.displayOrder) };
+    const payload = { category: articleForm.category, title: articleForm.title, contentType: articleForm.contentType, content: articleForm.content, cardPages: articleForm.cardPages, authorName: articleForm.authorName, imageUrl: articleForm.imageUrl, isActive: articleForm.isActive, displayOrder: Number(articleForm.displayOrder) };
     if (articleEditing === "new") {
       createArticle.mutate({ data: payload }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListHumanitiesArticlesQueryKey() }); setArticleEditing(null); } });
     } else if (typeof articleEditing === "number") {
       updateArticle.mutate({ id: articleEditing, data: payload }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListHumanitiesArticlesQueryKey() }); setArticleEditing(null); } });
     }
+  }
+
+  async function handleAddCardPage(files: FileList) {
+    if (!files.length) return;
+    if (articleForm.cardPages.length >= 10) return;
+    const newPages: string[] = [];
+    for (const file of Array.from(files)) {
+      if (articleForm.cardPages.length + newPages.length >= 10) break;
+      newPages.push(await fileToBase64(file));
+    }
+    setArticleForm((f) => ({ ...f, cardPages: [...f.cardPages, ...newPages] }));
   }
   function handleDeleteArticle(id: number) {
     if (!confirm("아티클을 삭제할까요?")) return;
@@ -1263,6 +1473,18 @@ function HumanitiesTab({ password }: { password: string }) {
                 </div>
               </div>
               <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">콘텐츠 유형</label>
+                <div className="mt-1.5 flex gap-2">
+                  {[{ value: "text", label: "📝 텍스트 아티클" }, { value: "card", label: "🃏 카드뉴스" }].map((opt) => (
+                    <button key={opt.value} type="button"
+                      onClick={() => setArticleForm((f) => ({ ...f, contentType: opt.value }))}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-colors ${articleForm.contentType === opt.value ? "border-primary bg-primary/15" : "border-border bg-background"}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">제목 *</label>
                 <Input value={articleForm.title} onChange={(e) => setArticleForm((f) => ({ ...f, title: e.target.value }))} className="mt-1.5 h-9 rounded-xl bg-background" placeholder="아티클 제목" />
               </div>
@@ -1275,10 +1497,44 @@ function HumanitiesTab({ password }: { password: string }) {
                 value={articleForm.imageUrl}
                 onChange={(url) => setArticleForm((f) => ({ ...f, imageUrl: url }))}
               />
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">본문</label>
-                <RichTextArea value={articleForm.content} onChange={(val) => setArticleForm((f) => ({ ...f, content: val }))} rows={10} placeholder="아티클 본문을 입력하세요..." className="mt-1.5" />
-              </div>
+              {articleForm.contentType === "text" ? (
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">본문</label>
+                  <RichTextArea value={articleForm.content} onChange={(val) => setArticleForm((f) => ({ ...f, content: val }))} rows={10} placeholder="아티클 본문을 입력하세요..." className="mt-1.5" />
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">카드 페이지 ({articleForm.cardPages.length}/10)</label>
+                    <button type="button" onClick={() => cardPageImgRef.current?.click()}
+                      disabled={articleForm.cardPages.length >= 10}
+                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-primary/15 font-semibold hover:bg-primary/25 transition-colors disabled:opacity-40">
+                      <Plus size={11} />이미지 추가
+                    </button>
+                    <input ref={cardPageImgRef} type="file" accept="image/*" multiple className="hidden"
+                      onChange={(e) => e.target.files && handleAddCardPage(e.target.files)} />
+                  </div>
+                  {articleForm.cardPages.length === 0 && (
+                    <div className="rounded-xl border-2 border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+                      이미지를 추가하면 카드뉴스 페이지가 됩니다. (최대 10장)
+                    </div>
+                  )}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    {articleForm.cardPages.map((page, idx) => (
+                      <div key={idx} className="relative group rounded-xl overflow-hidden border border-border aspect-[3/4]">
+                        <img src={page} alt={`페이지 ${idx + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                          <span className="text-white text-xs font-bold">{idx + 1}페이지</span>
+                          <button type="button"
+                            onClick={() => setArticleForm((f) => ({ ...f, cardPages: f.cardPages.filter((_, i) => i !== idx) }))}
+                            className="text-white hover:text-red-300 transition-colors"><Trash2 size={16} /></button>
+                        </div>
+                        <div className="absolute top-1 left-1 size-5 rounded-full bg-black/60 flex items-center justify-center text-white text-[10px] font-bold">{idx + 1}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <label className="text-xs flex items-center gap-1.5 cursor-pointer">
                 <input type="checkbox" checked={articleForm.isActive} onChange={(e) => setArticleForm((f) => ({ ...f, isActive: e.target.checked }))} />활성
               </label>
@@ -1565,7 +1821,7 @@ const TABS: { id: Tab; label: string; icon: typeof Inbox }[] = [
   { id: "applications", label: "멘토링 신청함", icon: Inbox },
   { id: "mentors", label: "멘토 관리", icon: Users },
   { id: "jobs", label: "직무 학습", icon: Briefcase },
-  { id: "startup", label: "창업 아이디어", icon: Rocket },
+  { id: "startup", label: "창업 프로젝트", icon: Rocket },
   { id: "creative", label: "창작 공간", icon: PenLine },
   { id: "humanities", label: "인문학 콘텐츠", icon: BookOpen },
   { id: "users", label: "회원 현황", icon: UserCheck },

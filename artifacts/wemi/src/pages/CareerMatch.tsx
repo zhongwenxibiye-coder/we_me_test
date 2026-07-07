@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Rocket, CheckCircle2 } from "lucide-react";
-import { useCreateStartupApplication } from "@workspace/api-client-react";
+import { Rocket, CheckCircle2, ExternalLink, Calendar } from "lucide-react";
+import { useCreateStartupApplication, useListStartupPosts } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,6 +59,74 @@ function SelectGroup({
         ))}
       </div>
     </div>
+  );
+}
+
+function StartupPostsList() {
+  const { data: posts = [], isLoading } = useListStartupPosts();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.18 }}
+      className="mt-12"
+    >
+      <h2 className="text-2xl font-extrabold tracking-tight">창업 프로그램</h2>
+      <p className="mt-1 text-sm text-muted-foreground">예비창업자가 지원할 수 있는 다양한 창업 프로그램에 지원해 보세요.</p>
+
+      {isLoading ? (
+        <div className="mt-6 py-8 text-center text-muted-foreground text-sm">불러오는 중...</div>
+      ) : posts.length === 0 ? (
+        <div className="mt-6 rounded-3xl bg-card border border-card-border p-10 text-center">
+          <Mascot size={96} animate="bob" />
+          <p className="mt-4 font-semibold">현재 프로젝트가 없습니다.</p>
+          <p className="mt-1 text-sm text-muted-foreground">곧 새로운 프로젝트가 업로드될 예정이에요.</p>
+        </div>
+      ) : (
+        <ul className="mt-6 space-y-4">
+          {posts.map((post) => (
+            <li key={post.id} className="rounded-3xl bg-card border border-card-border overflow-hidden">
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${post.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                        {post.isActive ? "진행중" : "마감"}
+                      </span>
+                      {post.organizationName && (
+                        <span className="text-xs text-muted-foreground font-medium">{post.organizationName}</span>
+                      )}
+                    </div>
+                    <p className="font-extrabold text-base leading-snug">{post.title}</p>
+                    {(post.startDate || post.endDate) && (
+                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                        <Calendar size={12} />
+                        <span>신청기간: {post.startDate ?? "?"} ~ {post.endDate ?? "?"}</span>
+                      </div>
+                    )}
+                    {post.content && (
+                      <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{post.content}</p>
+                    )}
+                  </div>
+                  {post.applicationUrl && (
+                    <a href={post.applicationUrl} target="_blank" rel="noopener noreferrer"
+                      className={cn(
+                        "shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-colors",
+                        post.isActive
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "bg-muted text-muted-foreground cursor-not-allowed pointer-events-none"
+                      )}>
+                      <ExternalLink size={13} />신청하기
+                    </a>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </motion.div>
   );
 }
 
@@ -282,21 +350,7 @@ export default function CareerMatchPage() {
         </button>
       </motion.div>
       {/* 신청할 수 있는 프로젝트 */}
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18 }}
-        className="mt-12"
-      >
-        <h2 className="text-2xl font-extrabold tracking-tight">창업 프로그램</h2>
-        <p className="mt-1 text-sm text-muted-foreground">예비창업자가 지원 할 수 있는 다양한 창업 프로그램에 지원해 보세요.</p>
-
-        <div className="mt-6 rounded-3xl bg-card border border-card-border p-10 text-center">
-          <Mascot size={96} animate="bob" />
-          <p className="mt-4 font-semibold">현재 프로젝트가 없습니다.</p>
-          <p className="mt-1 text-sm text-muted-foreground">곧 새로운 프로젝트가 업로드될 예정이에요.</p>
-        </div>
-      </motion.div>
+      <StartupPostsList />
       {/* 창업 신청 다이얼로그 */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">

@@ -12,7 +12,9 @@ tags:
   - name: mentors
   - name: mentor-articles
   - name: job-listings
+  - name: job-categories
   - name: startup-applications
+  - name: startup-posts
   - name: creative-works
   - name: creative-episodes
   - name: creative-work-submissions
@@ -446,6 +448,102 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  # ── Job Categories ─────────────────────────────────────────
+  /job-categories:
+    get:
+      operationId: listJobCategories
+      tags: [job-categories]
+      summary: List all job categories
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobCategory"
+    post:
+      operationId: createJobCategory
+      tags: [job-categories]
+      summary: Create a job category (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobCategoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /job-categories/{id}:
+    put:
+      operationId: updateJobCategory
+      tags: [job-categories]
+      summary: Update a job category (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobCategoryInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteJobCategory
+      tags: [job-categories]
+      summary: Delete a job category (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   # ── Startup Applications ───────────────────────────────────
   /startup-applications:
     post:
@@ -582,6 +680,124 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StartupApplicationPublic"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Startup Posts ──────────────────────────────────────────
+  /startup-posts:
+    get:
+      operationId: listStartupPosts
+      tags: [startup-posts]
+      summary: List active startup posts (public)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StartupPost"
+    post:
+      operationId: createStartupPost
+      tags: [startup-posts]
+      summary: Create a startup post (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartupPostInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartupPost"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /startup-posts/all:
+    get:
+      operationId: listAllStartupPosts
+      tags: [startup-posts]
+      summary: List all startup posts including inactive (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StartupPost"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /startup-posts/{id}:
+    put:
+      operationId: updateStartupPost
+      tags: [startup-posts]
+      summary: Update a startup post (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartupPostInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartupPost"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteStartupPost
+      tags: [startup-posts]
+      summary: Delete a startup post (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
 
@@ -1650,6 +1866,81 @@ components:
           format: date-time
       required: [id, quizId, sessionKey, isCorrect, attemptedAt]
 
+    # ── Job Category ─────────────────────────────────────────
+    JobCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+      required: [id, name, isActive, displayOrder]
+
+    JobCategoryInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+      required: [name]
+
+    # ── Startup Post ──────────────────────────────────────────
+    StartupPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        organizationName:
+          type: string
+        applicationUrl:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, content, organizationName, applicationUrl, startDate, endDate, isActive, displayOrder, createdAt]
+
+    StartupPostInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        organizationName:
+          type: string
+        applicationUrl:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+      required: [title]
+
     # ── Humanities Article ────────────────────────────────────
     HumanitiesArticle:
       type: object
@@ -1660,8 +1951,14 @@ components:
           type: string
         title:
           type: string
+        contentType:
+          type: string
         content:
           type: string
+        cardPages:
+          type: array
+          items:
+            type: string
         authorName:
           type: string
         imageUrl:
@@ -1673,7 +1970,7 @@ components:
         createdAt:
           type: string
           format: date-time
-      required: [id, category, title, content, authorName, imageUrl, isActive, displayOrder, createdAt]
+      required: [id, category, title, contentType, content, cardPages, authorName, imageUrl, isActive, displayOrder, createdAt]
 
     HumanitiesArticleInput:
       type: object
@@ -1684,8 +1981,14 @@ components:
         title:
           type: string
           minLength: 1
+        contentType:
+          type: string
         content:
           type: string
+        cardPages:
+          type: array
+          items:
+            type: string
         authorName:
           type: string
         imageUrl:
