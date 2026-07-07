@@ -247,10 +247,9 @@ export default function CareerMatchPage() {
         <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "hsl(88 45% 38%)" }}>
           Projects
         </p>
-        <h1 className="mt-2 text-4xl lg:text-5xl font-extrabold tracking-tight">프로젝트 참여</h1>
-        <p className="mt-3 text-muted-foreground">창업과 프로젝트에 도전해 보세요.</p>
+        <h1 className="mt-2 text-4xl lg:text-5xl font-extrabold tracking-tight">창업 프로젝트</h1>
+        <p className="mt-3 text-muted-foreground">창업 프로젝트에 도전해 보세요.</p>
       </motion.div>
-
       {/* 아이디어 창업 도전하기 */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
@@ -270,7 +269,7 @@ export default function CareerMatchPage() {
               <Rocket size={26} style={{ color: "hsl(35 60% 30%)" }} />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-extrabold tracking-tight">아이디어 창업 도전하기</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight">창업 멘토링 신청하기</h2>
               <p className="mt-1 text-sm text-muted-foreground font-medium">
                 창업 정부지원금과 관련한 멘토링을 진행합니다
               </p>
@@ -284,7 +283,6 @@ export default function CareerMatchPage() {
           </div>
         </button>
       </motion.div>
-
       {/* 신청할 수 있는 프로젝트 */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
@@ -301,7 +299,6 @@ export default function CareerMatchPage() {
           <p className="mt-1 text-sm text-muted-foreground">곧 새로운 프로젝트가 업로드될 예정이에요.</p>
         </div>
       </motion.div>
-
       {/* 창업 신청 다이얼로그 */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
