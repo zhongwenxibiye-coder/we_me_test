@@ -228,7 +228,7 @@ function StartupForm({ onClose }: { onClose: () => void }) {
         disabled={!canSubmit}
         className="w-full h-12 rounded-xl text-base font-bold"
       >
-        {createApp.isPending ? "제출 중..." : "도전하기"}
+        {createApp.isPending ? "제출 중..." : "신청하기"}
       </Button>
     </form>
   );
