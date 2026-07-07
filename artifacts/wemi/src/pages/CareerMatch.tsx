@@ -270,9 +270,7 @@ export default function CareerMatchPage() {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-2xl font-extrabold tracking-tight">창업 멘토링 신청하기</h2>
-              <p className="mt-1 text-sm text-muted-foreground font-medium">
-                창업 정부지원금과 관련한 멘토링을 진행합니다
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground font-medium">창업이 막막하다면 멘토링을 신청해 보세요!</p>
             </div>
             <span
               className="text-sm font-semibold opacity-60 group-hover:opacity-100 transition-opacity shrink-0"
