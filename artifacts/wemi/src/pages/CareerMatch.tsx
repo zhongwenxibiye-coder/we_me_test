@@ -289,7 +289,7 @@ export default function CareerMatchPage() {
         className="mt-12"
       >
         <h2 className="text-2xl font-extrabold tracking-tight">창업 프로그램</h2>
-        <p className="mt-1 text-sm text-muted-foreground">다양한 창업 프로그램에 지원해 보세요.</p>
+        <p className="mt-1 text-sm text-muted-foreground">예비창업자가 지원 할 수 있는 다양한 창업 프로그램에 지원해 보세요.</p>
 
         <div className="mt-6 rounded-3xl bg-card border border-card-border p-10 text-center">
           <Mascot size={96} animate="bob" />
