@@ -1,20 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Heart } from "lucide-react";
-import { useListJobListings, type JobListing } from "@workspace/api-client-react";
+import { useListJobListings, useListJobCategories, type JobListing } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
-import { JOB_CATEGORIES, type JobCategory } from "@/data/jobs";
 import { cn } from "@/lib/utils";
 import { useJobLikes } from "@/hooks/useJobLikes";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Jobs() {
-  const [active, setActive] = useState<JobCategory>("영업");
+  const [active, setActive] = useState<string>("");
   const { data: allJobs = [], isLoading } = useListJobListings<JobListing[]>();
+  const { data: allCategories = [] } = useListJobCategories();
   const { likes, userLikes, toggleLike } = useJobLikes();
   const { user } = useAuth();
+
+  // 활성 카테고리만 표시 순서대로
+  const categories = allCategories
+    .filter((c) => c.isActive)
+    .sort((a, b) => a.displayOrder - b.displayOrder);
+
+  // 활성 카테고리가 로드됐을 때 기본 선택값 설정
+  useEffect(() => {
+    if (categories.length > 0 && (!active || !categories.find((c) => c.name === active))) {
+      setActive(categories[0].name);
+    }
+  }, [categories, active]);
 
   const subJobs = allJobs
     .filter((j) => j.isActive && j.category === active)
@@ -42,19 +54,19 @@ export default function Jobs() {
 
       {/* Category buttons */}
       <div className="mt-8 flex flex-wrap gap-2">
-        {JOB_CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <button
-            key={c}
+            key={c.id}
             type="button"
-            onClick={() => setActive(c)}
+            onClick={() => setActive(c.name)}
             className={cn(
               "px-5 h-11 rounded-full text-sm font-semibold whitespace-nowrap transition-colors border",
-              active === c
+              active === c.name
                 ? "bg-foreground text-background border-foreground"
                 : "bg-card text-muted-foreground border-border hover-elevate",
             )}
           >
-            {c}
+            {c.name}
           </button>
         ))}
       </div>
