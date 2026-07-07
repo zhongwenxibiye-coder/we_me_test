@@ -288,8 +288,8 @@ export default function CareerMatchPage() {
         transition={{ delay: 0.18 }}
         className="mt-12"
       >
-        <h2 className="text-2xl font-extrabold tracking-tight">신청할 수 있는 프로젝트</h2>
-        <p className="mt-1 text-sm text-muted-foreground">실제 기업이 요청한 프로젝트에 도전해보세요.</p>
+        <h2 className="text-2xl font-extrabold tracking-tight">창업 프로그램</h2>
+        <p className="mt-1 text-sm text-muted-foreground">다양한 창업 프로그램에 지원해 보세요.</p>
 
         <div className="mt-6 rounded-3xl bg-card border border-card-border p-10 text-center">
           <Mascot size={96} animate="bob" />
