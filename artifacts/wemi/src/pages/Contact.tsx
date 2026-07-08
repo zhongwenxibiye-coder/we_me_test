@@ -68,7 +68,7 @@ export default function Contact() {
             >
               <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
                 <Instagram size={14} />
-                팔로우하기
+                DM으로 문의하기
               </a>
             </Button>
           </motion.div>
