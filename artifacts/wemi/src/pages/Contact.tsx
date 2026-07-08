@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
-import { Mail, Copy, Check } from "lucide-react";
+import { Mail, Copy, Check, Instagram } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 const EMAIL = "zhongwenxibiye@gmail.com";
+const INSTAGRAM_URL = "https://www.instagram.com/weme.career?igsh=MTR1eW52OGdoYXNqbw==";
+const INSTAGRAM_HANDLE = "@weme.career";
 
 export default function Contact() {
   const [copied, setCopied] = useState(false);
@@ -16,7 +18,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-6 lg:px-8 py-16 lg:py-24">
+    <div className="mx-auto max-w-3xl px-6 lg:px-8 py-16 lg:py-24">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center">
         <motion.img
           src="/wemi-character.png"
@@ -35,36 +37,73 @@ export default function Contact() {
           영업일 기준 3일 이내에 답변드립니다.
         </p>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-3xl border border-card-border bg-card p-8 flex flex-col items-center gap-6"
-        >
-          <div className="size-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(45 92% 55% / 0.15)" }}>
-            <Mail size={28} style={{ color: "hsl(45 92% 40%)" }} />
-          </div>
-
-          <div className="space-y-1 text-center">
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">이메일</p>
-            <a
-              href={`mailto:${EMAIL}`}
-              className="text-xl font-bold tracking-tight hover:underline underline-offset-4 transition-colors"
-              style={{ color: "hsl(30 35% 18%)" }}
-            >
-              {EMAIL}
-            </a>
-          </div>
-
-          <Button
-            variant="outline"
-            className="rounded-xl gap-2 text-muted-foreground"
-            onClick={handleCopy}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.05 }}
+            className="rounded-3xl border border-card-border bg-card p-8 flex flex-col items-center gap-6"
           >
-            {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
-            {copied ? "복사됨" : "주소 복사"}
-          </Button>
-        </motion.div>
+            <div className="size-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(88 45% 55% / 0.15)" }}>
+              <Instagram size={28} style={{ color: "hsl(88 45% 35%)" }} />
+            </div>
+
+            <div className="space-y-1 text-center">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">인스타그램</p>
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xl font-bold tracking-tight hover:underline underline-offset-4 transition-colors"
+                style={{ color: "hsl(30 35% 18%)" }}
+              >
+                {INSTAGRAM_HANDLE}
+              </a>
+            </div>
+
+            <Button
+              asChild
+              variant="outline"
+              className="rounded-xl gap-2 text-muted-foreground"
+            >
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+                <Instagram size={14} />
+                팔로우하기
+              </a>
+            </Button>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-3xl border border-card-border bg-card p-8 flex flex-col items-center gap-6"
+          >
+            <div className="size-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(45 92% 55% / 0.15)" }}>
+              <Mail size={28} style={{ color: "hsl(45 92% 40%)" }} />
+            </div>
+
+            <div className="space-y-1 text-center">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">이메일</p>
+              <a
+                href={`mailto:${EMAIL}`}
+                className="text-xl font-bold tracking-tight hover:underline underline-offset-4 transition-colors break-all"
+                style={{ color: "hsl(30 35% 18%)" }}
+              >
+                {EMAIL}
+              </a>
+            </div>
+
+            <Button
+              variant="outline"
+              className="rounded-xl gap-2 text-muted-foreground"
+              onClick={handleCopy}
+            >
+              {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+              {copied ? "복사됨" : "주소 복사"}
+            </Button>
+          </motion.div>
+        </div>
 
         <p className="mt-8 text-xs text-muted-foreground">
           개인정보 관련 문의는{" "}
