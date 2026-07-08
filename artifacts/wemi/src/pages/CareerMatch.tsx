@@ -106,7 +106,7 @@ function StartupPostsList() {
                       </div>
                     )}
                     {post.content && (
-                      <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{post.content}</p>
+                      <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{post.content}</p>
                     )}
                   </div>
                   {post.applicationUrl && (
