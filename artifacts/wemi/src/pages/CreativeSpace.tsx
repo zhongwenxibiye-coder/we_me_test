@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, BookOpen, ImageIcon, Send, CheckCircle2 } from "lucide-react";
+import { ChevronDown, ChevronUp, BookOpen, ImageIcon, Send, CheckCircle2, Heart } from "lucide-react";
 import {
   useListCreativeWorks,
   useListCreativeEpisodes,
@@ -11,6 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { useCreativeWorkLikes } from "@/hooks/useCreativeWorkLikes";
+import { useAuth } from "@/contexts/AuthContext";
 
 function EpisodeList({ workId, totalCount }: { workId: number; totalCount: number }) {
   const [, navigate] = useLocation();
@@ -42,7 +45,19 @@ function EpisodeList({ workId, totalCount }: { workId: number; totalCount: numbe
   );
 }
 
-function WorkCard({ work }: { work: CreativeWork }) {
+function WorkCard({
+  work,
+  likeCount,
+  liked,
+  canLike,
+  onToggleLike,
+}: {
+  work: CreativeWork;
+  likeCount: number;
+  liked: boolean;
+  canLike: boolean;
+  onToggleLike: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const episodesQuery = useListCreativeEpisodes(work.id);
   const episodeCount = (episodesQuery.data ?? []).filter((e) => e.isActive).length;
@@ -87,6 +102,24 @@ function WorkCard({ work }: { work: CreativeWork }) {
           </span>
         </div>
       </button>
+
+      <div className="px-3 pb-3 -mt-1">
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); if (!canLike) return; onToggleLike(); }}
+          title={canLike ? (liked ? "좋아요 취소" : "좋아요") : "로그인 후 이용 가능"}
+          className={cn(
+            "flex items-center gap-1 h-8 px-3 rounded-full border text-xs font-semibold transition-colors",
+            liked
+              ? "border-red-300 bg-red-50 text-red-500"
+              : "border-border text-muted-foreground hover:border-red-300 hover:text-red-400",
+            !canLike && "opacity-40 cursor-not-allowed",
+          )}
+        >
+          <Heart size={13} className={liked ? "fill-red-500" : ""} />
+          <span>{likeCount}</span>
+        </button>
+      </div>
 
       <AnimatePresence>
         {expanded && (
@@ -251,6 +284,8 @@ function SubmissionForm() {
 export default function CreativeSpace() {
   const query = useListCreativeWorks();
   const works = (query.data ?? []).filter((w) => w.isActive);
+  const { user } = useAuth();
+  const { likes, userLikes, toggleLike } = useCreativeWorkLikes();
 
   return (
     <div className="mx-auto max-w-6xl px-6 lg:px-10 py-12 lg:py-16">
@@ -277,7 +312,14 @@ export default function CreativeSpace() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {works.map((work) => (
-            <WorkCard key={work.id} work={work} />
+            <WorkCard
+              key={work.id}
+              work={work}
+              likeCount={likes[String(work.id)] ?? 0}
+              liked={userLikes.has(String(work.id))}
+              canLike={!!user}
+              onToggleLike={() => void toggleLike(work.id)}
+            />
           ))}
         </div>
       )}
