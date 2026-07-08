@@ -68,7 +68,13 @@ function WorkCard({
       animate={{ opacity: 1, y: 0 }}
       className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col"
     >
-      <button className="w-full text-left" onClick={() => setExpanded(!expanded)}>
+      <div
+        role="button"
+        tabIndex={0}
+        className="w-full text-left cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(!expanded); } }}
+      >
         <div className="aspect-[3/4] bg-muted/30 relative overflow-hidden">
           {work.thumbnailUrl ? (
             <img
@@ -86,6 +92,19 @@ function WorkCard({
               총 {episodeCount}화
             </div>
           )}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); if (!canLike) return; onToggleLike(); }}
+            title={canLike ? (liked ? "좋아요 취소" : "좋아요") : "로그인 후 이용 가능"}
+            className={cn(
+              "absolute bottom-2 left-2 flex items-center gap-1 h-6 px-2 rounded-full text-xs font-bold transition-colors",
+              liked ? "bg-red-500 text-white" : "bg-foreground/80 text-background",
+              !canLike && "opacity-60 cursor-not-allowed",
+            )}
+          >
+            <Heart size={12} className={liked ? "fill-white" : ""} />
+            <span>{likeCount}</span>
+          </button>
         </div>
         <div className="px-3 py-3 flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -101,24 +120,6 @@ function WorkCard({
             {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
           </span>
         </div>
-      </button>
-
-      <div className="px-3 pb-3 -mt-1">
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); if (!canLike) return; onToggleLike(); }}
-          title={canLike ? (liked ? "좋아요 취소" : "좋아요") : "로그인 후 이용 가능"}
-          className={cn(
-            "flex items-center gap-1 h-8 px-3 rounded-full border text-xs font-semibold transition-colors",
-            liked
-              ? "border-red-300 bg-red-50 text-red-500"
-              : "border-border text-muted-foreground hover:border-red-300 hover:text-red-400",
-            !canLike && "opacity-40 cursor-not-allowed",
-          )}
-        >
-          <Heart size={13} className={liked ? "fill-red-500" : ""} />
-          <span>{likeCount}</span>
-        </button>
       </div>
 
       <AnimatePresence>
