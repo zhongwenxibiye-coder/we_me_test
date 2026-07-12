@@ -40,9 +40,13 @@ export default function Landing() {
 
   const latestWork = works[0];
   const { data: latestWorkEpisodes = [] } = useListCreativeEpisodes(latestWork?.id ?? 0);
-  const latestEpisodeNumber = latestWorkEpisodes
+  const latestEpisode = latestWorkEpisodes
     .filter((e) => e.isActive)
-    .reduce((max, e) => Math.max(max, e.episodeNumber), 0);
+    .reduce<typeof latestWorkEpisodes[number] | null>(
+      (best, e) => (!best || e.episodeNumber > best.episodeNumber ? e : best),
+      null,
+    );
+  const latestEpisodeNumber = latestEpisode?.episodeNumber ?? 0;
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -93,7 +97,7 @@ export default function Landing() {
       title: latestWork
         ? (latestEpisodeNumber > 0 ? `${latestWork.title} ${latestEpisodeNumber}화` : latestWork.title)
         : null,
-      preview: latestWork?.category ? `${latestWork.category} · ${latestWork.authorName}` : null,
+      preview: latestEpisode?.title ?? null,
       sub: null,
       date: latestWork ? fmtDate(latestWork.createdAt) : null,
       badge: null,
