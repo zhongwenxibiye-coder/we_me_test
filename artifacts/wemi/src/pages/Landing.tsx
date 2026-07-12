@@ -10,8 +10,25 @@ import { getSupabase } from "@/lib/supabase";
 interface CommunityPost {
   id: string;
   title: string;
+  content: string | null;
   nickname: string | null;
   created_at: string;
+}
+
+function fmtDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+function excerpt(text: string | null | undefined, max = 52): string {
+  if (!text) return "";
+  const stripped = text
+    .replace(/<[^>]+>/g, " ")
+    .replace(/^[-*+]\s+/gm, "")
+    .replace(/[#*_~`>|\\]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return stripped.length > max ? stripped.slice(0, max) + "…" : stripped;
 }
 
 
@@ -32,7 +49,7 @@ export default function Landing() {
     if (!supabase) return;
     void supabase
       .from("posts")
-      .select("id, title, nickname, created_at")
+      .select("id, title, content, nickname, created_at")
       .order("created_at", { ascending: false })
       .limit(1)
       .single()
@@ -48,7 +65,9 @@ export default function Landing() {
       label: "창업 프로젝트",
       href: "/career-match",
       title: latestPost?.title ?? null,
+      preview: excerpt(latestPost?.content),
       sub: latestPost?.organizationName ?? null,
+      date: latestPost ? fmtDate(latestPost.createdAt) : null,
       badge: latestPost ? (latestPost.isActive ? "진행중" : "마감") : null,
       badgeColor: latestPost?.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground",
       color: "hsl(45 92% 45%)",
@@ -59,7 +78,9 @@ export default function Landing() {
       label: "인문학 콘텐츠",
       href: "/humanities",
       title: latestArticle?.title ?? null,
+      preview: excerpt(latestArticle?.content),
       sub: latestArticle?.authorName ?? null,
+      date: latestArticle ? fmtDate(latestArticle.createdAt) : null,
       badge: latestArticle?.category ?? null,
       badgeColor: "bg-primary/15 text-foreground",
       color: "hsl(88 50% 38%)",
@@ -72,7 +93,9 @@ export default function Landing() {
       title: latestWork
         ? (latestEpisodeNumber > 0 ? `${latestWork.title} ${latestEpisodeNumber}화` : latestWork.title)
         : null,
-      sub: latestWork?.authorName ?? null,
+      preview: latestWork?.category ? `${latestWork.category} · ${latestWork.authorName}` : null,
+      sub: null,
+      date: latestWork ? fmtDate(latestWork.createdAt) : null,
       badge: null,
       badgeColor: "",
       color: "hsl(200 65% 38%)",
@@ -83,7 +106,9 @@ export default function Landing() {
       label: "커뮤니티",
       href: "/community",
       title: communityPost?.title ?? null,
+      preview: excerpt(communityPost?.content),
       sub: communityPost?.nickname ?? null,
+      date: communityPost ? fmtDate(communityPost.created_at) : null,
       badge: null,
       badgeColor: "",
       color: "hsl(280 50% 45%)",
@@ -172,13 +197,21 @@ export default function Landing() {
                     {card.title ? (
                       <>
                         <p className="font-bold text-xs leading-snug line-clamp-2">{card.title}</p>
-                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        {card.preview && (
+                          <p className="text-[11px] text-muted-foreground leading-relaxed mt-1 line-clamp-2">
+                            {card.preview}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                           {card.badge && (
                             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${card.badgeColor}`}>
                               {card.badge}
                             </span>
                           )}
                           {card.sub && <span className="text-[10px] text-muted-foreground truncate">{card.sub}</span>}
+                          {card.date && (
+                            <span className="text-[10px] text-muted-foreground/70 ml-auto shrink-0">{card.date}</span>
+                          )}
                         </div>
                       </>
                     ) : (
