@@ -45,13 +45,10 @@ export default function Jobs() {
             Jobs
           </p>
           <h1 className="mt-2 text-4xl lg:text-5xl font-extrabold tracking-tight">직무 학습</h1>
-          <p className="mt-3 text-muted-foreground max-w-2xl">
-            인문계열이 선택 가능한 직무를 모아왔어요. 마음에 드는 직무를 골라 깊이 들여다보세요.
-          </p>
+          <p className="mt-3 text-muted-foreground max-w-2xl">인문계열이 선택 가능한 직무를 모아왔어요. 궁금한 직무를 살펴보세요. 직무는 계속 추가됩니다.</p>
         </div>
         <Mascot size={84} animate="bob" className="hidden sm:block" />
       </motion.div>
-
       {/* Category buttons */}
       <div className="mt-8 flex flex-wrap gap-2">
         {categories.map((c) => (
@@ -70,7 +67,6 @@ export default function Jobs() {
           </button>
         ))}
       </div>
-
       {/* Sub-job box */}
       <AnimatePresence mode="wait">
         <motion.div
