@@ -14,18 +14,6 @@ interface CommunityPost {
   created_at: string;
 }
 
-interface FeedItem {
-  icon: React.ReactNode;
-  label: string;
-  href: string;
-  title: string;
-  sub: string | null;
-  badge: string | null;
-  badgeColor: string;
-  color: string;
-  bg: string;
-  date: number;
-}
 
 export default function Landing() {
   const { data: startupPosts = [] } = useListStartupPosts();
@@ -54,61 +42,54 @@ export default function Landing() {
   const latestPost = startupPosts[0];
   const latestArticle = articles[0];
 
-  const rawItems: (FeedItem | null)[] = [
-    latestPost ? {
-      icon: <Rocket size={15} />,
+  const cards = [
+    {
+      icon: <Rocket size={16} />,
       label: "창업 프로젝트",
       href: "/career-match",
-      title: latestPost.title,
-      sub: latestPost.organizationName ?? null,
-      badge: latestPost.isActive ? "진행중" : "마감",
-      badgeColor: latestPost.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground",
+      title: latestPost?.title ?? null,
+      sub: latestPost?.organizationName ?? null,
+      badge: latestPost ? (latestPost.isActive ? "진행중" : "마감") : null,
+      badgeColor: latestPost?.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground",
       color: "hsl(45 92% 45%)",
       bg: "hsl(45 85% 93%)",
-      date: new Date(latestPost.createdAt).getTime(),
-    } : null,
-    latestArticle ? {
-      icon: <BookOpen size={15} />,
+    },
+    {
+      icon: <BookOpen size={16} />,
       label: "인문학 콘텐츠",
       href: "/humanities",
-      title: latestArticle.title,
-      sub: latestArticle.authorName ?? null,
-      badge: latestArticle.category ?? null,
+      title: latestArticle?.title ?? null,
+      sub: latestArticle?.authorName ?? null,
+      badge: latestArticle?.category ?? null,
       badgeColor: "bg-primary/15 text-foreground",
       color: "hsl(88 50% 38%)",
       bg: "hsl(88 35% 92%)",
-      date: new Date(latestArticle.createdAt).getTime(),
-    } : null,
-    latestWork ? {
-      icon: <PenLine size={15} />,
+    },
+    {
+      icon: <PenLine size={16} />,
       label: "창작 공간",
       href: "/creative-space",
-      title: latestEpisodeNumber > 0
-        ? `${latestWork.title} ${latestEpisodeNumber}화`
-        : latestWork.title,
-      sub: latestWork.authorName ?? null,
+      title: latestWork
+        ? (latestEpisodeNumber > 0 ? `${latestWork.title} ${latestEpisodeNumber}화` : latestWork.title)
+        : null,
+      sub: latestWork?.authorName ?? null,
       badge: null,
       badgeColor: "",
       color: "hsl(200 65% 38%)",
       bg: "hsl(200 45% 92%)",
-      date: new Date(latestWork.createdAt).getTime(),
-    } : null,
-    communityPost ? {
-      icon: <Users size={15} />,
+    },
+    {
+      icon: <Users size={16} />,
       label: "커뮤니티",
       href: "/community",
-      title: communityPost.title,
-      sub: communityPost.nickname ?? null,
+      title: communityPost?.title ?? null,
+      sub: communityPost?.nickname ?? null,
       badge: null,
       badgeColor: "",
       color: "hsl(280 50% 45%)",
       bg: "hsl(280 35% 93%)",
-      date: new Date(communityPost.created_at).getTime(),
-    } : null,
+    },
   ];
-  const allItems: FeedItem[] = (rawItems.filter((x) => x !== null) as FeedItem[])
-    .sort((a, b) => b.date - a.date)
-    .slice(0, 3);
 
   return (
     <div>
@@ -171,32 +152,38 @@ export default function Landing() {
           viewport={{ once: true, amount: 0.15 }}
           className="grid lg:grid-cols-[1fr_1fr] gap-6 lg:gap-8 items-stretch"
         >
-          {/* 왼쪽: 최신글 3개 */}
+          {/* 왼쪽: 최신글 2×2 */}
           <div className="flex flex-col">
             <h2 className="text-base font-extrabold tracking-tight mb-3">최신글</h2>
-            <div className="flex flex-col gap-3 flex-1">
-              {allItems.map((item) => (
-                <Link key={item.label} href={item.href} className="flex-1">
-                  <div className="rounded-2xl border border-border bg-card hover:shadow-md transition-shadow p-4 h-full cursor-pointer group flex items-center gap-3">
-                    <span
-                      className="size-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: item.bg, color: item.color }}
-                    >
-                      {item.icon}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                        <span className="text-[10px] font-semibold text-muted-foreground">{item.label}</span>
-                        {item.badge && (
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${item.badgeColor}`}>
-                            {item.badge}
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-bold text-sm leading-snug line-clamp-2">{item.title}</p>
-                      {item.sub && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.sub}</p>}
+            <div className="grid grid-cols-2 grid-rows-2 gap-3 flex-1">
+              {cards.map((card) => (
+                <Link key={card.label} href={card.href}>
+                  <div className="rounded-2xl border border-border bg-card hover:shadow-md transition-shadow p-4 h-full cursor-pointer group">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span
+                        className="size-7 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: card.bg, color: card.color }}
+                      >
+                        {card.icon}
+                      </span>
+                      <span className="text-[11px] font-semibold text-muted-foreground leading-tight">{card.label}</span>
+                      <ArrowRight size={10} className="ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform shrink-0" />
                     </div>
-                    <ArrowRight size={13} className="shrink-0 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                    {card.title ? (
+                      <>
+                        <p className="font-bold text-xs leading-snug line-clamp-2">{card.title}</p>
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                          {card.badge && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${card.badgeColor}`}>
+                              {card.badge}
+                            </span>
+                          )}
+                          {card.sub && <span className="text-[10px] text-muted-foreground truncate">{card.sub}</span>}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground">곧 새 콘텐츠가 올라와요</p>
+                    )}
                   </div>
                 </Link>
               ))}
