@@ -331,6 +331,26 @@ export interface HumanitiesArticleInput {
   displayOrder?: number;
 }
 
+export interface CareerVideo {
+  id: number;
+  title: string;
+  description: string;
+  youtubeUrl: string;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CareerVideoInput {
+  /** @minLength 1 */
+  title: string;
+  description?: string;
+  /** @minLength 1 */
+  youtubeUrl: string;
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
 /**
  * Unauthorized
  */

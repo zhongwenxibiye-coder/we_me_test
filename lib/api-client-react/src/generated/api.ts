@@ -17,6 +17,8 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  CareerVideo,
+  CareerVideoInput,
   CreateMentorApplicationBody,
   CreateStartupApplicationBody,
   CreativeEpisode,
@@ -4495,4 +4497,415 @@ export const useDeleteHumanitiesArticle = <
   TContext
 > => {
   return useMutation(getDeleteHumanitiesArticleMutationOptions(options));
+};
+
+/**
+ * @summary List active career videos (public)
+ */
+export const getListCareerVideosUrl = () => {
+  return `/api/career-videos`;
+};
+
+export const listCareerVideos = async (
+  options?: RequestInit,
+): Promise<CareerVideo[]> => {
+  return customFetch<CareerVideo[]>(getListCareerVideosUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListCareerVideosQueryKey = () => {
+  return [`/api/career-videos`] as const;
+};
+
+export const getListCareerVideosQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCareerVideos>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCareerVideos>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListCareerVideosQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCareerVideos>>
+  > = ({ signal }) => listCareerVideos({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCareerVideos>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCareerVideosQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCareerVideos>>
+>;
+export type ListCareerVideosQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active career videos (public)
+ */
+
+export function useListCareerVideos<
+  TData = Awaited<ReturnType<typeof listCareerVideos>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCareerVideos>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCareerVideosQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a career video (admin)
+ */
+export const getCreateCareerVideoUrl = () => {
+  return `/api/career-videos`;
+};
+
+export const createCareerVideo = async (
+  careerVideoInput: CareerVideoInput,
+  options?: RequestInit,
+): Promise<CareerVideo> => {
+  return customFetch<CareerVideo>(getCreateCareerVideoUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(careerVideoInput),
+  });
+};
+
+export const getCreateCareerVideoMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCareerVideo>>,
+    TError,
+    { data: BodyType<CareerVideoInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCareerVideo>>,
+  TError,
+  { data: BodyType<CareerVideoInput> },
+  TContext
+> => {
+  const mutationKey = ["createCareerVideo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCareerVideo>>,
+    { data: BodyType<CareerVideoInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createCareerVideo(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCareerVideoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCareerVideo>>
+>;
+export type CreateCareerVideoMutationBody = BodyType<CareerVideoInput>;
+export type CreateCareerVideoMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Create a career video (admin)
+ */
+export const useCreateCareerVideo = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCareerVideo>>,
+    TError,
+    { data: BodyType<CareerVideoInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCareerVideo>>,
+  TError,
+  { data: BodyType<CareerVideoInput> },
+  TContext
+> => {
+  return useMutation(getCreateCareerVideoMutationOptions(options));
+};
+
+/**
+ * @summary List all career videos including inactive (admin)
+ */
+export const getListAllCareerVideosUrl = () => {
+  return `/api/career-videos/all`;
+};
+
+export const listAllCareerVideos = async (
+  options?: RequestInit,
+): Promise<CareerVideo[]> => {
+  return customFetch<CareerVideo[]>(getListAllCareerVideosUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListAllCareerVideosQueryKey = () => {
+  return [`/api/career-videos/all`] as const;
+};
+
+export const getListAllCareerVideosQueryOptions = <
+  TData = Awaited<ReturnType<typeof listAllCareerVideos>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAllCareerVideos>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListAllCareerVideosQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listAllCareerVideos>>
+  > = ({ signal }) => listAllCareerVideos({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listAllCareerVideos>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListAllCareerVideosQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listAllCareerVideos>>
+>;
+export type ListAllCareerVideosQueryError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary List all career videos including inactive (admin)
+ */
+
+export function useListAllCareerVideos<
+  TData = Awaited<ReturnType<typeof listAllCareerVideos>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listAllCareerVideos>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListAllCareerVideosQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a career video (admin)
+ */
+export const getUpdateCareerVideoUrl = (id: number) => {
+  return `/api/career-videos/${id}`;
+};
+
+export const updateCareerVideo = async (
+  id: number,
+  careerVideoInput: CareerVideoInput,
+  options?: RequestInit,
+): Promise<CareerVideo> => {
+  return customFetch<CareerVideo>(getUpdateCareerVideoUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(careerVideoInput),
+  });
+};
+
+export const getUpdateCareerVideoMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCareerVideo>>,
+    TError,
+    { id: number; data: BodyType<CareerVideoInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCareerVideo>>,
+  TError,
+  { id: number; data: BodyType<CareerVideoInput> },
+  TContext
+> => {
+  const mutationKey = ["updateCareerVideo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCareerVideo>>,
+    { id: number; data: BodyType<CareerVideoInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateCareerVideo(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCareerVideoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCareerVideo>>
+>;
+export type UpdateCareerVideoMutationBody = BodyType<CareerVideoInput>;
+export type UpdateCareerVideoMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Update a career video (admin)
+ */
+export const useUpdateCareerVideo = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCareerVideo>>,
+    TError,
+    { id: number; data: BodyType<CareerVideoInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCareerVideo>>,
+  TError,
+  { id: number; data: BodyType<CareerVideoInput> },
+  TContext
+> => {
+  return useMutation(getUpdateCareerVideoMutationOptions(options));
+};
+
+/**
+ * @summary Delete a career video (admin)
+ */
+export const getDeleteCareerVideoUrl = (id: number) => {
+  return `/api/career-videos/${id}`;
+};
+
+export const deleteCareerVideo = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteCareerVideoUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteCareerVideoMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCareerVideo>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteCareerVideo>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteCareerVideo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteCareerVideo>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteCareerVideo(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCareerVideoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCareerVideo>>
+>;
+
+export type DeleteCareerVideoMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Delete a career video (admin)
+ */
+export const useDeleteCareerVideo = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCareerVideo>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteCareerVideo>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteCareerVideoMutationOptions(options));
 };

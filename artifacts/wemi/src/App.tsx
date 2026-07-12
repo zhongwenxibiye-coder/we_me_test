@@ -24,7 +24,8 @@ import SignUp from "@/pages/SignUp";
 import Login from "@/pages/Login";
 import Community from "@/pages/Community";
 import MyPage from "@/pages/MyPage";
-import { CareerMatchingPage, ProjectsPage } from "@/pages/ComingSoon";
+import CareerMatching from "@/pages/CareerMatching";
+import { ProjectsPage } from "@/pages/ComingSoon";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 import Contact from "@/pages/Contact";
@@ -57,7 +58,7 @@ function Router() {
         <Route path="/mentors/:id" component={MentorDetail} />
         <Route path="/career-match/result/:id" component={StartupResult} />
         <Route path="/career-match" component={CareerMatchPage} />
-        <Route path="/career-matching" component={CareerMatchingPage} />
+        <Route path="/career-matching" component={CareerMatching} />
         <Route path="/creative-space/:workId/episodes/:episodeId" component={CreativeEpisode} />
         <Route path="/creative-space" component={CreativeSpace} />
         <Route path="/humanities/articles/:id" component={HumanitiesArticle} />

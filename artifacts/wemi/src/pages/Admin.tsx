@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Inbox, Lock, Mail, CheckCircle2, Clock, LogOut, Users, Briefcase,
   Rocket, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Eye, PenLine, ImageIcon,
-  BookOpen, HelpCircle, FileText, Send, UserCheck, UserX, RefreshCw, Heart,
+  BookOpen, HelpCircle, FileText, Send, UserCheck, UserX, RefreshCw, Heart, PlayCircle,
 } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { Link } from "wouter";
@@ -32,6 +32,8 @@ import {
   getListHumanitiesQuizzesQueryKey,
   useListHumanitiesArticles, useCreateHumanitiesArticle, useUpdateHumanitiesArticle, useDeleteHumanitiesArticle,
   getListHumanitiesArticlesQueryKey,
+  useListAllCareerVideos, useCreateCareerVideo, useUpdateCareerVideo, useDeleteCareerVideo,
+  getListCareerVideosQueryKey, type CareerVideo,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -108,7 +110,7 @@ function ImageUpload({
   );
 }
 
-type Tab = "applications" | "mentors" | "jobs" | "startup" | "creative" | "humanities" | "users";
+type Tab = "applications" | "mentors" | "jobs" | "startup" | "creative" | "humanities" | "users" | "videos";
 
 function formatDate(value: string | Date): string {
   const d = new Date(value as string);
@@ -1815,6 +1817,140 @@ function UsersTab({ password }: { password: string }) {
   );
 }
 
+// ── Tab: 고민 맞춤 영상 ─────────────────────────────────────
+
+function VideosTab({ password }: { password: string }) {
+  const queryClient = useQueryClient();
+  const ro = useMemo(() => ({ headers: { "x-admin-password": password } }), [password]);
+
+  const { data: videos = [], isLoading } = useListAllCareerVideos<CareerVideo[]>({ request: ro });
+  const createVideo = useCreateCareerVideo({ request: ro });
+  const updateVideo = useUpdateCareerVideo({ request: ro });
+  const deleteVideo = useDeleteCareerVideo({ request: ro });
+
+  const [editing, setEditing] = useState<number | "new" | null>(null);
+  const [form, setForm] = useState({ title: "", description: "", youtubeUrl: "", displayOrder: "0", isActive: true });
+
+  function startNew() {
+    setForm({ title: "", description: "", youtubeUrl: "", displayOrder: "0", isActive: true });
+    setEditing("new");
+  }
+  function startEdit(v: CareerVideo) {
+    setForm({ title: v.title, description: v.description, youtubeUrl: v.youtubeUrl, displayOrder: String(v.displayOrder), isActive: v.isActive });
+    setEditing(v.id);
+  }
+
+  function handleSave() {
+    const payload = {
+      title: form.title,
+      description: form.description,
+      youtubeUrl: form.youtubeUrl,
+      displayOrder: Number(form.displayOrder),
+      isActive: form.isActive,
+    };
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey: getListCareerVideosQueryKey() });
+      setEditing(null);
+    };
+    if (editing === "new") {
+      createVideo.mutate({ data: payload }, { onSuccess: invalidate });
+    } else if (typeof editing === "number") {
+      updateVideo.mutate({ id: editing, data: payload }, { onSuccess: invalidate });
+    }
+  }
+
+  function handleDelete(id: number) {
+    if (!confirm("영상을 삭제하시겠습니까?")) return;
+    deleteVideo.mutate({ id }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListCareerVideosQueryKey() }),
+    });
+  }
+
+  const busy = createVideo.isPending || updateVideo.isPending;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-extrabold">고민 맞춤 영상 관리</h2>
+        <Button size="sm" className="rounded-full" onClick={startNew}>
+          <Plus size={14} className="mr-1" />영상 추가
+        </Button>
+      </div>
+
+      {editing !== null && (
+        <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+          <h3 className="font-bold text-sm">{editing === "new" ? "새 영상 추가" : "영상 수정"}</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">제목 *</label>
+              <Input value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} placeholder="영상 제목" className="mt-1.5 rounded-xl" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">YouTube URL *</label>
+              <Input value={form.youtubeUrl} onChange={(e) => setForm(f => ({ ...f, youtubeUrl: e.target.value }))} placeholder="https://youtu.be/..." className="mt-1.5 rounded-xl font-mono text-xs" />
+              <p className="text-[11px] text-muted-foreground mt-1">youtu.be 공유 링크 또는 youtube.com/watch?v= 링크 모두 가능합니다.</p>
+            </div>
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">설명</label>
+              <Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="영상 설명 (선택)" rows={2} className="mt-1.5 rounded-xl resize-none" />
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">순서</label>
+                <Input type="number" value={form.displayOrder} onChange={(e) => setForm(f => ({ ...f, displayOrder: e.target.value }))} className="mt-1.5 rounded-xl" />
+              </div>
+              <div className="flex items-center gap-2 mt-5">
+                <input type="checkbox" id="vid-active" checked={form.isActive} onChange={(e) => setForm(f => ({ ...f, isActive: e.target.checked }))} className="size-4 rounded" />
+                <label htmlFor="vid-active" className="text-sm font-medium">공개</label>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleSave} disabled={busy || !form.title || !form.youtubeUrl} className="rounded-xl">저장</Button>
+            <Button size="sm" variant="outline" onClick={() => setEditing(null)} className="rounded-xl">취소</Button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-20 rounded-2xl bg-muted/50 animate-pulse" />)}
+        </div>
+      ) : videos.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground text-sm">등록된 영상이 없습니다.</div>
+      ) : (
+        <div className="space-y-3">
+          {videos.map((v) => (
+            <div key={v.id} className="flex items-start gap-4 rounded-2xl border border-border bg-card p-4">
+              <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <PlayCircle size={18} className="text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-sm">{v.title}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${v.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                    {v.isActive ? "공개" : "비공개"}
+                  </span>
+                </div>
+                {v.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{v.description}</p>}
+                <p className="text-[11px] text-muted-foreground/70 mt-0.5 font-mono truncate">{v.youtubeUrl}</p>
+              </div>
+              <div className="flex gap-1.5 shrink-0">
+                <button onClick={() => startEdit(v)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors">
+                  <Pencil size={13} />
+                </button>
+                <button onClick={() => handleDelete(v.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Admin Shell ─────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string; icon: typeof Inbox }[] = [
@@ -1822,6 +1958,7 @@ const TABS: { id: Tab; label: string; icon: typeof Inbox }[] = [
   { id: "mentors", label: "멘토 관리", icon: Users },
   { id: "jobs", label: "직무 학습", icon: Briefcase },
   { id: "startup", label: "창업 프로젝트", icon: Rocket },
+  { id: "videos", label: "고민 맞춤 영상", icon: PlayCircle },
   { id: "creative", label: "창작 공간", icon: PenLine },
   { id: "humanities", label: "인문학 콘텐츠", icon: BookOpen },
   { id: "users", label: "회원 현황", icon: UserCheck },
@@ -1850,6 +1987,7 @@ function AdminShell({ password, onLogout }: { password: string; onLogout: () => 
       {tab === "mentors" && <MentorsTab password={password} />}
       {tab === "jobs" && <JobsTab password={password} />}
       {tab === "startup" && <StartupTab password={password} />}
+      {tab === "videos" && <VideosTab password={password} />}
       {tab === "creative" && <CreativeTab password={password} />}
       {tab === "humanities" && <HumanitiesTab password={password} />}
       {tab === "users" && <UsersTab password={password} />}

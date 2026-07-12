@@ -1093,3 +1093,92 @@ export const DeleteHumanitiesArticleParams = zod.object({
 export const DeleteHumanitiesArticleHeader = zod.object({
   "x-admin-password": zod.string(),
 });
+
+/**
+ * @summary List active career videos (public)
+ */
+export const ListCareerVideosResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  youtubeUrl: zod.string(),
+  displayOrder: zod.number(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const ListCareerVideosResponse = zod.array(ListCareerVideosResponseItem);
+
+/**
+ * @summary Create a career video (admin)
+ */
+export const CreateCareerVideoHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const CreateCareerVideoBody = zod.object({
+  title: zod.string().min(1),
+  description: zod.string().optional(),
+  youtubeUrl: zod.string().min(1),
+  displayOrder: zod.number().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary List all career videos including inactive (admin)
+ */
+export const ListAllCareerVideosHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const ListAllCareerVideosResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  youtubeUrl: zod.string(),
+  displayOrder: zod.number(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const ListAllCareerVideosResponse = zod.array(
+  ListAllCareerVideosResponseItem,
+);
+
+/**
+ * @summary Update a career video (admin)
+ */
+export const UpdateCareerVideoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCareerVideoHeader = zod.object({
+  "x-admin-password": zod.string(),
+});
+
+export const UpdateCareerVideoBody = zod.object({
+  title: zod.string().min(1),
+  description: zod.string().optional(),
+  youtubeUrl: zod.string().min(1),
+  displayOrder: zod.number().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateCareerVideoResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  youtubeUrl: zod.string(),
+  displayOrder: zod.number(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a career video (admin)
+ */
+export const DeleteCareerVideoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteCareerVideoHeader = zod.object({
+  "x-admin-password": zod.string(),
+});

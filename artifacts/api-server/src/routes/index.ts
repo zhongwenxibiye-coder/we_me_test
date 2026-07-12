@@ -11,6 +11,7 @@ import creativeWorksRouter from "./creative-works";
 import creativeSubmissionsRouter from "./creative-submissions";
 import humanitiesRouter from "./humanities";
 import usersRouter from "./users";
+import careerVideosRouter from "./career-videos";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(creativeWorksRouter);
 router.use(creativeSubmissionsRouter);
 router.use(humanitiesRouter);
 router.use(usersRouter);
+router.use(careerVideosRouter);
 
 export default router;

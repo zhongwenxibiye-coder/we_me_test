@@ -11,3 +11,4 @@ export * from "./creative-work-submissions";
 export * from "./humanities-quizzes";
 export * from "./humanities-quiz-attempts";
 export * from "./humanities-articles";
+export * from "./career-videos";

@@ -20,6 +20,7 @@ tags:
   - name: creative-work-submissions
   - name: humanities-quizzes
   - name: humanities-articles
+  - name: career-videos
 paths:
   /healthz:
     get:
@@ -1344,6 +1345,126 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  # ── Career Videos ─────────────────────────────────────────
+  /career-videos:
+    get:
+      operationId: listCareerVideos
+      tags: [career-videos]
+      summary: List active career videos (public)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CareerVideo"
+    post:
+      operationId: createCareerVideo
+      tags: [career-videos]
+      summary: Create a career video (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareerVideoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerVideo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /career-videos/all:
+    get:
+      operationId: listAllCareerVideos
+      tags: [career-videos]
+      summary: List all career videos including inactive (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CareerVideo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /career-videos/{id}:
+    put:
+      operationId: updateCareerVideo
+      tags: [career-videos]
+      summary: Update a career video (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareerVideoInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerVideo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteCareerVideo
+      tags: [career-videos]
+      summary: Delete a career video (admin)
+      parameters:
+        - in: header
+          name: x-admin-password
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
 components:
   responses:
     Unauthorized:
@@ -1998,3 +2119,41 @@ components:
         displayOrder:
           type: integer
       required: [category, title]
+
+    # ── Career Videos ─────────────────────────────────────────
+    CareerVideo:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        youtubeUrl:
+          type: string
+        displayOrder:
+          type: integer
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, description, youtubeUrl, displayOrder, isActive, createdAt]
+
+    CareerVideoInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        youtubeUrl:
+          type: string
+          minLength: 1
+        displayOrder:
+          type: integer
+        isActive:
+          type: boolean
+      required: [title, youtubeUrl]

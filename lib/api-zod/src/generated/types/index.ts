@@ -7,6 +7,8 @@
  */
 
 export * from "./apiError";
+export * from "./careerVideo";
+export * from "./careerVideoInput";
 export * from "./createMentorApplicationBody";
 export * from "./createStartupApplicationBody";
 export * from "./creativeEpisode";

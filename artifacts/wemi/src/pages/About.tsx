@@ -103,8 +103,8 @@ const FEATURES: FeatureCard[] = [
   },
   {
     icon: Sparkles,
-    title: "커리어 매칭",
-    desc: "AI가 가장 적합한 직무를 찾아주어요.",
+    title: "고민 맞춤 영상",
+    desc: "현재 고민이 있으시다면 내 고민에 맞는 영상을 찾아 시청해 보세요.",
     href: "/career-matching",
   },
   {
