@@ -33,7 +33,7 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "실전·매칭",
+    label: "도전·성장",
     items: [
       { href: "/career-match", label: "창업 프로젝트" },
       { href: "/career-matching", label: "고민 맞춤 영상" },
