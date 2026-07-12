@@ -142,12 +142,12 @@ export default function Landing() {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.15 }}
-          className="grid lg:grid-cols-[1fr_1fr] gap-6 lg:gap-8 items-start"
+          className="grid lg:grid-cols-[1fr_1fr] gap-6 lg:gap-8 items-stretch"
         >
           {/* 왼쪽: 최신글 2×2 */}
-          <div>
+          <div className="flex flex-col">
             <h2 className="text-base font-extrabold tracking-tight mb-3">최신글</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 grid-rows-2 gap-3 flex-1">
               {cards.map((card) => (
                 <Link key={card.label} href={card.href}>
                   <div className="rounded-2xl border border-border bg-card hover:shadow-md transition-shadow p-4 h-full cursor-pointer group">
@@ -183,7 +183,7 @@ export default function Landing() {
           </div>
 
           {/* 오른쪽: 오늘의 퀴즈 */}
-          <div>
+          <div className="flex flex-col">
             <div className="flex items-baseline gap-2 mb-3">
               <h2 className="text-base font-extrabold tracking-tight">오늘의 인문학 퀴즈</h2>
               <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: "hsl(45 80% 40%)" }}>
