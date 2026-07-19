@@ -1,41 +1,37 @@
 import { Router, type IRouter } from "express";
 import { desc, eq } from "drizzle-orm";
+import { z } from "zod";
 import { db, startupApplicationsTable } from "@workspace/db";
 import { requireAdmin } from "../lib/admin-auth";
 
 const router: IRouter = Router();
 
+const CreateStartupApplicationBody = z.object({
+  founderName: z.string().min(1),
+  email: z.string().min(1).email(),
+  registrationStatus: z.string().min(1),
+  startupIdea: z.string().min(1),
+  readiness: z.string().min(1),
+  readinessDetail: z.string().default(""),
+  ideaReason: z.string().min(1),
+  experience: z.string().min(1),
+  team: z.string().min(1),
+});
+
+const UpdateStartupResultBody = z.object({
+  result: z.string().min(1),
+  resultReason: z.string().optional(),
+});
+
 router.post("/startup-applications", async (req, res) => {
-  const body = req.body as {
-    founderName: string;
-    email: string;
-    registrationStatus: string;
-    startupIdea: string;
-    readiness: string;
-    readinessDetail?: string;
-    ideaReason: string;
-    experience: string;
-    team: string;
-  };
-  if (!body.founderName || !body.email || !body.registrationStatus ||
-      !body.startupIdea || !body.readiness || !body.ideaReason ||
-      !body.experience || !body.team) {
-    res.status(400).json({ error: "All required fields must be provided" });
+  const parsed = CreateStartupApplicationBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid request body", details: parsed.error.flatten() });
     return;
   }
   const [created] = await db
     .insert(startupApplicationsTable)
-    .values({
-      founderName: body.founderName,
-      email: body.email,
-      registrationStatus: body.registrationStatus,
-      startupIdea: body.startupIdea,
-      readiness: body.readiness,
-      readinessDetail: body.readinessDetail ?? "",
-      ideaReason: body.ideaReason,
-      experience: body.experience,
-      team: body.team,
-    })
+    .values(parsed.data)
     .returning();
   req.log.info({ id: created.id }, "Startup application created");
   res.status(201).json(created);
@@ -69,8 +65,12 @@ router.get("/startup-applications/:id", async (req, res) => {
 router.patch("/startup-applications/:id/result", requireAdmin, async (req, res) => {
   const id = parseInt(String(req.params.id), 10);
   if (isNaN(id)) { res.status(404).json({ error: "Not found" }); return; }
-  const { result, resultReason } = req.body as { result: string; resultReason?: string };
-  if (!result) { res.status(400).json({ error: "result required" }); return; }
+  const parsed = UpdateStartupResultBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid request body", details: parsed.error.flatten() });
+    return;
+  }
+  const { result, resultReason } = parsed.data;
   const [updated] = await db
     .update(startupApplicationsTable)
     .set({ result, resultReason: resultReason ?? null })
