@@ -25,9 +25,14 @@ app.use(
     },
   }),
 );
-const allowedOrigins: string[] = process.env.REPLIT_DOMAINS
-  ? process.env.REPLIT_DOMAINS.split(",").map((d) => `https://${d.trim()}`)
-  : [];
+const allowedOrigins: string[] = [
+  ...(process.env.REPLIT_DOMAINS
+    ? process.env.REPLIT_DOMAINS.split(",").map((d) => `https://${d.trim()}`)
+    : []),
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+    : []),
+];
 
 app.use(
   cors({
