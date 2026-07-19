@@ -33,7 +33,7 @@ export default function Contact() {
         </p>
         <h1 className="text-3xl font-extrabold tracking-tight mb-3">문의하기</h1>
         <p className="text-muted-foreground text-sm mb-12">
-          강의 문의, 제휴문의, 사업 문의, 서비스 문의, 건의 사항 등 무엇이든 편하게 보내주세요.<br />
+          강의 문의, 제휴 문의, 사업 문의, 서비스 문의, 건의 사항 등 무엇이든 편하게 보내주세요.<br />
           영업일 기준 3일 이내에 답변드립니다.
         </p>
 
