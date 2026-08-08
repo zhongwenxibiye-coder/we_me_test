@@ -517,7 +517,7 @@ function PostRow({
       </span>
       {/* 제목 + 댓글수 */}
       <span className="flex-1 min-w-0 flex items-center gap-1.5">
-        <span className={`text-sm truncate font-medium ${isSelected ? "text-primary font-semibold" : ""}`}>
+        <span className={`text-sm font-medium ${isSelected ? "text-primary font-semibold" : ""}`}>
           {post.title}
         </span>
         {(post.comment_count ?? 0) > 0 && (

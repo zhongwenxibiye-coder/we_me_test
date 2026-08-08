@@ -907,6 +907,124 @@ function StartupTab({ password }: { password: string }) {
   );
 }
 
+// ── 좋아요 뷰어 컴포넌트 ────────────────────────────────────
+
+function WorkLikesSection({ workId }: { workId: number }) {
+  const [open, setOpen] = useState(false);
+  const [likes, setLikes] = useState<{ user_id: string; created_at: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function fetchLikes() {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from("creative_work_likes")
+      .select("user_id, created_at")
+      .eq("work_id", workId)
+      .order("created_at", { ascending: false });
+    setLikes(data ?? []);
+    setLoading(false);
+  }
+
+  function toggle() {
+    if (!open) void fetchLikes();
+    setOpen((v) => !v);
+  }
+
+  return (
+    <div className="mt-2">
+      <button
+        onClick={toggle}
+        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1 rounded-lg border border-border/50 hover:border-border"
+      >
+        <Heart size={11} className="text-red-400" />
+        좋아요 목록{open ? " ▲" : " ▼"}
+      </button>
+      {open && (
+        <div className="mt-2 rounded-xl border border-border bg-background/60 p-3">
+          {loading ? (
+            <p className="text-xs text-muted-foreground">불러오는 중...</p>
+          ) : likes.length === 0 ? (
+            <p className="text-xs text-muted-foreground">좋아요가 없어요.</p>
+          ) : (
+            <>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">총 {likes.length}명이 좋아요를 눌렀어요</p>
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {likes.map((like, i) => (
+                  <div key={i} className="text-xs text-foreground/70 font-mono flex items-center gap-2">
+                    <span className="shrink-0 text-muted-foreground/50">{i + 1}.</span>
+                    <span className="break-all">{like.user_id}</span>
+                    <span className="shrink-0 text-muted-foreground/50 ml-auto">{new Date(like.created_at).toLocaleDateString("ko-KR")}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ArticleLikesSection({ articleId }: { articleId: number }) {
+  const [open, setOpen] = useState(false);
+  const [likes, setLikes] = useState<{ user_id: string; created_at: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function fetchLikes() {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from("humanities_article_likes")
+      .select("user_id, created_at")
+      .eq("article_id", articleId)
+      .order("created_at", { ascending: false });
+    setLikes(data ?? []);
+    setLoading(false);
+  }
+
+  function toggle() {
+    if (!open) void fetchLikes();
+    setOpen((v) => !v);
+  }
+
+  return (
+    <div className="mt-1">
+      <button
+        onClick={toggle}
+        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1 rounded-lg border border-border/50 hover:border-border"
+      >
+        <Heart size={11} className="text-red-400" />
+        좋아요 목록{open ? " ▲" : " ▼"}
+      </button>
+      {open && (
+        <div className="mt-2 rounded-xl border border-border bg-background/60 p-3">
+          {loading ? (
+            <p className="text-xs text-muted-foreground">불러오는 중...</p>
+          ) : likes.length === 0 ? (
+            <p className="text-xs text-muted-foreground">좋아요가 없어요.</p>
+          ) : (
+            <>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">총 {likes.length}명이 좋아요를 눌렀어요</p>
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {likes.map((like, i) => (
+                  <div key={i} className="text-xs text-foreground/70 font-mono flex items-center gap-2">
+                    <span className="shrink-0 text-muted-foreground/50">{i + 1}.</span>
+                    <span className="break-all">{like.user_id}</span>
+                    <span className="shrink-0 text-muted-foreground/50 ml-auto">{new Date(like.created_at).toLocaleDateString("ko-KR")}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Tab: 창작 공간 ───────────────────────────────────────────
 
 const MAX_EPISODE_IMAGES = 5;
@@ -933,11 +1051,16 @@ function EpisodeManager({ work, password }: { work: CreativeWork; password: stri
     setEditing("new");
   }
   function startEdit(ep: CreativeEpisode) {
-    setForm({
-      episodeNumber: String(ep.episodeNumber), title: ep.title, content: ep.content,
-      images: Array.isArray(ep.images) ? (ep.images as string[]) : [],
-      isActive: ep.isActive,
-    });
+    let content = ep.content;
+    const oldImages = Array.isArray(ep.images) ? (ep.images as string[]) : [];
+    // 기존 별도 이미지 배열 → 본문 HTML에 인라인 삽입 (에디터에서 이동 가능)
+    if (oldImages.length > 0 && !content.includes("<img")) {
+      const imgHtml = oldImages
+        .map((src) => `<img src="${src}" alt="" style="max-width:100%;margin:8px 0">`)
+        .join("");
+      content = content + imgHtml;
+    }
+    setForm({ episodeNumber: String(ep.episodeNumber), title: ep.title, content, images: [], isActive: ep.isActive });
     setImgError("");
     setEditing(ep.id);
   }
@@ -1011,37 +1134,17 @@ function EpisodeManager({ work, password }: { work: CreativeWork; password: stri
           </div>
           <div>
             <label className="text-xs font-semibold">내용</label>
-            <RichTextArea value={form.content} onChange={(val) => setForm((f) => ({ ...f, content: val }))} rows={8} placeholder="본문 내용을 입력하세요..." className="mt-1" />
-          </div>
-
-          {/* 이미지 업로드 */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-semibold">이미지 ({form.images.length}/{MAX_EPISODE_IMAGES}장, 총 5MB 이하)</label>
-              {form.images.length < MAX_EPISODE_IMAGES && (
-                <button type="button" onClick={() => imgRef.current?.click()}
-                  className="text-xs px-2.5 py-1 rounded-full border border-border bg-card hover:bg-muted/40 transition-colors flex items-center gap-1">
-                  <ImageIcon size={11} />이미지 추가
-                </button>
-              )}
-            </div>
-            <input ref={imgRef} type="file" accept="image/*" multiple className="hidden"
-              onChange={(e) => { if (e.target.files) handleAddImages(e.target.files); e.target.value = ""; }} />
-            {imgError && <p className="text-xs text-destructive mb-2">{imgError}</p>}
-            {form.images.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {form.images.map((src, i) => (
-                  <div key={i} className="relative group">
-                    <img src={src} alt={`이미지 ${i + 1}`} className="size-20 rounded-xl object-cover border border-border" />
-                    <button type="button"
-                      onClick={() => setForm((f) => ({ ...f, images: f.images.filter((_, j) => j !== i) }))}
-                      className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <RichTextArea
+              value={form.content}
+              onChange={(val) => setForm((f) => ({ ...f, content: val }))}
+              rows={8}
+              placeholder="본문 내용을 입력하세요... 에디터 툴바의 [이미지] 버튼으로 본문 원하는 위치에 이미지를 삽입할 수 있어요."
+              className="mt-1"
+              enableImages
+            />
+            <p className="text-[11px] text-muted-foreground mt-1.5">
+              💡 이미지는 툴바의 [이미지] 버튼을 통해 본문 원하는 위치에 삽입할 수 있어요. 기존 에피소드 이미지는 편집 시 자동으로 본문 끝에 인라인 삽입됩니다.
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -1274,6 +1377,7 @@ function CreativeTab({ password }: { password: string }) {
                   <Button size="sm" variant="outline" className="rounded-full bg-card h-8 text-destructive" onClick={() => handleDelete(w.id)}><Trash2 size={13} /></Button>
                 </div>
               </div>
+              <WorkLikesSection workId={w.id} />
               {expandedEpisodes === w.id && (
                 <EpisodeManager work={w} password={password} />
               )}
@@ -1557,8 +1661,9 @@ function HumanitiesTab({ password }: { password: string }) {
                       : <div className="w-full h-full flex items-center justify-center"><BookOpen size={14} className="text-muted-foreground/40" /></div>}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-sm truncate">{a.title}</p>
+                    <p className="font-semibold text-sm">{a.title}</p>
                     <p className="text-xs text-muted-foreground">[{a.category}] · {a.authorName} · {a.isActive ? "활성" : "비활성"}</p>
+                    <ArticleLikesSection articleId={a.id} />
                   </div>
                   <div className="flex gap-1.5 shrink-0">
                     <Button size="sm" variant="outline" className="h-7 rounded-full bg-card" onClick={() => startEditArticle(a)}><Pencil size={12} /></Button>

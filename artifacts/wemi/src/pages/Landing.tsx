@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Mascot, WemiWordmark } from "@/components/Mascot";
 import { QuizSection } from "@/components/QuizSection";
-import { useListStartupPosts, useListHumanitiesArticles, useListCreativeWorks, useListCreativeEpisodes } from "@workspace/api-client-react";
+import { useListStartupPosts, useListHumanitiesArticles, useListCreativeWorks } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Rocket, BookOpen, PenLine, Users, ArrowRight } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
@@ -10,113 +10,95 @@ import { getSupabase } from "@/lib/supabase";
 interface CommunityPost {
   id: string;
   title: string;
-  content: string | null;
-  nickname: string | null;
   created_at: string;
 }
 
 function fmtDate(dateStr: string): string {
   const d = new Date(dateStr);
-  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff === 0) return "오늘";
+  if (diff === 1) return "어제";
+  if (diff < 7) return `${diff}일 전`;
+  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-function excerpt(text: string | null | undefined, max = 52): string {
-  if (!text) return "";
-  const stripped = text
-    .replace(/<[^>]+>/g, " ")
-    .replace(/^[-*+]\s+/gm, "")
-    .replace(/[#*_~`>|\\]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  return stripped.length > max ? stripped.slice(0, max) + "…" : stripped;
+interface CardSection {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+  color: string;
+  bg: string;
+  items: { title: string; date: string; badge?: string; badgeColor?: string }[];
 }
-
 
 export default function Landing() {
   const { data: startupPosts = [] } = useListStartupPosts();
   const { data: articles = [] } = useListHumanitiesArticles();
   const { data: works = [] } = useListCreativeWorks();
-  const [communityPost, setCommunityPost] = useState<CommunityPost | null>(null);
-
-  const latestWork = works[0];
-  const { data: latestWorkEpisodes = [] } = useListCreativeEpisodes(latestWork?.id ?? 0);
-  const latestEpisode = latestWorkEpisodes
-    .filter((e) => e.isActive)
-    .reduce<typeof latestWorkEpisodes[number] | null>(
-      (best, e) => (!best || e.episodeNumber > best.episodeNumber ? e : best),
-      null,
-    );
-  const latestEpisodeNumber = latestEpisode?.episodeNumber ?? 0;
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
 
   useEffect(() => {
     const supabase = getSupabase();
     if (!supabase) return;
     void supabase
       .from("posts")
-      .select("id, title, content, nickname, created_at")
+      .select("id, title, created_at")
       .order("created_at", { ascending: false })
-      .limit(1)
-      .single()
-      .then(({ data }) => { if (data) setCommunityPost(data as CommunityPost); });
+      .limit(5)
+      .then(({ data }) => { if (data) setCommunityPosts(data as CommunityPost[]); });
   }, []);
 
-  const latestPost = startupPosts[0];
-  const latestArticle = articles[0];
-
-  const cards = [
+  const cards: CardSection[] = [
     {
-      icon: <Rocket size={16} />,
+      icon: <Rocket size={15} />,
       label: "창업 프로젝트",
       href: "/career-match",
-      title: latestPost?.title ?? null,
-      preview: excerpt(latestPost?.content),
-      sub: latestPost?.organizationName ?? null,
-      date: latestPost ? fmtDate(latestPost.createdAt) : null,
-      badge: latestPost ? (latestPost.isActive ? "진행중" : "마감") : null,
-      badgeColor: latestPost?.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground",
-      color: "hsl(45 92% 45%)",
-      bg: "hsl(45 85% 93%)",
+      color: "hsl(45 92% 38%)",
+      bg: "hsl(45 85% 92%)",
+      items: startupPosts.slice(0, 5).map((p) => ({
+        title: p.title,
+        date: fmtDate(p.createdAt),
+        badge: p.isActive ? "진행중" : undefined,
+        badgeColor: "bg-green-100 text-green-700",
+      })),
     },
     {
-      icon: <BookOpen size={16} />,
+      icon: <BookOpen size={15} />,
       label: "인문학 콘텐츠",
       href: "/humanities",
-      title: latestArticle?.title ?? null,
-      preview: excerpt(latestArticle?.content),
-      sub: latestArticle?.authorName ?? null,
-      date: latestArticle ? fmtDate(latestArticle.createdAt) : null,
-      badge: latestArticle?.category ?? null,
-      badgeColor: "bg-primary/15 text-foreground",
-      color: "hsl(88 50% 38%)",
-      bg: "hsl(88 35% 92%)",
+      color: "hsl(88 50% 32%)",
+      bg: "hsl(88 35% 91%)",
+      items: articles.slice(0, 5).map((a) => ({
+        title: a.title,
+        date: fmtDate(a.createdAt),
+        badge: a.category,
+        badgeColor: "bg-primary/15 text-foreground/70",
+      })),
     },
     {
-      icon: <PenLine size={16} />,
+      icon: <PenLine size={15} />,
       label: "창작 공간",
       href: "/creative-space",
-      title: latestWork
-        ? (latestEpisodeNumber > 0 ? `${latestWork.title} ${latestEpisodeNumber}화` : latestWork.title)
-        : null,
-      preview: latestEpisode?.title ?? null,
-      sub: null,
-      date: latestWork ? fmtDate(latestWork.createdAt) : null,
-      badge: null,
-      badgeColor: "",
-      color: "hsl(200 65% 38%)",
-      bg: "hsl(200 45% 92%)",
+      color: "hsl(200 65% 32%)",
+      bg: "hsl(200 45% 91%)",
+      items: works.slice(0, 5).map((w) => ({
+        title: w.title,
+        date: fmtDate(w.createdAt),
+        badge: w.category,
+        badgeColor: "bg-primary/15 text-foreground/70",
+      })),
     },
     {
-      icon: <Users size={16} />,
+      icon: <Users size={15} />,
       label: "커뮤니티",
       href: "/community",
-      title: communityPost?.title ?? null,
-      preview: excerpt(communityPost?.content),
-      sub: communityPost?.nickname ?? null,
-      date: communityPost ? fmtDate(communityPost.created_at) : null,
-      badge: null,
-      badgeColor: "",
-      color: "hsl(280 50% 45%)",
-      bg: "hsl(280 35% 93%)",
+      color: "hsl(280 50% 38%)",
+      bg: "hsl(280 35% 92%)",
+      items: communityPosts.map((p) => ({
+        title: p.title,
+        date: fmtDate(p.created_at),
+      })),
     },
   ];
 
@@ -173,61 +155,15 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ② 최신글 + ③ 퀴즈 — 나란히 */}
+      {/* ② 퀴즈(왼쪽) + 최신글(오른쪽) */}
       <section className="mx-auto max-w-6xl px-6 lg:px-10 py-6 lg:py-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
+          viewport={{ once: true, amount: 0.1 }}
           className="grid lg:grid-cols-[1fr_1fr] gap-6 lg:gap-8 items-stretch"
         >
-          {/* 왼쪽: 최신글 2×2 */}
-          <div className="flex flex-col">
-            <h2 className="text-base font-extrabold tracking-tight mb-3">최신글</h2>
-            <div className="grid grid-cols-2 grid-rows-2 gap-3 flex-1">
-              {cards.map((card) => (
-                <Link key={card.label} href={card.href}>
-                  <div className="rounded-2xl border border-border bg-card hover:shadow-md transition-shadow p-4 h-full cursor-pointer group">
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span
-                        className="size-7 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: card.bg, color: card.color }}
-                      >
-                        {card.icon}
-                      </span>
-                      <span className="text-[11px] font-semibold text-muted-foreground leading-tight">{card.label}</span>
-                      <ArrowRight size={10} className="ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform shrink-0" />
-                    </div>
-                    {card.title ? (
-                      <>
-                        <p className="font-bold text-xs leading-snug line-clamp-2">{card.title}</p>
-                        {card.preview && (
-                          <p className="text-[11px] text-muted-foreground leading-relaxed mt-1 line-clamp-2">
-                            {card.preview}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                          {card.badge && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${card.badgeColor}`}>
-                              {card.badge}
-                            </span>
-                          )}
-                          {card.sub && <span className="text-[10px] text-muted-foreground truncate">{card.sub}</span>}
-                          {card.date && (
-                            <span className="text-[10px] text-muted-foreground/70 ml-auto shrink-0">{card.date}</span>
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-[11px] text-muted-foreground">곧 새 콘텐츠가 올라와요</p>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* 오른쪽: 오늘의 퀴즈 */}
+          {/* 왼쪽: 오늘의 퀴즈 (모바일에서 먼저 보임) */}
           <div className="flex flex-col">
             <div className="flex items-baseline gap-2 mb-3">
               <h2 className="text-base font-extrabold tracking-tight">오늘의 인문학 퀴즈</h2>
@@ -236,6 +172,47 @@ export default function Landing() {
               </span>
             </div>
             <QuizSection />
+          </div>
+
+          {/* 오른쪽: 최신글 2×2 */}
+          <div className="flex flex-col">
+            <h2 className="text-base font-extrabold tracking-tight mb-3">최신글</h2>
+            <div className="grid grid-cols-2 grid-rows-2 gap-3 flex-1">
+              {cards.map((card) => (
+                <Link key={card.label} href={card.href}>
+                  <div className="rounded-2xl border border-border bg-card hover:shadow-md transition-shadow p-3.5 h-full cursor-pointer group flex flex-col">
+                    {/* 카드 헤더 */}
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <span
+                        className="size-6 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: card.bg, color: card.color }}
+                      >
+                        {card.icon}
+                      </span>
+                      <span className="text-[11px] font-semibold text-muted-foreground leading-none">{card.label}</span>
+                      <ArrowRight size={10} className="ml-auto text-muted-foreground/60 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                    </div>
+                    {/* 글 목록 */}
+                    {card.items.length === 0 ? (
+                      <p className="text-[11px] text-muted-foreground/60">곧 새 콘텐츠가 올라와요</p>
+                    ) : (
+                      <ul className="space-y-1.5 flex-1">
+                        {card.items.map((item, i) => (
+                          <li key={i} className="flex items-start gap-1.5 min-w-0">
+                            <span className="text-xs font-medium leading-snug flex-1 line-clamp-1 min-w-0">
+                              {item.title}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums">
+                              {item.date}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </motion.div>
       </section>

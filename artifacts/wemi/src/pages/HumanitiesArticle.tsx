@@ -1,9 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Calendar, User, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Calendar, User, BookOpen, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { useGetHumanitiesArticle } from "@workspace/api-client-react";
 import { RichContent } from "@/components/RichContent";
+import { useHumanitiesArticleLikes } from "@/hooks/useHumanitiesArticleLikes";
+import { getSupabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "wouter";
+
+function getOrCreateViewerSession(): string {
+  const KEY = "wemi-viewer-session";
+  let v = localStorage.getItem(KEY);
+  if (!v) {
+    v = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem(KEY, v);
+  }
+  return v;
+}
 
 function CardNewsViewer({ pages }: { pages: string[] }) {
   const [current, setCurrent] = useState(0);
@@ -32,7 +46,6 @@ function CardNewsViewer({ pages }: { pages: string[] }) {
           />
         </AnimatePresence>
 
-        {/* 이전/다음 화살표 */}
         {current > 0 && (
           <button
             onClick={() => setCurrent((c) => c - 1)}
@@ -50,7 +63,6 @@ function CardNewsViewer({ pages }: { pages: string[] }) {
           </button>
         )}
 
-        {/* 페이지 인디케이터 */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
           {pages.map((_, idx) => (
             <button
@@ -62,7 +74,6 @@ function CardNewsViewer({ pages }: { pages: string[] }) {
         </div>
       </div>
 
-      {/* 썸네일 스크롤 */}
       <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
         {pages.map((page, idx) => (
           <button
@@ -85,9 +96,42 @@ export default function HumanitiesArticle() {
   const [, params] = useRoute("/humanities/articles/:id");
   const [, navigate] = useLocation();
   const id = Number(params?.id);
+  const { user } = useAuth();
 
   const query = useGetHumanitiesArticle(id);
   const article = query.data;
+
+  const { likeCount, liked, initialized, toggleLike } = useHumanitiesArticleLikes(
+    Number.isFinite(id) ? id : undefined,
+  );
+
+  const [viewCount, setViewCount] = useState<number | null>(null);
+
+  // 조회수 기록
+  useEffect(() => {
+    if (!article) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+    const sessionId = getOrCreateViewerSession();
+
+    void (async () => {
+      try {
+        // 조회수 insert (중복 방지: unique(article_id, session_id))
+        await supabase
+          .from("humanities_article_views")
+          .upsert({ article_id: id, session_id: sessionId }, { onConflict: "article_id,session_id" });
+      } catch {}
+
+      try {
+        // 조회수 fetch
+        const { count } = await supabase
+          .from("humanities_article_views")
+          .select("*", { count: "exact", head: true })
+          .eq("article_id", id);
+        if (count !== null) setViewCount(count);
+      } catch {}
+    })();
+  }, [id, article]);
 
   const isCard = article?.contentType === "card";
   const cardPages = Array.isArray(article?.cardPages) ? (article.cardPages as string[]) : [];
@@ -141,7 +185,7 @@ export default function HumanitiesArticle() {
             <h1 className="mt-3 text-2xl lg:text-3xl font-extrabold tracking-tight leading-snug">
               {article.title}
             </h1>
-            <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1.5">
                 <User size={13} />
                 {article.authorName || "위미"}
@@ -154,6 +198,11 @@ export default function HumanitiesArticle() {
                   day: "numeric",
                 })}
               </span>
+              {viewCount !== null && viewCount > 0 && (
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+                  👁 조회 {viewCount}
+                </span>
+              )}
             </div>
           </div>
 
@@ -166,6 +215,39 @@ export default function HumanitiesArticle() {
                 : <p className="italic text-muted-foreground text-sm">내용이 준비 중입니다.</p>}
             </div>
           )}
+
+          {/* 좋아요 버튼 */}
+          <div className="mt-8 flex items-center justify-center">
+            {user ? (
+              <button
+                onClick={() => void toggleLike()}
+                disabled={!initialized}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
+                  liked
+                    ? "border-red-300 bg-red-50 text-red-600"
+                    : "border-border bg-card text-muted-foreground hover:border-red-300 hover:text-red-500"
+                }`}
+              >
+                <Heart size={18} className={liked ? "fill-red-500 text-red-500" : ""} />
+                {liked ? "좋아요 취소" : "좋아요"}
+                {likeCount > 0 && (
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${liked ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"}`}>
+                    {likeCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <Link href="/login">
+                <button className="flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-border bg-card text-muted-foreground text-sm font-bold hover:border-primary/40 transition-colors">
+                  <Heart size={18} />
+                  로그인 후 좋아요를 남길 수 있어요
+                  {likeCount > 0 && (
+                    <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{likeCount}</span>
+                  )}
+                </button>
+              </Link>
+            )}
+          </div>
         </motion.article>
       )}
     </div>

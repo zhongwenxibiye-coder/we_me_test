@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { Bold, Italic, Heading2, Heading3, List } from "lucide-react";
+import Image from "@tiptap/extension-image";
+import { Bold, Italic, Heading2, Heading3, List, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RichTextAreaProps {
@@ -12,6 +13,7 @@ interface RichTextAreaProps {
   minHeight?: number;
   rows?: number;
   className?: string;
+  enableImages?: boolean;
 }
 
 export function RichTextArea({
@@ -21,18 +23,29 @@ export function RichTextArea({
   minHeight,
   rows,
   className = "",
+  enableImages = false,
 }: RichTextAreaProps) {
   const computedMinHeight = minHeight ?? (rows ? rows * 24 : 120);
+  const imgInputRef = useRef<HTMLInputElement>(null);
+
+  const extensions = [
+    StarterKit.configure({
+      heading: { levels: [2, 3] },
+    }),
+    Placeholder.configure({
+      placeholder,
+      emptyEditorClass: "is-editor-empty",
+    }),
+  ];
+
+  if (enableImages) {
+    extensions.push(
+      Image.configure({ inline: false, allowBase64: true }) as unknown as typeof extensions[0]
+    );
+  }
+
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [2, 3] },
-      }),
-      Placeholder.configure({
-        placeholder,
-        emptyEditorClass: "is-editor-empty",
-      }),
-    ],
+    extensions,
     content: value || "",
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
@@ -53,6 +66,21 @@ export function RichTextArea({
     if (current === value) return;
     editor.commands.setContent(value || "");
   }, [value, editor]);
+
+  function handleImageInsert(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !editor) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const src = ev.target?.result as string;
+      if (src) {
+        editor.chain().focus().setImage({ src }).run();
+      }
+    };
+    reader.readAsDataURL(file);
+    // reset so same file can be re-selected
+    e.target.value = "";
+  }
 
   if (!editor) return null;
 
@@ -121,6 +149,27 @@ export function RichTextArea({
             </button>
           );
         })}
+        {enableImages && (
+          <>
+            <div className="w-px h-4 bg-border/60 mx-0.5" />
+            <button
+              type="button"
+              title="이미지 삽입"
+              onClick={() => imgInputRef.current?.click()}
+              className="p-1.5 rounded text-xs transition-colors hover:bg-primary/15 text-foreground/70 flex items-center gap-1"
+            >
+              <ImageIcon size={13} />
+              <span className="text-[11px]">이미지</span>
+            </button>
+            <input
+              ref={imgInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageInsert}
+            />
+          </>
+        )}
         <span className="ml-auto text-[10px] text-muted-foreground/40 hidden sm:inline">
           선택 후 버튼 클릭 · 다시 클릭하면 해제
         </span>

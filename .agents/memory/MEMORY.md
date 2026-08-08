@@ -1,0 +1,3 @@
+- [Supabase tables needed](supabase-new-tables.md) — view counts and humanities likes require new tables not yet created in Supabase dashboard.
+- [Quiz streak architecture](quiz-streak-arch.md) — guest streak in localStorage; member streak in Supabase user_metadata; merge on login with abuse prevention.
+- [TipTap inline images](tiptap-inline-images.md) — @tiptap/extension-image installed (peer mismatch warning OK); enableImages prop on RichTextArea; old episode images auto-inlined when editing.

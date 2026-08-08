@@ -37,7 +37,7 @@ function EpisodeList({ workId, totalCount }: { workId: number; totalCount: numbe
             <span className="shrink-0 text-xs font-bold w-10" style={{ color: "hsl(45 92% 38%)" }}>
               {ep.episodeNumber}화
             </span>
-            <span className="text-sm font-medium truncate">{ep.title}</span>
+            <span className="text-sm font-medium">{ep.title}</span>
           </button>
         </li>
       ))}

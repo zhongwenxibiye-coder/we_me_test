@@ -408,6 +408,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.108.1
         version: 2.108.1
+      '@tiptap/extension-image':
+        specifier: ^3.29.2
+        version: 3.29.2(@tiptap/core@3.27.0(@tiptap/pm@3.27.0))
       '@tiptap/extension-placeholder':
         specifier: ^3.27.0
         version: 3.27.0(@tiptap/extensions@3.27.0(@tiptap/core@3.27.0(@tiptap/pm@3.27.0))(@tiptap/pm@3.27.0))
@@ -1730,6 +1733,11 @@ packages:
     peerDependencies:
       '@tiptap/core': 3.27.0
       '@tiptap/pm': 3.27.0
+
+  '@tiptap/extension-image@3.29.2':
+    resolution: {integrity: sha512-F+S4iru247mNVZdkNwNDZHeb281DkjsBJinaOGsOyJTvXY+KU5Uq7vY1LQTn493dTfU48Z0yMBUXwJffCT92Mg==}
+    peerDependencies:
+      '@tiptap/core': 3.29.2
 
   '@tiptap/extension-italic@3.27.0':
     resolution: {integrity: sha512-z/EomYhfaf9oxtYz4+yxaIO6cw9Sa2CVw7jsnGR0jf0CZk6B+5iTbNeJDMxpSeYg+dAPOWYiO8vWOeKM0gYPFQ==}
@@ -4631,6 +4639,10 @@ snapshots:
     dependencies:
       '@tiptap/core': 3.27.0(@tiptap/pm@3.27.0)
       '@tiptap/pm': 3.27.0
+
+  '@tiptap/extension-image@3.29.2(@tiptap/core@3.27.0(@tiptap/pm@3.27.0))':
+    dependencies:
+      '@tiptap/core': 3.27.0(@tiptap/pm@3.27.0)
 
   '@tiptap/extension-italic@3.27.0(@tiptap/core@3.27.0(@tiptap/pm@3.27.0))':
     dependencies:

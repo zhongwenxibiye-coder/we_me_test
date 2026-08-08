@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Heart } from "lucide-react";
 import { useListHumanitiesArticles, type HumanitiesArticle } from "@workspace/api-client-react";
+import { useAllHumanitiesArticleLikes } from "@/hooks/useHumanitiesArticleLikes";
 
 const CATEGORIES = ["전체", "문학", "문화", "역사", "지리", "예술", "기타"];
 
-function ArticleRow({ article }: { article: HumanitiesArticle }) {
+function ArticleRow({ article, likeCount }: { article: HumanitiesArticle; likeCount: number }) {
   const [, navigate] = useLocation();
   return (
     <button
@@ -29,8 +30,14 @@ function ArticleRow({ article }: { article: HumanitiesArticle }) {
         >
           {article.category}
         </span>
-        <span className="font-semibold text-sm flex-1 truncate min-w-0">{article.title}</span>
+        <span className="font-semibold text-sm flex-1 text-left min-w-0">{article.title}</span>
         <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">{article.authorName}</span>
+        {likeCount > 0 && (
+          <span className="flex items-center gap-0.5 text-xs text-muted-foreground shrink-0">
+            <Heart size={11} className="text-red-400 fill-red-400" />
+            {likeCount}
+          </span>
+        )}
         <span className="text-xs text-muted-foreground/60 shrink-0">
           {new Date(article.createdAt).toLocaleDateString("ko-KR", { year: "numeric", month: "short", day: "numeric" })}
         </span>
@@ -42,6 +49,7 @@ function ArticleRow({ article }: { article: HumanitiesArticle }) {
 function ArticlesSection() {
   const [activeCategory, setActiveCategory] = useState("전체");
   const query = useListHumanitiesArticles();
+  const likeCounts = useAllHumanitiesArticleLikes();
   const all = query.data ?? [];
   const articles = activeCategory === "전체" ? all : all.filter((a) => a.category === activeCategory);
 
@@ -69,7 +77,7 @@ function ArticlesSection() {
       ) : (
         <div className="bg-card rounded-2xl border border-border overflow-hidden">
           {articles.map((a) => (
-            <ArticleRow key={a.id} article={a} />
+            <ArticleRow key={a.id} article={a} likeCount={likeCounts[a.id] ?? 0} />
           ))}
         </div>
       )}

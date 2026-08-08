@@ -1,16 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, XCircle, HelpCircle, Users, Flame } from "lucide-react";
+import { CheckCircle2, XCircle, HelpCircle, Users, Flame, UserPlus } from "lucide-react";
 import {
   useGetTodayQuiz,
   useSubmitQuizAttempt,
   getGetTodayQuizQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { getSupabase } from "@/lib/supabase";
+import { Link } from "wouter";
 
 const SESSION_KEY_STORAGE = "wemi-session-key";
 const QUIZ_ATTEMPT_PREFIX = "wemi-quiz-attempt-";
 const STREAK_KEY = "wemi-quiz-streak";
+/** 연속 허용 최대 공백 일수 (4일 이내 = 최대 3일 빠짐 허용) */
+const GAP_TOLERANCE_DAYS = 4;
+const TOTAL_DAYS = 7;
+const STAMP_EMOJI = ["🌽", "🌽", "🌽", "🌽", "🌽", "🌽", "🌟"];
 
 function getOrCreateSessionKey(): string {
   let key = localStorage.getItem(SESSION_KEY_STORAGE);
@@ -23,6 +30,12 @@ function getOrCreateSessionKey(): string {
 
 function getTodayDate(): string {
   return new Date().toISOString().split("T")[0];
+}
+
+function daysDiff(from: string, to: string): number {
+  return Math.floor(
+    (new Date(to).getTime() - new Date(from).getTime()) / (1000 * 60 * 60 * 24),
+  );
 }
 
 interface StreakData {
@@ -38,25 +51,35 @@ function getStreak(): StreakData {
   return { count: 0, lastDate: "" };
 }
 
+function saveLocalStreak(data: StreakData) {
+  localStorage.setItem(STREAK_KEY, JSON.stringify(data));
+}
+
+/** 오늘 퀴즈 참여 시 streak 업데이트 (4일 이내 공백은 연속 유지) */
 function updateStreak(): StreakData {
   const today = getTodayDate();
   const current = getStreak();
   if (current.lastDate === today) return current;
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split("T")[0];
-  const newCount = current.lastDate === yesterdayStr ? current.count + 1 : 1;
-  const next = { count: newCount, lastDate: today };
-  localStorage.setItem(STREAK_KEY, JSON.stringify(next));
+
+  const gap = current.lastDate ? daysDiff(current.lastDate, today) : Infinity;
+  const newCount = gap <= GAP_TOLERANCE_DAYS ? current.count + 1 : 1;
+  const next: StreakData = { count: newCount, lastDate: today };
+  saveLocalStreak(next);
   return next;
 }
 
-const TOTAL_DAYS = 7;
-const STAMP_EMOJI = ["🌽", "🌽", "🌽", "🌽", "🌽", "🌽", "🌟"];
+// ── StreakBar ────────────────────────────────────────────────
 
-function StreakBar({ streak }: { streak: StreakData }) {
+function StreakBar({ streak, isLoggedIn }: { streak: StreakData; isLoggedIn: boolean }) {
   const today = getTodayDate();
-  const displayCount = Math.min(streak.count, TOTAL_DAYS);
+
+  // 현재 7일 주기 내 진행도
+  const cyclePos = streak.count <= TOTAL_DAYS
+    ? streak.count
+    : streak.count % TOTAL_DAYS === 0
+    ? TOTAL_DAYS
+    : streak.count % TOTAL_DAYS;
+  const weekNumber = Math.ceil(streak.count / TOTAL_DAYS);
 
   return (
     <div className="mt-6 rounded-2xl border border-orange-200/70 bg-gradient-to-br from-orange-50/80 to-yellow-50/60 p-5">
@@ -69,10 +92,18 @@ function StreakBar({ streak }: { streak: StreakData }) {
           </span>
         )}
       </div>
+
+      {/* 주차 표시 (2주차 이상일 때) */}
+      {weekNumber >= 2 && (
+        <p className="text-[11px] text-orange-600 font-semibold text-center mb-2">
+          {weekNumber}주차 진행 중 🎖️
+        </p>
+      )}
+
       <div className="flex justify-between gap-1">
         {Array.from({ length: TOTAL_DAYS }).map((_, i) => {
-          const filled = i < displayCount;
-          const isToday = filled && i === displayCount - 1 && streak.lastDate === today;
+          const filled = i < cyclePos;
+          const isToday = filled && i === cyclePos - 1 && streak.lastDate === today;
           return (
             <motion.div
               key={i}
@@ -99,22 +130,36 @@ function StreakBar({ streak }: { streak: StreakData }) {
           );
         })}
       </div>
+
       <p className="text-center text-xs text-muted-foreground mt-4">
         {streak.count === 0
           ? "오늘 퀴즈를 풀면 첫 번째 스탬프를 받아요! 🌽"
-          : streak.count >= TOTAL_DAYS
-          ? "🎉 일주일 개근 달성! 정말 대단해요!"
-          : `${TOTAL_DAYS - streak.count}일 더 출석하면 일주일 개근!`}
+          : cyclePos < TOTAL_DAYS
+          ? `${TOTAL_DAYS - cyclePos}일 더 출석하면 이번 주 개근!`
+          : `🎉 ${weekNumber}주 개근 달성! 정말 대단해요!`}
       </p>
+
+      {/* 비회원 7일 달성 시 회원가입 유도 */}
+      {!isLoggedIn && streak.count >= TOTAL_DAYS && (
+        <Link href="/signup">
+          <button className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity">
+            <UserPlus size={13} />
+            회원가입으로 연속 출석 이어나가기
+          </button>
+        </Link>
+      )}
     </div>
   );
 }
+
+// ── Main QuizSection ─────────────────────────────────────────
 
 export function QuizSection() {
   const sessionKey = useMemo(() => getOrCreateSessionKey(), []);
   const queryClient = useQueryClient();
   const quizQuery = useGetTodayQuiz({ sessionKey });
   const submitAttempt = useSubmitQuizAttempt();
+  const { user } = useAuth();
 
   const quiz = quizQuery.data?.quiz ?? null;
   const serverAttempt = quizQuery.data?.attempt ?? null;
@@ -123,6 +168,7 @@ export function QuizSection() {
   const [submitted, setSubmitted] = useState(false);
   const [streak, setStreak] = useState<StreakData>(() => getStreak());
 
+  // 퀴즈 이전 답변 복원
   useEffect(() => {
     if (quiz) {
       const stored = localStorage.getItem(QUIZ_ATTEMPT_PREFIX + quiz.id);
@@ -133,9 +179,59 @@ export function QuizSection() {
     }
   }, [quiz?.id]);
 
+  // 초기 streak 로드
   useEffect(() => {
     setStreak(getStreak());
   }, []);
+
+  // 회원 로그인 시 서버 streak와 로컬 streak 병합
+  const syncStreakWithServer = useCallback(async () => {
+    if (!user) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    const serverStreakRaw = user.user_metadata?.quiz_streak as StreakData | undefined;
+    const localStreak = getStreak();
+
+    // 이미 오늘 동기화했는지 확인 (abuse 방지)
+    const mergeKey = `wemi-streak-merged-${user.id}`;
+    const lastMergedLocalDate = localStorage.getItem(mergeKey) ?? "";
+
+    // 로컬 streak가 있고 아직 병합하지 않은 날짜인 경우
+    if (
+      localStreak.count > 0 &&
+      localStreak.lastDate &&
+      localStreak.lastDate !== lastMergedLocalDate
+    ) {
+      const gapFromLocal = localStreak.lastDate ? daysDiff(localStreak.lastDate, getTodayDate()) : Infinity;
+
+      if (gapFromLocal <= GAP_TOLERANCE_DAYS) {
+        // 유효한 로컬 streak — 서버 값과 비교하여 높은 값 사용
+        const mergedCount = Math.max(localStreak.count, serverStreakRaw?.count ?? 0);
+        const merged: StreakData = { count: mergedCount, lastDate: localStreak.lastDate };
+
+        // 서버에 저장
+        await supabase.auth.updateUser({ data: { quiz_streak: merged } }).catch(() => {});
+
+        setStreak(merged);
+        saveLocalStreak(merged);
+      }
+      // 병합 완료 마킹 (동일 로컬 lastDate로 재병합 방지)
+      localStorage.setItem(mergeKey, localStreak.lastDate);
+    } else if (serverStreakRaw && !localStreak.count) {
+      // 로컬 기록 없음 → 서버 streak 복원
+      setStreak(serverStreakRaw);
+      saveLocalStreak(serverStreakRaw);
+    } else if (serverStreakRaw && serverStreakRaw.count > localStreak.count) {
+      // 서버 값이 더 높으면 동기화
+      setStreak(serverStreakRaw);
+      saveLocalStreak(serverStreakRaw);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    void syncStreakWithServer();
+  }, [syncStreakWithServer]);
 
   const attempt = serverAttempt ?? localAttempt;
   const alreadyAttempted = submitted || !!attempt;
@@ -148,8 +244,19 @@ export function QuizSection() {
       localStorage.setItem(QUIZ_ATTEMPT_PREFIX + quiz.id, JSON.stringify(result));
       setLocalAttempt(result);
       setSubmitted(true);
+
+      // streak 업데이트
       const newStreak = updateStreak();
       setStreak(newStreak);
+
+      // 회원이면 서버에도 저장
+      if (user) {
+        const supabase = getSupabase();
+        if (supabase) {
+          void supabase.auth.updateUser({ data: { quiz_streak: newStreak } }).catch(() => {});
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: getGetTodayQuizQueryKey({ sessionKey }) });
     };
     submitAttempt.mutate(
@@ -218,7 +325,19 @@ export function QuizSection() {
 
                 <div className="bg-muted/50 rounded-2xl p-4 border border-border">
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">해설</p>
-                  <p className="text-sm leading-relaxed">{quiz.explanation || "해설이 준비 중입니다."}</p>
+                  {quiz.explanation ? (
+                    <div
+                      className="text-sm leading-relaxed"
+                      dangerouslySetInnerHTML={{
+                        __html: quiz.explanation
+                          .replace(/<p>/gi, "")
+                          .replace(/<\/p>/gi, "<br>")
+                          .replace(/^<br>|<br>$/g, ""),
+                      }}
+                    />
+                  ) : (
+                    <p className="text-sm leading-relaxed">해설이 준비 중입니다.</p>
+                  )}
                 </div>
 
                 <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
@@ -240,7 +359,7 @@ export function QuizSection() {
           </div>
         )}
 
-        <StreakBar streak={streak} />
+        <StreakBar streak={streak} isLoggedIn={!!user} />
       </div>
     </section>
   );
