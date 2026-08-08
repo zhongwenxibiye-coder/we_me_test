@@ -1,13 +1,21 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { BookOpen, Heart } from "lucide-react";
+import { BookOpen, Heart, Eye } from "lucide-react";
 import { useListHumanitiesArticles, type HumanitiesArticle } from "@workspace/api-client-react";
-import { useAllHumanitiesArticleLikes } from "@/hooks/useHumanitiesArticleLikes";
+import { useAllHumanitiesArticleLikes, useAllHumanitiesArticleViews } from "@/hooks/useHumanitiesArticleLikes";
 
 const CATEGORIES = ["전체", "문학", "문화", "역사", "지리", "예술", "기타"];
 
-function ArticleRow({ article, likeCount }: { article: HumanitiesArticle; likeCount: number }) {
+function ArticleRow({
+  article,
+  likeCount,
+  viewCount,
+}: {
+  article: HumanitiesArticle;
+  likeCount: number;
+  viewCount: number;
+}) {
   const [, navigate] = useLocation();
   return (
     <button
@@ -31,13 +39,24 @@ function ArticleRow({ article, likeCount }: { article: HumanitiesArticle; likeCo
           {article.category}
         </span>
         <span className="font-semibold text-sm flex-1 text-left min-w-0">{article.title}</span>
+
+        {/* 조회수 + 좋아요 */}
+        <span className="flex items-center gap-2 shrink-0">
+          {viewCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-muted-foreground/70">
+              <Eye size={11} />
+              {viewCount}
+            </span>
+          )}
+          {likeCount > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+              <Heart size={11} className="text-red-400 fill-red-400" />
+              {likeCount}
+            </span>
+          )}
+        </span>
+
         <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">{article.authorName}</span>
-        {likeCount > 0 && (
-          <span className="flex items-center gap-0.5 text-xs text-muted-foreground shrink-0">
-            <Heart size={11} className="text-red-400 fill-red-400" />
-            {likeCount}
-          </span>
-        )}
         <span className="text-xs text-muted-foreground/60 shrink-0">
           {new Date(article.createdAt).toLocaleDateString("ko-KR", { year: "numeric", month: "short", day: "numeric" })}
         </span>
@@ -50,6 +69,7 @@ function ArticlesSection() {
   const [activeCategory, setActiveCategory] = useState("전체");
   const query = useListHumanitiesArticles();
   const likeCounts = useAllHumanitiesArticleLikes();
+  const viewCounts = useAllHumanitiesArticleViews();
   const all = query.data ?? [];
   const articles = activeCategory === "전체" ? all : all.filter((a) => a.category === activeCategory);
 
@@ -77,7 +97,12 @@ function ArticlesSection() {
       ) : (
         <div className="bg-card rounded-2xl border border-border overflow-hidden">
           {articles.map((a) => (
-            <ArticleRow key={a.id} article={a} likeCount={likeCounts[a.id] ?? 0} />
+            <ArticleRow
+              key={a.id}
+              article={a}
+              likeCount={likeCounts[a.id] ?? 0}
+              viewCount={viewCounts[a.id] ?? 0}
+            />
           ))}
         </div>
       )}

@@ -71,9 +71,11 @@ export function useJobLikes() {
       if (liked) {
         guestLikes.delete(id);
         setUserLikes(prev => { const s = new Set(prev); s.delete(id); return s; });
+        setLikes(prev => ({ ...prev, [id]: Math.max(0, (prev[id] ?? 1) - 1) }));
       } else {
         guestLikes.add(id);
         setUserLikes(prev => new Set([...prev, id]));
+        setLikes(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
       }
       saveGuestLikes(guestLikes);
     }

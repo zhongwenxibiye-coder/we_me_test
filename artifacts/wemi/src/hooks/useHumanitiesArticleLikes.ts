@@ -89,9 +89,11 @@ export function useHumanitiesArticleLikes(articleId?: number) {
       if (liked) {
         guestLikes.delete(articleId);
         setLiked(false);
+        setLikeCount((c) => Math.max(0, c - 1));
       } else {
         guestLikes.add(articleId);
         setLiked(true);
+        setLikeCount((c) => c + 1);
       }
       saveGuestLikedIds(guestLikes);
     }
@@ -110,6 +112,30 @@ export function useAllHumanitiesArticleLikes() {
       try {
         const { data } = await supabase
           .from("humanities_article_likes")
+          .select("article_id");
+        if (!data) return;
+        const c: Record<number, number> = {};
+        data.forEach(({ article_id }: { article_id: number }) => {
+          c[article_id] = (c[article_id] ?? 0) + 1;
+        });
+        setCounts(c);
+      } catch {}
+    })();
+  }, []);
+
+  return counts;
+}
+
+export function useAllHumanitiesArticleViews() {
+  const [counts, setCounts] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("humanities_article_views")
           .select("article_id");
         if (!data) return;
         const c: Record<number, number> = {};
