@@ -526,11 +526,11 @@ function PostRow({
           </span>
         )}
       </span>
-      {/* 글쓴이 + 학과 */}
-      <span className="shrink-0 flex items-center gap-1 text-xs text-muted-foreground w-28 justify-end">
-        <span className="truncate max-w-[60px]">{post.nickname ?? "익명"}</span>
+      {/* 글쓴이 + 학과 (2줄 세로) */}
+      <span className="shrink-0 flex flex-col items-end gap-0.5 w-20">
+        <span className="text-xs text-muted-foreground font-medium truncate max-w-full">{post.nickname ?? "익명"}</span>
         {post.department && (
-          <span className="text-[9px] bg-primary/10 text-primary/70 rounded px-1 py-px font-medium shrink-0">{post.department}</span>
+          <span className="text-[9px] bg-primary/10 text-primary/70 rounded px-1 py-px font-medium truncate max-w-full">{post.department}</span>
         )}
       </span>
       {/* 날짜 */}
@@ -704,7 +704,7 @@ export default function Community() {
         <div className="flex items-center gap-3 px-4 py-2 bg-muted/40 border-b border-border/60 text-xs text-muted-foreground font-semibold">
           <span className="w-7 shrink-0 text-right">번호</span>
           <span className="flex-1">제목</span>
-          <span className="w-28 text-right">글쓴이</span>
+          <span className="w-20 text-right">글쓴이</span>
           <span className="w-14 text-right">날짜</span>
         </div>
 

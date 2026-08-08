@@ -1813,15 +1813,17 @@ function VideosTab({ password }: { password: string }) {
   const updateVideo = useUpdateCareerVideo({ request: ro });
   const deleteVideo = useDeleteCareerVideo({ request: ro });
 
+  const VIDEO_CATEGORIES = ["취업", "진로", "공부", "직장생활", "기타"];
+
   const [editing, setEditing] = useState<number | "new" | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", youtubeUrl: "", displayOrder: "0", isActive: true });
+  const [form, setForm] = useState({ title: "", description: "", youtubeUrl: "", category: "기타", displayOrder: "0", isActive: true });
 
   function startNew() {
-    setForm({ title: "", description: "", youtubeUrl: "", displayOrder: "0", isActive: true });
+    setForm({ title: "", description: "", youtubeUrl: "", category: "기타", displayOrder: "0", isActive: true });
     setEditing("new");
   }
   function startEdit(v: CareerVideo) {
-    setForm({ title: v.title, description: v.description, youtubeUrl: v.youtubeUrl, displayOrder: String(v.displayOrder), isActive: v.isActive });
+    setForm({ title: v.title, description: v.description, youtubeUrl: v.youtubeUrl, category: (v as CareerVideo & { category?: string }).category ?? "기타", displayOrder: String(v.displayOrder), isActive: v.isActive });
     setEditing(v.id);
   }
 
@@ -1830,6 +1832,7 @@ function VideosTab({ password }: { password: string }) {
       title: form.title,
       description: form.description,
       youtubeUrl: form.youtubeUrl,
+      category: form.category,
       displayOrder: Number(form.displayOrder),
       isActive: form.isActive,
     };
@@ -1876,6 +1879,21 @@ function VideosTab({ password }: { password: string }) {
               <p className="text-[11px] text-muted-foreground mt-1">youtu.be 공유 링크 또는 youtube.com/watch?v= 링크 모두 가능합니다.</p>
             </div>
             <div>
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">카테고리</label>
+              <div className="flex gap-1.5 flex-wrap mt-1.5">
+                {VIDEO_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, category: cat }))}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${form.category === cat ? "bg-foreground text-background border-foreground" : "bg-card text-muted-foreground border-border hover:border-foreground/40"}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">설명</label>
               <Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="영상 설명 (선택)" rows={2} className="mt-1.5 rounded-xl resize-none" />
             </div>
@@ -1913,6 +1931,9 @@ function VideosTab({ password }: { password: string }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-sm">{v.title}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-primary/10 text-primary/80">
+                    {(v as CareerVideo & { category?: string }).category ?? "기타"}
+                  </span>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${v.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
                     {v.isActive ? "공개" : "비공개"}
                   </span>

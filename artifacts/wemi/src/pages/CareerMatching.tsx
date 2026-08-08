@@ -4,6 +4,8 @@ import { Play, X, PlayCircle, Video } from "lucide-react";
 import { useListCareerVideos } from "@workspace/api-client-react";
 import type { CareerVideo } from "@workspace/api-client-react";
 
+const VIDEO_CATEGORIES = ["전체", "취업", "진로", "공부", "직장생활", "기타"];
+
 function getYoutubeId(url: string): string | null {
   try {
     const u = new URL(url);
@@ -63,6 +65,13 @@ function VideoModal({ video, onClose }: { video: CareerVideo; onClose: () => voi
           </div>
 
           <div className="mt-3 px-1">
+            <div className="flex items-center gap-2 mb-1">
+              {(video as CareerVideo & { category?: string }).category && (
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/15 text-white">
+                  {(video as CareerVideo & { category?: string }).category}
+                </span>
+              )}
+            </div>
             <h3 className="text-white font-bold text-lg leading-snug">{video.title}</h3>
             {video.description && (
               <p className="mt-1 text-white/70 text-sm leading-relaxed">{video.description}</p>
@@ -84,6 +93,7 @@ function VideoModal({ video, onClose }: { video: CareerVideo; onClose: () => voi
 function VideoCard({ video, onClick }: { video: CareerVideo; onClick: () => void }) {
   const [imgError, setImgError] = useState(false);
   const thumb = getYoutubeThumbnail(video.youtubeUrl);
+  const category = (video as CareerVideo & { category?: string }).category;
 
   return (
     <motion.div
@@ -111,6 +121,11 @@ function VideoCard({ video, onClick }: { video: CareerVideo; onClick: () => void
             <Play size={22} className="text-foreground fill-foreground ml-1" />
           </div>
         </div>
+        {category && (
+          <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/50 text-white backdrop-blur-sm">
+            {category}
+          </span>
+        )}
       </div>
       <div className="p-4">
         <h3 className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
@@ -129,6 +144,11 @@ function VideoCard({ video, onClick }: { video: CareerVideo; onClick: () => void
 export default function CareerMatching() {
   const { data: videos = [], isLoading } = useListCareerVideos();
   const [selected, setSelected] = useState<CareerVideo | null>(null);
+  const [activeCategory, setActiveCategory] = useState("전체");
+
+  const filtered = activeCategory === "전체"
+    ? videos
+    : videos.filter((v) => (v as CareerVideo & { category?: string }).category === activeCategory);
 
   return (
     <div className="mx-auto max-w-5xl px-6 lg:px-10 py-12 lg:py-16">
@@ -151,24 +171,48 @@ export default function CareerMatching() {
         </p>
       </motion.div>
 
-      <div className="mt-10">
+      {/* 카테고리 필터 */}
+      <div className="mt-8 flex gap-2 flex-wrap">
+        {VIDEO_CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+              activeCategory === cat
+                ? "bg-foreground text-background border-foreground"
+                : "bg-card text-muted-foreground border-border hover:border-foreground/40"
+            }`}
+          >
+            {cat}
+            {cat !== "전체" && videos.filter((v) => (v as CareerVideo & { category?: string }).category === cat).length > 0 && (
+              <span className="ml-1 opacity-60">
+                {videos.filter((v) => (v as CareerVideo & { category?: string }).category === cat).length}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-6">
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="rounded-2xl bg-muted/50 animate-pulse aspect-[4/3]" />
             ))}
           </div>
-        ) : videos.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
               <PlayCircle size={28} className="text-primary/60" />
             </div>
-            <p className="text-base font-semibold text-foreground/70">곧 영상이 업로드됩니다</p>
+            <p className="text-base font-semibold text-foreground/70">
+              {activeCategory === "전체" ? "곧 영상이 업로드됩니다" : `'${activeCategory}' 카테고리 영상이 없어요`}
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">위미가 준비한 맞춤 영상을 기대해 주세요.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {videos.map((video) => (
+            {filtered.map((video) => (
               <VideoCard key={video.id} video={video} onClick={() => setSelected(video)} />
             ))}
           </div>

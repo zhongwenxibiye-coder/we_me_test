@@ -27,6 +27,7 @@ router.post("/career-videos", requireAdmin, async (req, res) => {
     title: string;
     description?: string;
     youtubeUrl: string;
+    category?: string;
     displayOrder?: number;
     isActive?: boolean;
   };
@@ -40,6 +41,7 @@ router.post("/career-videos", requireAdmin, async (req, res) => {
       title: body.title,
       description: body.description ?? "",
       youtubeUrl: body.youtubeUrl,
+      category: body.category ?? "기타",
       displayOrder: body.displayOrder ?? 0,
       isActive: body.isActive ?? true,
     })
@@ -54,6 +56,7 @@ router.put("/career-videos/:id", requireAdmin, async (req, res) => {
     title?: string;
     description?: string;
     youtubeUrl?: string;
+    category?: string;
     displayOrder?: number;
     isActive?: boolean;
   };
@@ -63,6 +66,7 @@ router.put("/career-videos/:id", requireAdmin, async (req, res) => {
       ...(body.title !== undefined && { title: body.title }),
       ...(body.description !== undefined && { description: body.description }),
       ...(body.youtubeUrl !== undefined && { youtubeUrl: body.youtubeUrl }),
+      ...(body.category !== undefined && { category: body.category }),
       ...(body.displayOrder !== undefined && { displayOrder: body.displayOrder }),
       ...(body.isActive !== undefined && { isActive: body.isActive }),
     })
