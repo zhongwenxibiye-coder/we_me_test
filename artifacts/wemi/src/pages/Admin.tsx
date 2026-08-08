@@ -907,124 +907,6 @@ function StartupTab({ password }: { password: string }) {
   );
 }
 
-// ── 좋아요 뷰어 컴포넌트 ────────────────────────────────────
-
-function WorkLikesSection({ workId }: { workId: number }) {
-  const [open, setOpen] = useState(false);
-  const [likes, setLikes] = useState<{ user_id: string; created_at: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  async function fetchLikes() {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    setLoading(true);
-    const { data } = await supabase
-      .from("creative_work_likes")
-      .select("user_id, created_at")
-      .eq("work_id", workId)
-      .order("created_at", { ascending: false });
-    setLikes(data ?? []);
-    setLoading(false);
-  }
-
-  function toggle() {
-    if (!open) void fetchLikes();
-    setOpen((v) => !v);
-  }
-
-  return (
-    <div className="mt-2">
-      <button
-        onClick={toggle}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1 rounded-lg border border-border/50 hover:border-border"
-      >
-        <Heart size={11} className="text-red-400" />
-        좋아요 목록{open ? " ▲" : " ▼"}
-      </button>
-      {open && (
-        <div className="mt-2 rounded-xl border border-border bg-background/60 p-3">
-          {loading ? (
-            <p className="text-xs text-muted-foreground">불러오는 중...</p>
-          ) : likes.length === 0 ? (
-            <p className="text-xs text-muted-foreground">좋아요가 없어요.</p>
-          ) : (
-            <>
-              <p className="text-xs font-semibold text-muted-foreground mb-2">총 {likes.length}명이 좋아요를 눌렀어요</p>
-              <div className="space-y-1 max-h-40 overflow-y-auto">
-                {likes.map((like, i) => (
-                  <div key={i} className="text-xs text-foreground/70 font-mono flex items-center gap-2">
-                    <span className="shrink-0 text-muted-foreground/50">{i + 1}.</span>
-                    <span className="break-all">{like.user_id}</span>
-                    <span className="shrink-0 text-muted-foreground/50 ml-auto">{new Date(like.created_at).toLocaleDateString("ko-KR")}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ArticleLikesSection({ articleId }: { articleId: number }) {
-  const [open, setOpen] = useState(false);
-  const [likes, setLikes] = useState<{ user_id: string; created_at: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  async function fetchLikes() {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    setLoading(true);
-    const { data } = await supabase
-      .from("humanities_article_likes")
-      .select("user_id, created_at")
-      .eq("article_id", articleId)
-      .order("created_at", { ascending: false });
-    setLikes(data ?? []);
-    setLoading(false);
-  }
-
-  function toggle() {
-    if (!open) void fetchLikes();
-    setOpen((v) => !v);
-  }
-
-  return (
-    <div className="mt-1">
-      <button
-        onClick={toggle}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1 rounded-lg border border-border/50 hover:border-border"
-      >
-        <Heart size={11} className="text-red-400" />
-        좋아요 목록{open ? " ▲" : " ▼"}
-      </button>
-      {open && (
-        <div className="mt-2 rounded-xl border border-border bg-background/60 p-3">
-          {loading ? (
-            <p className="text-xs text-muted-foreground">불러오는 중...</p>
-          ) : likes.length === 0 ? (
-            <p className="text-xs text-muted-foreground">좋아요가 없어요.</p>
-          ) : (
-            <>
-              <p className="text-xs font-semibold text-muted-foreground mb-2">총 {likes.length}명이 좋아요를 눌렀어요</p>
-              <div className="space-y-1 max-h-40 overflow-y-auto">
-                {likes.map((like, i) => (
-                  <div key={i} className="text-xs text-foreground/70 font-mono flex items-center gap-2">
-                    <span className="shrink-0 text-muted-foreground/50">{i + 1}.</span>
-                    <span className="break-all">{like.user_id}</span>
-                    <span className="shrink-0 text-muted-foreground/50 ml-auto">{new Date(like.created_at).toLocaleDateString("ko-KR")}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Tab: 창작 공간 ───────────────────────────────────────────
 
 const MAX_EPISODE_IMAGES = 5;
@@ -1377,7 +1259,6 @@ function CreativeTab({ password }: { password: string }) {
                   <Button size="sm" variant="outline" className="rounded-full bg-card h-8 text-destructive" onClick={() => handleDelete(w.id)}><Trash2 size={13} /></Button>
                 </div>
               </div>
-              <WorkLikesSection workId={w.id} />
               {expandedEpisodes === w.id && (
                 <EpisodeManager work={w} password={password} />
               )}
@@ -1663,7 +1544,6 @@ function HumanitiesTab({ password }: { password: string }) {
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm">{a.title}</p>
                     <p className="text-xs text-muted-foreground">[{a.category}] · {a.authorName} · {a.isActive ? "활성" : "비활성"}</p>
-                    <ArticleLikesSection articleId={a.id} />
                   </div>
                   <div className="flex gap-1.5 shrink-0">
                     <Button size="sm" variant="outline" className="h-7 rounded-full bg-card" onClick={() => startEditArticle(a)}><Pencil size={12} /></Button>

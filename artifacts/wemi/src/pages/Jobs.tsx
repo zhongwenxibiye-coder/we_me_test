@@ -120,14 +120,13 @@ export default function Jobs() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => { if (!user) return; void toggleLike(job.id); }}
-                      title={user ? (userLikes.has(String(job.id)) ? "관심 해제" : "관심 직무 추가") : "로그인 후 이용 가능"}
+                      onClick={() => { void toggleLike(job.id); }}
+                      title={userLikes.has(String(job.id)) ? "관심 해제" : "관심 직무 추가"}
                       className={cn(
                         "flex items-center gap-1 h-9 px-3 rounded-xl border text-xs font-semibold transition-colors shrink-0",
                         userLikes.has(String(job.id))
                           ? "border-red-300 bg-red-50 text-red-500"
                           : "border-border text-muted-foreground hover:border-red-300 hover:text-red-400",
-                        !user && "opacity-40 cursor-not-allowed",
                       )}
                     >
                       <Heart size={13} className={userLikes.has(String(job.id)) ? "fill-red-500" : ""} />

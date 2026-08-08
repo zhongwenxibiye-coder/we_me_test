@@ -318,7 +318,7 @@ export default function CreativeSpace() {
               work={work}
               likeCount={likes[String(work.id)] ?? 0}
               liked={userLikes.has(String(work.id))}
-              canLike={!!user}
+              canLike={true}
               onToggleLike={() => void toggleLike(work.id)}
             />
           ))}

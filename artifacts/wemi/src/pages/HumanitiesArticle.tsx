@@ -218,35 +218,23 @@ export default function HumanitiesArticle() {
 
           {/* 좋아요 버튼 */}
           <div className="mt-8 flex items-center justify-center">
-            {user ? (
-              <button
-                onClick={() => void toggleLike()}
-                disabled={!initialized}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
-                  liked
-                    ? "border-red-300 bg-red-50 text-red-600"
-                    : "border-border bg-card text-muted-foreground hover:border-red-300 hover:text-red-500"
-                }`}
-              >
-                <Heart size={18} className={liked ? "fill-red-500 text-red-500" : ""} />
-                {liked ? "좋아요 취소" : "좋아요"}
-                {likeCount > 0 && (
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${liked ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"}`}>
-                    {likeCount}
-                  </span>
-                )}
-              </button>
-            ) : (
-              <Link href="/login">
-                <button className="flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-border bg-card text-muted-foreground text-sm font-bold hover:border-primary/40 transition-colors">
-                  <Heart size={18} />
-                  로그인 후 좋아요를 남길 수 있어요
-                  {likeCount > 0 && (
-                    <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{likeCount}</span>
-                  )}
-                </button>
-              </Link>
-            )}
+            <button
+              onClick={() => void toggleLike()}
+              disabled={!initialized}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl border-2 font-bold text-sm transition-all ${
+                liked
+                  ? "border-red-300 bg-red-50 text-red-600"
+                  : "border-border bg-card text-muted-foreground hover:border-red-300 hover:text-red-500"
+              }`}
+            >
+              <Heart size={18} className={liked ? "fill-red-500 text-red-500" : ""} />
+              {liked ? "좋아요 취소" : "좋아요"}
+              {likeCount > 0 && (
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${liked ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"}`}>
+                  {likeCount}
+                </span>
+              )}
+            </button>
           </div>
         </motion.article>
       )}
