@@ -39,7 +39,9 @@ router.get("/humanities/quiz/today", async (req, res) => {
       .select()
       .from(humanitiesQuizAttemptsTable)
       .where(
-        sql`${humanitiesQuizAttemptsTable.quizId} = ${quiz.id} AND ${humanitiesQuizAttemptsTable.sessionKey} = ${sessionKey}`,
+        sql`${humanitiesQuizAttemptsTable.quizId} = ${quiz.id}
+          AND ${humanitiesQuizAttemptsTable.sessionKey} = ${sessionKey}
+          AND ${humanitiesQuizAttemptsTable.attemptedAt} >= (${kstDate}::date AT TIME ZONE 'Asia/Seoul')`,
       )
       .limit(1);
     attempt = found ?? null;
@@ -73,11 +75,15 @@ router.post("/humanities/quiz/attempt", async (req, res) => {
     res.status(400).json({ error: "quizId and sessionKey required" });
     return;
   }
+  // KST 오늘 자정 이후에 제출한 기록만 중복 체크 (같은 문제가 다른 날 나와도 다시 풀 수 있게)
+  const kstToday = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const existing = await db
     .select()
     .from(humanitiesQuizAttemptsTable)
     .where(
-      sql`${humanitiesQuizAttemptsTable.quizId} = ${body.quizId} AND ${humanitiesQuizAttemptsTable.sessionKey} = ${body.sessionKey}`,
+      sql`${humanitiesQuizAttemptsTable.quizId} = ${body.quizId}
+        AND ${humanitiesQuizAttemptsTable.sessionKey} = ${body.sessionKey}
+        AND ${humanitiesQuizAttemptsTable.attemptedAt} >= (${kstToday}::date AT TIME ZONE 'Asia/Seoul')`,
     )
     .limit(1);
   if (existing.length > 0) {

@@ -168,10 +168,11 @@ export function QuizSection() {
   const [submitted, setSubmitted] = useState(false);
   const [streak, setStreak] = useState<StreakData>(() => getStreak());
 
-  // 퀴즈 이전 답변 복원
+  // 퀴즈 이전 답변 복원 (오늘 날짜 기준 — 같은 문제가 다른 날 나와도 다시 풀 수 있게)
   useEffect(() => {
     if (quiz) {
-      const stored = localStorage.getItem(QUIZ_ATTEMPT_PREFIX + quiz.id);
+      const today = getTodayDate();
+      const stored = localStorage.getItem(QUIZ_ATTEMPT_PREFIX + quiz.id + "-" + today);
       if (stored) {
         setLocalAttempt(JSON.parse(stored) as { isCorrect: boolean });
         setSubmitted(true);
@@ -241,7 +242,7 @@ export function QuizSection() {
     const isCorrect = answer === quiz.answer;
     const finalize = () => {
       const result = { isCorrect };
-      localStorage.setItem(QUIZ_ATTEMPT_PREFIX + quiz.id, JSON.stringify(result));
+      localStorage.setItem(QUIZ_ATTEMPT_PREFIX + quiz.id + "-" + getTodayDate(), JSON.stringify(result));
       setLocalAttempt(result);
       setSubmitted(true);
 
