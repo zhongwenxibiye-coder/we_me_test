@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { getSupabase } from "@/lib/supabase";
 
 const PENDING_PROFILE_PREFIX = "wemi-pending-profile-";
+const AUTH_REDIRECT_URL = "https://wemecareer.com";
 
 export default function SignUp() {
   const [, navigate] = useLocation();
@@ -53,16 +54,27 @@ export default function SignUp() {
       nickname.trim(),
     );
 
-    const { data, error: signUpErr } = await supabase.auth.signUp({
+    const { error: signUpErr } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        // 개발 프리뷰나 Supabase 기본 Site URL(localhost)이 섞여도
+        // 인증 메일은 실제 서비스로 돌아오게 한다.
+        emailRedirectTo: AUTH_REDIRECT_URL,
         data: { nickname: nickname.trim() },
       },
     });
 
-    if (signUpErr) { setLoading(false); setError(signUpErr.message); return; }
+    if (signUpErr) {
+      setLoading(false);
+      const message = signUpErr.message.toLowerCase();
+      setError(
+        message.includes("rate limit")
+          ? "인증 메일 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요."
+          : signUpErr.message,
+      );
+      return;
+    }
 
     setLoading(false);
     setDone(true);
