@@ -41,6 +41,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setDepartment(profile?.department ?? null);
   }, []);
 
+  const ensureProfile = useCallback(async (user: User) => {
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    const metadataNickname = user.user_metadata?.nickname;
+    if (typeof metadataNickname === "string" && metadataNickname.trim()) {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!existing) {
+        // 가입 직후 이메일 인증으로 세션이 없었던 경우, 첫 로그인 때
+        // 인증된 사용자 세션으로 프로필을 생성한다.
+        await supabase.from("profiles").insert({
+          id: user.id,
+          nickname: metadataNickname.trim(),
+        });
+      }
+    }
+
+    await fetchProfile(user.id);
+  }, [fetchProfile]);
+
   const refreshProfile = useCallback(async () => {
     const supabase = getSupabase();
     if (!supabase) return;
@@ -54,17 +79,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session?.user) void fetchProfile(data.session.user.id);
+      if (data.session?.user) void ensureProfile(data.session.user);
       setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
-      if (s?.user) void fetchProfile(s.user.id);
+      if (s?.user) void ensureProfile(s.user);
       else setNickname(null);
     });
     return () => listener.subscription.unsubscribe();
-  }, [fetchProfile]);
+  }, [ensureProfile]);
 
   const signOut = async () => {
     await getSupabase()?.auth.signOut();

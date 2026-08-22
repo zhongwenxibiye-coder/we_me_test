@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getSupabase } from "@/lib/supabase";
 
+const PENDING_PROFILE_PREFIX = "wemi-pending-profile-";
+
 export default function SignUp() {
   const [, navigate] = useLocation();
   const [email, setEmail] = useState("");
@@ -43,27 +45,24 @@ export default function SignUp() {
     if (!supabase) { setError("서비스를 불러오는 중입니다. 잠시 후 다시 시도해 주세요."); return; }
 
     setLoading(true);
+    const normalizedEmail = email.trim().toLowerCase();
+    // 이메일 인증이 켜져 있으면 가입 직후에는 세션이 없어 profiles insert가
+    // RLS에 막힐 수 있으므로, 첫 로그인 때 저장할 수 있도록 임시 보관한다.
+    localStorage.setItem(
+      PENDING_PROFILE_PREFIX + normalizedEmail,
+      nickname.trim(),
+    );
 
     const { data, error: signUpErr } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { nickname: nickname.trim() },
+      },
     });
 
     if (signUpErr) { setLoading(false); setError(signUpErr.message); return; }
-
-    if (data.user) {
-      const { error: profileErr } = await supabase
-        .from("profiles")
-        .insert({ id: data.user.id, nickname: nickname.trim() });
-      if (profileErr) {
-        setLoading(false);
-        setError(profileErr.code === "23505"
-          ? "이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해 주세요."
-          : "닉네임 저장 중 오류가 발생했습니다.");
-        return;
-      }
-    }
 
     setLoading(false);
     setDone(true);

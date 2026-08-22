@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getSupabase } from "@/lib/supabase";
 
+const PENDING_PROFILE_PREFIX = "wemi-pending-profile-";
+
 export default function Login() {
   const [, navigate] = useLocation();
   const [email, setEmail] = useState("");
@@ -21,10 +23,24 @@ export default function Login() {
     if (!supabase) { setError("서비스를 불러오는 중입니다. 잠시 후 다시 시도해 주세요."); return; }
 
     setLoading(true);
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    const normalizedEmail = email.trim().toLowerCase();
+    const { data, error: err } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
     setLoading(false);
     if (err) setError("이메일 또는 비밀번호가 올바르지 않습니다.");
-    else navigate("/");
+    else {
+      // 이전 버전에서 가입은 완료됐지만 profiles 저장에 실패한 계정도
+      // 같은 기기에서 닉네임을 복구할 수 있도록 처리한다.
+      const pendingNickname = localStorage.getItem(PENDING_PROFILE_PREFIX + normalizedEmail);
+      if (data.user && pendingNickname) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .upsert({ id: data.user.id, nickname: pendingNickname }, { onConflict: "id" });
+        if (!profileError) {
+          localStorage.removeItem(PENDING_PROFILE_PREFIX + normalizedEmail);
+        }
+      }
+      navigate("/");
+    }
   };
 
   return (
