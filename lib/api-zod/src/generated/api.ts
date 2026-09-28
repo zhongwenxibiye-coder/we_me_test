@@ -543,8 +543,15 @@ export const GetStartupApplicationResponse = zod.object({
 });
 
 /**
- * @summary List active startup posts (public)
+ * @summary List startup posts (public, active only by default)
  */
+export const ListStartupPostsQueryParams = zod.object({
+  includeClosed: zod.coerce
+    .boolean()
+    .optional()
+    .describe("Include posts marked as recruitment closed"),
+});
+
 export const ListStartupPostsResponseItem = zod.object({
   id: zod.number(),
   title: zod.string(),

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Rocket, CheckCircle2, ExternalLink, Calendar } from "lucide-react";
-import { useCreateStartupApplication, useListStartupPosts } from "@workspace/api-client-react";
+import { useCreateStartupApplication, useListStartupPosts, type StartupPost } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,7 +63,14 @@ function SelectGroup({
 }
 
 function StartupPostsList() {
-  const { data: posts = [], isLoading } = useListStartupPosts();
+  const [filter, setFilter] = useState<"all" | "open" | "closed">("all");
+  const { data: posts = [], isLoading, isError } = useListStartupPosts({ includeClosed: true });
+  const todayInKorea = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const isRecruiting = (post: StartupPost) =>
+    post.isActive && (!post.endDate || post.endDate >= todayInKorea);
+  const filteredPosts = posts.filter((post) =>
+    filter === "all" || isRecruiting(post) === (filter === "open")
+  );
 
   return (
     <motion.div
@@ -72,58 +79,83 @@ function StartupPostsList() {
       transition={{ delay: 0.18 }}
       className="mt-12"
     >
-      <h2 className="text-2xl font-extrabold tracking-tight">창업 프로그램</h2>
-      <p className="mt-1 text-sm text-muted-foreground">예비창업자가 지원할 수 있는 다양한 창업 프로그램에 지원해 보세요.</p>
+      <h2 className="text-2xl font-extrabold tracking-tight">창업 프로젝트</h2>
+      <p className="mt-1 text-sm text-muted-foreground">모집 중인 프로젝트와 지난 모집 공고를 확인해 보세요.</p>
+
+      <div className="mt-6 flex flex-wrap gap-2" aria-label="창업 프로젝트 모집 상태">
+        {([
+          ["all", "전체보기"],
+          ["open", "모집중"],
+          ["closed", "모집마감"],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={filter === value}
+            onClick={() => setFilter(value)}
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              filter === value
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-card-border text-muted-foreground hover:text-foreground hover:border-primary/50",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {isLoading ? (
         <div className="mt-6 py-8 text-center text-muted-foreground text-sm">불러오는 중...</div>
-      ) : posts.length === 0 ? (
+      ) : isError ? (
+        <div className="mt-6 py-8 text-center text-muted-foreground text-sm">프로젝트를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>
+      ) : filteredPosts.length === 0 ? (
         <div className="mt-6 rounded-3xl bg-card border border-card-border p-10 text-center">
           <Mascot size={96} animate="bob" />
-          <p className="mt-4 font-semibold">현재 프로젝트가 없습니다.</p>
-          <p className="mt-1 text-sm text-muted-foreground">곧 새로운 프로젝트가 업로드될 예정이에요.</p>
+          <p className="mt-4 font-semibold">
+            {filter === "all" ? "현재 프로젝트가 없습니다." : filter === "open" ? "현재 모집 중인 프로젝트가 없습니다." : "모집 마감된 프로젝트가 없습니다."}
+          </p>
+          {filter === "all" && <p className="mt-1 text-sm text-muted-foreground">곧 새로운 프로젝트가 업로드될 예정이에요.</p>}
         </div>
       ) : (
         <ul className="mt-6 space-y-4">
-          {posts.map((post) => (
-            <li key={post.id} className="rounded-3xl bg-card border border-card-border overflow-hidden">
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-3 flex-wrap">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${post.isActive ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                        {post.isActive ? "진행중" : "마감"}
-                      </span>
-                      {post.organizationName && (
-                        <span className="text-xs text-muted-foreground font-medium">{post.organizationName}</span>
+          {filteredPosts.map((post) => {
+            const recruiting = isRecruiting(post);
+            return (
+              <li key={post.id} className="rounded-3xl bg-card border border-card-border overflow-hidden">
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${recruiting ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                          {recruiting ? "모집중" : "모집마감"}
+                        </span>
+                        {post.organizationName && (
+                          <span className="text-xs text-muted-foreground font-medium">{post.organizationName}</span>
+                        )}
+                      </div>
+                      <p className="font-extrabold text-base leading-snug">{post.title}</p>
+                      {(post.startDate || post.endDate) && (
+                        <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                          <Calendar size={12} />
+                          <span>신청기간: {post.startDate ?? "?"} ~ {post.endDate ?? "?"}</span>
+                        </div>
+                      )}
+                      {post.content && (
+                        <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{post.content}</p>
                       )}
                     </div>
-                    <p className="font-extrabold text-base leading-snug">{post.title}</p>
-                    {(post.startDate || post.endDate) && (
-                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                        <Calendar size={12} />
-                        <span>신청기간: {post.startDate ?? "?"} ~ {post.endDate ?? "?"}</span>
-                      </div>
-                    )}
-                    {post.content && (
-                      <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                    {recruiting && post.applicationUrl && (
+                      <a href={post.applicationUrl} target="_blank" rel="noopener noreferrer"
+                        className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-colors bg-primary text-primary-foreground hover:bg-primary/90">
+                        <ExternalLink size={13} />신청하기
+                      </a>
                     )}
                   </div>
-                  {post.applicationUrl && (
-                    <a href={post.applicationUrl} target="_blank" rel="noopener noreferrer"
-                      className={cn(
-                        "shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-colors",
-                        post.isActive
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-muted text-muted-foreground cursor-not-allowed pointer-events-none"
-                      )}>
-                      <ExternalLink size={13} />신청하기
-                    </a>
-                  )}
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
     </motion.div>

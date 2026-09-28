@@ -1,15 +1,20 @@
 import { Router, type IRouter } from "express";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and, or, gte } from "drizzle-orm";
 import { db, startupPostsTable } from "@workspace/db";
 import { requireAdmin } from "../lib/admin-auth";
 
 const router: IRouter = Router();
 
-router.get("/startup-posts", async (_req, res) => {
+router.get("/startup-posts", async (req, res) => {
+  const includeClosed = req.query.includeClosed === "true";
+  const todayInKorea = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const rows = await db
     .select()
     .from(startupPostsTable)
-    .where(eq(startupPostsTable.isActive, true))
+    .where(includeClosed ? undefined : and(
+      eq(startupPostsTable.isActive, true),
+      or(eq(startupPostsTable.endDate, ""), gte(startupPostsTable.endDate, todayInKorea)),
+    ))
     .orderBy(asc(startupPostsTable.displayOrder), asc(startupPostsTable.id));
   res.json(rows);
 });

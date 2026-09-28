@@ -41,6 +41,7 @@ import type {
   JobCategoryInput,
   JobListing,
   JobListingInput,
+  ListStartupPostsParams,
   MentorApplication,
   MentorArticle,
   MentorArticleInput,
@@ -2190,43 +2191,62 @@ export function useGetStartupApplication<
 }
 
 /**
- * @summary List active startup posts (public)
+ * @summary List startup posts (public, active only by default)
  */
-export const getListStartupPostsUrl = () => {
-  return `/api/startup-posts`;
+export const getListStartupPostsUrl = (params?: ListStartupPostsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/startup-posts?${stringifiedParams}`
+    : `/api/startup-posts`;
 };
 
 export const listStartupPosts = async (
+  params?: ListStartupPostsParams,
   options?: RequestInit,
 ): Promise<StartupPost[]> => {
-  return customFetch<StartupPost[]>(getListStartupPostsUrl(), {
+  return customFetch<StartupPost[]>(getListStartupPostsUrl(params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getListStartupPostsQueryKey = () => {
-  return [`/api/startup-posts`] as const;
+export const getListStartupPostsQueryKey = (
+  params?: ListStartupPostsParams,
+) => {
+  return [`/api/startup-posts`, ...(params ? [params] : [])] as const;
 };
 
 export const getListStartupPostsQueryOptions = <
   TData = Awaited<ReturnType<typeof listStartupPosts>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listStartupPosts>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: ListStartupPostsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listStartupPosts>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getListStartupPostsQueryKey();
+  const queryKey =
+    queryOptions?.queryKey ?? getListStartupPostsQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof listStartupPosts>>
-  > = ({ signal }) => listStartupPosts({ signal, ...requestOptions });
+  > = ({ signal }) => listStartupPosts(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof listStartupPosts>>,
@@ -2241,21 +2261,24 @@ export type ListStartupPostsQueryResult = NonNullable<
 export type ListStartupPostsQueryError = ErrorType<unknown>;
 
 /**
- * @summary List active startup posts (public)
+ * @summary List startup posts (public, active only by default)
  */
 
 export function useListStartupPosts<
   TData = Awaited<ReturnType<typeof listStartupPosts>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listStartupPosts>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getListStartupPostsQueryOptions(options);
+>(
+  params?: ListStartupPostsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listStartupPosts>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListStartupPostsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

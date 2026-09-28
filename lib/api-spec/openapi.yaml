@@ -689,7 +689,13 @@ paths:
     get:
       operationId: listStartupPosts
       tags: [startup-posts]
-      summary: List active startup posts (public)
+      summary: List startup posts (public, active only by default)
+      parameters:
+        - in: query
+          name: includeClosed
+          description: Include posts marked as recruitment closed
+          schema:
+            type: boolean
       responses:
         "200":
           description: OK

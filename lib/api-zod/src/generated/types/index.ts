@@ -33,6 +33,7 @@ export * from "./jobCategoryInput";
 export * from "./jobListing";
 export * from "./jobListingInput";
 export * from "./learningItem";
+export * from "./listStartupPostsParams";
 export * from "./mentorApplication";
 export * from "./mentorApplicationStatus";
 export * from "./mentorArticle";

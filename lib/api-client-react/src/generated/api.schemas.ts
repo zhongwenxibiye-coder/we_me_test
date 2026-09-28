@@ -419,6 +419,13 @@ export type UpdateStartupApplicationResultBody = {
   resultReason?: string;
 };
 
+export type ListStartupPostsParams = {
+  /**
+   * Include posts marked as recruitment closed
+   */
+  includeClosed?: boolean;
+};
+
 export type UpdateCreativeWorkSubmissionStatusBody = {
   status: string;
 };
