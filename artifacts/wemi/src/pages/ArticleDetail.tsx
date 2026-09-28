@@ -5,6 +5,7 @@ import { useGetMentor } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { RichContent } from "@/components/RichContent";
+import { SEO, SITE_URL } from "@/components/SEO";
 
 export default function ArticleDetail() {
   const [, params] = useRoute("/mentors/:mentorId/articles/:articleId");
@@ -37,6 +38,22 @@ export default function ArticleDetail() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 lg:px-10 py-12 lg:py-16">
+      <SEO
+        title={`${article.title} | ${mentor.name} 멘토 | 위미`}
+        description={`${mentor.name} 멘토가 전하는 인문계열 진로·취업 이야기, ${article.title}을 읽어보세요.`}
+        canonicalPath={`/mentors/${mentorId}/articles/${articleId}`}
+        type="article"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: article.title,
+          description: `${mentor.name} 멘토가 전하는 인문계열 진로·취업 이야기`,
+          author: { "@type": "Person", name: mentor.name },
+          publisher: { "@type": "Organization", name: "위미", url: SITE_URL },
+          mainEntityOfPage: `${SITE_URL}/mentors/${mentorId}/articles/${articleId}`,
+          inLanguage: "ko-KR",
+        }}
+      />
       <Link href={`/mentors/${mentorId}`}>
         <button className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover-elevate rounded-full px-3 py-1.5 -ml-3">
           <ChevronLeft size={16} />

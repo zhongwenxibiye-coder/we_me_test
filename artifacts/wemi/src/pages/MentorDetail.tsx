@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/utils";
 import { RichContent } from "@/components/RichContent";
+import { SEO, SITE_URL } from "@/components/SEO";
 
 // ── 아티클 인라인 확장 아이템 ──────────────────────────────────
 
@@ -91,6 +92,19 @@ export default function MentorDetail() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 lg:px-10 py-12 lg:py-16">
+      <SEO
+        title={`${mentor.name} 멘토 프로필 | 위미`}
+        description={`${mentor.name} 멘토의 ${mentor.major} 전공과 현업 경험을 확인하고 인문계열 진로에 대한 이야기를 만나보세요.`}
+        canonicalPath={`/mentors/${mentor.id}`}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Person",
+          name: mentor.name,
+          description: mentor.headlineText || mentor.bio || undefined,
+          jobTitle: mentor.major,
+          url: `${SITE_URL}/mentors/${mentor.id}`,
+        }}
+      />
       <Link href="/mentors">
         <button className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover-elevate rounded-full px-3 py-1.5 -ml-3">
           <ChevronLeft size={16} />

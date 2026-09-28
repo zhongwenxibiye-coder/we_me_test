@@ -31,6 +31,7 @@ import Terms from "@/pages/Terms";
 import Contact from "@/pages/Contact";
 import About from "@/pages/About";
 import NotFound from "@/pages/not-found";
+import { RouteSEO } from "@/components/SEO";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ function Router() {
   return (
     <WebShell>
       <ScrollToTop />
+      <RouteSEO />
       <Switch>
         <Route path="/" component={Landing} />
         <Route path="/signup" component={SignUp} />

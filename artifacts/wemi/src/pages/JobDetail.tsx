@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/utils";
 import { RichContent } from "@/components/RichContent";
+import { SEO } from "@/components/SEO";
 
 export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");
@@ -66,6 +67,11 @@ export default function JobDetail() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 lg:px-10 py-12 lg:py-16">
+      <SEO
+        title={`${job.title} 직무 상세 | 위미`}
+        description={`${job.title} 직무의 역할과 인문계열 전공자를 위한 학습 내용을 확인해 보세요. ${job.shortDescription}`}
+        canonicalPath={`/jobs/${job.id}`}
+      />
       <Link href="/jobs">
         <button className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover-elevate rounded-full px-3 py-1.5 -ml-3">
           <ChevronLeft size={16} />

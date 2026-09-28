@@ -8,6 +8,7 @@ import { useHumanitiesArticleLikes } from "@/hooks/useHumanitiesArticleLikes";
 import { getSupabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
+import { SEO, SITE_URL } from "@/components/SEO";
 
 function getOrCreateViewerSession(): string {
   const KEY = "wemi-viewer-session";
@@ -152,6 +153,25 @@ export default function HumanitiesArticle() {
         <div className="text-center py-24 text-muted-foreground">콘텐츠를 찾을 수 없습니다.</div>
       ) : (
         <motion.article initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+          <SEO
+            title={`${article.title} | 인문학 콘텐츠 | 위미`}
+            description={`${article.category} 분야의 인문학 콘텐츠, ${article.title}을 읽고 새로운 관점과 상식을 만나보세요.`}
+            canonicalPath={`/humanities/articles/${article.id}`}
+            imagePath={article.imageUrl || "/opengraph.jpg"}
+            type="article"
+            structuredData={{
+              "@context": "https://schema.org",
+              "@type": "Article",
+              headline: article.title,
+              description: `${article.category} 분야의 인문학 콘텐츠`,
+              author: { "@type": "Person", name: article.authorName || "위미" },
+              datePublished: article.createdAt,
+              image: article.imageUrl || `${SITE_URL}/opengraph.jpg`,
+              publisher: { "@type": "Organization", name: "위미", url: SITE_URL },
+              mainEntityOfPage: `${SITE_URL}/humanities/articles/${article.id}`,
+              inLanguage: "ko-KR",
+            }}
+          />
           {!isCard && (
             article.imageUrl ? (
               <div className="mb-8 rounded-2xl overflow-hidden border border-border">

@@ -8,6 +8,7 @@ import {
   useListCreativeEpisodes,
 } from "@workspace/api-client-react";
 import { RichContent } from "@/components/RichContent";
+import { SEO, SITE_URL } from "@/components/SEO";
 
 export default function CreativeEpisode() {
   const [, params] = useRoute("/creative-space/:workId/episodes/:episodeId");
@@ -48,6 +49,22 @@ export default function CreativeEpisode() {
         <div className="text-center py-24 text-muted-foreground">콘텐츠를 찾을 수 없습니다.</div>
       ) : (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+          <SEO
+            title={`${episode.title} | ${work.title} | 위미 창작 공간`}
+            description={`${work.title}의 ${episode.episodeNumber}화, ${episode.title}을 읽어보세요. 위미 창작 공간에서 만나는 인문계열 창작 콘텐츠입니다.`}
+            canonicalPath={`/creative-space/${workId}/episodes/${episodeId}`}
+            type="article"
+            structuredData={{
+              "@context": "https://schema.org",
+              "@type": "CreativeWork",
+              name: episode.title,
+              headline: `${episode.episodeNumber}화: ${episode.title}`,
+              author: { "@type": "Person", name: work.authorName || "위미 창작자" },
+              isPartOf: { "@type": "CreativeWorkSeries", name: work.title },
+              url: `${SITE_URL}/creative-space/${workId}/episodes/${episodeId}`,
+              inLanguage: "ko-KR",
+            }}
+          />
           <div className="mb-6">
             <p className="text-xs font-semibold" style={{ color: "hsl(45 92% 38%)" }}>
               [{work.category}] {work.title}
