@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/utils";
+import { isStartupPostRecruiting } from "@/lib/startupPostStatus";
 import {
   Dialog,
   DialogContent,
@@ -65,11 +66,8 @@ function SelectGroup({
 function StartupPostsList() {
   const [filter, setFilter] = useState<"all" | "open" | "closed">("all");
   const { data: posts = [], isLoading, isError } = useListStartupPosts({ includeClosed: true });
-  const todayInKorea = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const isRecruiting = (post: StartupPost) =>
-    post.isActive && (!post.endDate || post.endDate >= todayInKorea);
   const filteredPosts = posts.filter((post) =>
-    filter === "all" || isRecruiting(post) === (filter === "open")
+    filter === "all" || isStartupPostRecruiting(post) === (filter === "open")
   );
 
   return (
@@ -120,7 +118,7 @@ function StartupPostsList() {
       ) : (
         <ul className="mt-6 space-y-4">
           {filteredPosts.map((post) => {
-            const recruiting = isRecruiting(post);
+            const recruiting = isStartupPostRecruiting(post);
             return (
               <li key={post.id} className="rounded-3xl bg-card border border-card-border overflow-hidden">
                 <div className="p-5">

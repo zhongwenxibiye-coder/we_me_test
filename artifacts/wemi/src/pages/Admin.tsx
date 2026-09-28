@@ -41,6 +41,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextArea } from "@/components/RichTextArea";
 import { Mascot } from "@/components/Mascot";
+import { isStartupPostRecruiting } from "@/lib/startupPostStatus";
 
 const STORAGE_KEY = "wemi-admin-password";
 
@@ -684,7 +685,6 @@ const POST_FORM_DEFAULTS: PostFormData = { title: "", content: "", organizationN
 function StartupTab({ password }: { password: string }) {
   const queryClient = useQueryClient();
   const ro = useMemo(() => ({ headers: { "x-admin-password": password } }), [password]);
-  const todayInKorea = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
   const [subTab, setSubTab] = useState<"apps" | "posts">("apps");
 
@@ -788,14 +788,16 @@ function StartupTab({ password }: { password: string }) {
                 <Textarea value={postForm.content} onChange={(e) => setPostForm((f) => ({ ...f, content: e.target.value }))} rows={4} className="mt-1 rounded-xl bg-background" /></div>
               <div className="flex items-center gap-3">
                 <label className="text-sm font-semibold flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={postForm.isActive} onChange={(e) => setPostForm((f) => ({ ...f, isActive: e.target.checked }))} />모집중으로 설정
+                  <input type="checkbox" data-testid="input-startup-post-active" checked={postForm.isActive} onChange={(e) => setPostForm((f) => ({ ...f, isActive: e.target.checked }))} />모집중으로 설정
                 </label>
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-muted-foreground">순서</label>
                   <Input type="number" min="1" value={postForm.displayOrder} onChange={(e) => setPostForm((f) => ({ ...f, displayOrder: e.target.value }))} className="h-8 w-20 rounded-xl bg-background" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">체크되어 있어도 신청 마감일이 지나면 자동으로 모집마감으로 표시됩니다. 다시 모집하려면 체크 후 마감일을 연장하세요.</p>
+              <p className="text-xs text-muted-foreground" data-testid="status-startup-post-form">
+                현재 표시: {isStartupPostRecruiting(postForm) ? "모집중" : "모집마감"} · 체크를 해제하면 즉시 모집마감으로 표시됩니다. 체크해도 신청 마감일이 지나면 자동으로 모집마감으로 표시됩니다 (마감일 당일까지 모집중). 마감일이 없으면 체크 상태만 적용됩니다. 다시 모집하려면 체크 후 마감일을 연장하세요.
+              </p>
               <div className="flex gap-2">
                 <Button size="sm" className="rounded-full" onClick={handleSavePost} disabled={!postForm.title}>저장</Button>
                 <Button size="sm" variant="outline" className="rounded-full bg-card" onClick={() => setPostEditing(null)}>취소</Button>
@@ -807,13 +809,13 @@ function StartupTab({ password }: { password: string }) {
               ? <div className="rounded-3xl bg-card border border-card-border p-8 text-center text-muted-foreground">공고가 없습니다. 추가해주세요.</div>
               : <ul className="space-y-3">
                 {posts.map((p: StartupPost) => {
-                  const recruiting = p.isActive && (!p.endDate || p.endDate >= todayInKorea);
+                  const recruiting = isStartupPostRecruiting(p);
                   return (
                     <li key={p.id} className="rounded-2xl bg-card border border-card-border px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-extrabold">{p.title}</p>
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${recruiting ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>{recruiting ? "모집중" : "모집마감"}</span>
+                          <span data-testid={`status-startup-post-${p.id}`} className={`text-xs px-2 py-0.5 rounded-full font-medium ${recruiting ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>{recruiting ? "모집중" : "모집마감"}</span>
                         </div>
                         {p.organizationName && <p className="text-xs text-muted-foreground mt-0.5">{p.organizationName}</p>}
                         {(p.startDate || p.endDate) && <p className="text-xs text-muted-foreground mt-0.5">{p.startDate} ~ {p.endDate}</p>}
