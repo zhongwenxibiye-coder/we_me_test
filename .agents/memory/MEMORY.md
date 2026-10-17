@@ -1,3 +1,4 @@
 - [Supabase tables needed](supabase-new-tables.md) — view counts and humanities likes require new tables not yet created in Supabase dashboard.
 - [Quiz streak architecture](quiz-streak-arch.md) — guest streak in localStorage; member streak in Supabase user_metadata; merge on login with abuse prevention.
 - [TipTap inline images](tiptap-inline-images.md) — @tiptap/extension-image installed (peer mismatch warning OK); enableImages prop on RichTextArea; old episode images auto-inlined when editing.
+- [사업화 지원금](startup-grant.md) — 위미 정부지원금 200만원 확보, 비목 간 금액한도 없음.
