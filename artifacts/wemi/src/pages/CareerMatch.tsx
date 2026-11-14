@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/utils";
 import { isStartupPostRecruiting } from "@/lib/startupPostStatus";
+import { compareStartupPostsByDeadline } from "@/lib/startupPostSort";
 import {
   Dialog,
   DialogContent,
@@ -68,7 +69,7 @@ function StartupPostsList() {
   const { data: posts = [], isLoading, isError } = useListStartupPosts({ includeClosed: true });
   const filteredPosts = posts.filter((post) =>
     filter === "all" || isStartupPostRecruiting(post) === (filter === "open")
-  );
+  ).sort(compareStartupPostsByDeadline);
 
   return (
     <motion.div
