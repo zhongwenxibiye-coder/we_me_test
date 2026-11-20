@@ -185,14 +185,13 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
         <Mascot size={80} animate="bob" className="hidden sm:block shrink-0" />
       </motion.header>
       <div className="mt-5 rounded-2xl border border-border bg-card p-4 text-sm" aria-live="polite">
-        <p className="font-semibold">회원당 하루 1회 탐색 · 서비스 전체 하루 AI 예산 $1</p>
-        <p className="mt-1 text-muted-foreground">첫 답변을 보내면 오늘의 탐색이 시작돼요. 같은 탐색의 후속 질문과 결과 확인은 이어서 할 수 있어요. 한국 시간 자정에 초기화되며, 전체 예산이 부족하면 다음 AI 요청은 중단돼요.</p>
+        <p className="font-semibold">현재는 테스트 기능으로, 회원당 하루 1회 탐색만 가능합니다.</p>
+        <p className="mt-1 text-muted-foreground">일일 한도 초과시 탐색이 되지 않을 수 있습니다. </p>
         {usage.data && <p className="mt-2 font-semibold">{continuingToday && exhausted && !complete ? "오늘의 탐색을 이어서 진행 중이에요." : `오늘 남은 새 탐색: ${Math.max(0, usage.data.dailyLimit - usage.data.used)}회 / ${usage.data.dailyLimit}회`}</p>}
         {exhausted && <p className="mt-2 text-muted-foreground">새로운 탐색은 내일 가능해요. 진행 중인 대화는 시작한 브라우저에서 이어가고, 기존 결과는 계속 볼 수 있어요.</p>}
         {budgetExhausted && <p className="mt-2 text-destructive">오늘의 서비스 전체 AI 예산이 소진됐어요. 내일 다시 이용해 주세요.</p>}
         {usage.isError && <div className="mt-2"><span role="alert">이용 한도를 확인하지 못했어요. </span><button type="button" className="underline" onClick={() => void usage.refetch()}>다시 확인하기</button></div>}
       </div>
-
       {started && (
         <div className="mt-6 flex items-center gap-4" data-testid="status-progress">
           <div className="flex-1">
@@ -233,7 +232,6 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
           </Button>
         </div>
       )}
-
       <AnimatePresence mode="wait">
         {!started ? (
           <motion.section
@@ -475,7 +473,6 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
           </motion.section>
         )}
       </AnimatePresence>
-
       <AlertDialog open={confirmRestart} onOpenChange={setConfirmRestart}>
         <AlertDialogContent className="rounded-3xl">
           <AlertDialogHeader>
