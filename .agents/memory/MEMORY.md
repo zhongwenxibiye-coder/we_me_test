@@ -2,3 +2,4 @@
 - [Quiz streak architecture](quiz-streak-arch.md) — guest streak in localStorage; member streak in Supabase user_metadata; merge on login with abuse prevention.
 - [TipTap inline images](tiptap-inline-images.md) — @tiptap/extension-image installed (peer mismatch warning OK); enableImages prop on RichTextArea; old episode images auto-inlined when editing.
 - [사업화 지원금](startup-grant.md) — 위미 정부지원금 200만원 확보, 비목 간 금액한도 없음.
+- [멘토의 서비스 방향 피드백](mentor-positioning.md) — 전공에 한정되지 않는 직무 탐색과 멘토링을 핵심 강점으로 본 의견.
