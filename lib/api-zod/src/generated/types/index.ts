@@ -7,6 +7,7 @@
  */
 
 export * from "./apiError";
+export * from "./careerAiUsage";
 export * from "./careerExplorationInput";
 export * from "./careerExplorationMessage";
 export * from "./careerExplorationMessageRole";

@@ -39,7 +39,8 @@ export default function Login() {
           localStorage.removeItem(PENDING_PROFILE_PREFIX + normalizedEmail);
         }
       }
-      navigate("/");
+      const next = new URLSearchParams(window.location.search).get("next");
+      navigate(next === "/career-exploration" ? next : "/");
     }
   };
 

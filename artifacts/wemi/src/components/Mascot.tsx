@@ -15,7 +15,8 @@ export function Mascot({ size = 80, className, animate = "none" }: MascotProps) 
       alt="위미 캐릭터"
       width={size}
       height={size}
-      className={cn("inline-block select-none", animClass, className)}
+      style={{ width: size, height: size, objectFit: "contain", flexShrink: 0, alignSelf: "flex-start" }}
+      className={cn("inline-block select-none aspect-square", animClass, className)}
       draggable={false}
     />
   );

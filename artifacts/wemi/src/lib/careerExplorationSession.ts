@@ -53,9 +53,9 @@ export function parseCareerSession(raw: string | null): CareerExplorationSaved {
   }
 }
 
-export function loadCareerSession(): CareerExplorationSaved {
+export function loadCareerSession(memberId?: string): CareerExplorationSaved {
   try {
-    return parseCareerSession(sessionStorage.getItem(CAREER_STORAGE_KEY));
+    return parseCareerSession(sessionStorage.getItem(memberId ? `${CAREER_STORAGE_KEY}:${memberId}` : CAREER_STORAGE_KEY));
   } catch {
     return { messages: [], result: null };
   }

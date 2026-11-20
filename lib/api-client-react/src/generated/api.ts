@@ -18,6 +18,7 @@ import type {
 
 import type {
   ApiError,
+  CareerAiUsage,
   CareerExplorationInput,
   CareerExplorationResult,
   CareerVideo,
@@ -70,6 +71,82 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Authenticated member daily AI request allowance
+ */
+export const getGetCareerExplorationUsageUrl = () => {
+  return `/api/openai/career-exploration`;
+};
+
+export const getCareerExplorationUsage = async (
+  options?: RequestInit,
+): Promise<CareerAiUsage> => {
+  return customFetch<CareerAiUsage>(getGetCareerExplorationUsageUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCareerExplorationUsageQueryKey = () => {
+  return [`/api/openai/career-exploration`] as const;
+};
+
+export const getGetCareerExplorationUsageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCareerExplorationUsage>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCareerExplorationUsage>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetCareerExplorationUsageQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCareerExplorationUsage>>
+  > = ({ signal }) => getCareerExplorationUsage({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCareerExplorationUsage>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCareerExplorationUsageQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCareerExplorationUsage>>
+>;
+export type GetCareerExplorationUsageQueryError = ErrorType<void>;
+
+/**
+ * @summary Authenticated member daily AI request allowance
+ */
+
+export function useGetCareerExplorationUsage<
+  TData = Awaited<ReturnType<typeof getCareerExplorationUsage>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCareerExplorationUsage>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCareerExplorationUsageQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Adaptive career interview restricted to published learning jobs

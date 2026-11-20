@@ -23,6 +23,21 @@ tags:
   - name: career-videos
 paths:
   /openai/career-exploration:
+    get:
+      operationId: getCareerExplorationUsage
+      tags: [job-listings]
+      summary: Authenticated member daily AI request allowance
+      responses:
+        "200":
+          description: Member usage in Korea calendar day
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerAiUsage"
+        "401":
+          description: Member login required
+        "503":
+          description: Usage service unavailable
     post:
       operationId: exploreCareer
       tags: [job-listings]
@@ -48,6 +63,8 @@ paths:
                 $ref: "#/components/schemas/ApiError"
         "429":
           description: Too many requests
+        "401":
+          description: Member login required
         "503":
           description: AI or learning catalog temporarily unavailable
   /healthz:
@@ -1515,6 +1532,16 @@ components:
             $ref: "#/components/schemas/ApiError"
 
   schemas:
+    CareerAiUsage:
+      type: object
+      required: [dailyLimit, used, resetDay]
+      properties:
+        dailyLimit:
+          type: integer
+        used:
+          type: integer
+        resetDay:
+          type: string
     CareerExplorationMessage:
       type: object
       required: [role, content]

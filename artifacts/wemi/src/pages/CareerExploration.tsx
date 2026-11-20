@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, RotateCcw, ShieldAlert, Send, AlertCircle, BookOpen, Compass } from "lucide-react";
 import {
   useExploreCareer,
+  useGetCareerExplorationUsage,
   type CareerExplorationMessage,
   type CareerExplorationResult,
 } from "@workspace/api-client-react";
@@ -21,9 +22,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { CAREER_STORAGE_KEY, loadCareerSession } from "@/lib/careerExplorationSession";
+import { useAuth } from "@/contexts/AuthContext";
 
 const TOTAL = 5;
-const MAX_LEN = 2000;
+const MAX_LEN = 800;
 const UNSURE = "잘 모르겠어요";
 
 function errorMessage(err: unknown): string {
@@ -39,7 +41,28 @@ function errorMessage(err: unknown): string {
 }
 
 export default function CareerExploration() {
-  const [initial] = useState(loadCareerSession);
+  const { user, loading } = useAuth();
+  if (loading) return <div className="mx-auto max-w-4xl px-6 py-16 text-muted-foreground">회원 정보를 확인하는 중...</div>;
+  if (!user) return (
+    <div className="mx-auto max-w-3xl px-6 py-16">
+      <h1 className="text-3xl font-extrabold">AI 직무 탐색</h1>
+      <div className="mt-6 rounded-3xl border bg-card p-7">
+        <h2 className="text-xl font-bold">회원 전용 기능이에요</h2>
+        <p className="mt-3 text-muted-foreground leading-relaxed">회원가입과 이메일 인증 후 로그인하면 AI와 대화하며 나에게 맞는 직무 3개를 탐색할 수 있어요.</p>
+        <p className="mt-3 text-sm text-muted-foreground">무분별한 사용을 막기 위해 회원별 일일 이용 한도가 적용돼요.</p>
+        <div className="mt-6 flex gap-3">
+          <Link href="/login?next=/career-exploration"><Button>로그인하고 시작하기</Button></Link>
+          <Link href="/signup"><Button variant="outline">회원가입</Button></Link>
+        </div>
+      </div>
+    </div>
+  );
+  return <MemberCareerExploration key={user.id} memberId={user.id} />;
+}
+
+function MemberCareerExploration({ memberId }: { memberId: string }) {
+  const { session } = useAuth();
+  const [initial] = useState(() => loadCareerSession(memberId));
   const [messages, setMessages] = useState<CareerExplorationMessage[]>(initial.messages);
   const [result, setResult] = useState<CareerExplorationResult | null>(initial.result);
   const [draft, setDraft] = useState("");
@@ -47,19 +70,30 @@ export default function CareerExploration() {
   const [error, setError] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmRestart, setConfirmRestart] = useState(false);
-  const explore = useExploreCareer();
+  const authorization = { Authorization: `Bearer ${session?.access_token ?? ""}` };
+  const usage = useGetCareerExplorationUsage({
+    request: { headers: authorization },
+    query: { queryKey: ["career-ai-usage", memberId], staleTime: 0, refetchOnWindowFocus: true, retry: false },
+  });
+  const exhausted = !!usage.data && usage.data.used >= usage.data.dailyLimit;
+  const unavailable = usage.isLoading || usage.isError || exhausted;
+  const explore = useExploreCareer({
+    request: { headers: authorization },
+    mutation: { retry: false, onSettled: () => { void usage.refetch(); } },
+  });
   const pending = explore.isPending;
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
-      if (messages.length === 0 && !result) sessionStorage.removeItem(CAREER_STORAGE_KEY);
-      else sessionStorage.setItem(CAREER_STORAGE_KEY, JSON.stringify({ messages, result }));
+      const storageKey = `${CAREER_STORAGE_KEY}:${memberId}`;
+      if (messages.length === 0 && !result) sessionStorage.removeItem(storageKey);
+      else sessionStorage.setItem(storageKey, JSON.stringify({ messages, result }));
     } catch {
       /* storage unavailable */
     }
-  }, [messages, result]);
+  }, [messages, result, memberId]);
 
   const complete = result?.status === "complete";
   const started = messages.length > 0;
@@ -70,6 +104,7 @@ export default function CareerExploration() {
   }, [messages.length, pending, started, complete]);
 
   const begin = async () => {
+    if (pending || unavailable) return;
     setError(null);
     try {
       const res = await explore.mutateAsync({ data: { messages: [] } });
@@ -87,7 +122,8 @@ export default function CareerExploration() {
 
   const send = async (text: string) => {
     const content = text.trim();
-    if (!content || content.length > MAX_LEN || pending) return;
+    const retryLastResponse = exhausted && !!error && content === lastAttempt;
+    if (!content || content.length > MAX_LEN || pending || (unavailable && !retryLastResponse)) return;
     setError(null);
     setLastAttempt(content);
     const userMsg: CareerExplorationMessage = { role: "user", content };
@@ -144,6 +180,13 @@ export default function CareerExploration() {
         </div>
         <Mascot size={80} animate="bob" className="hidden sm:block shrink-0" />
       </motion.header>
+      <div className="mt-5 rounded-2xl border border-border bg-card p-4 text-sm" aria-live="polite">
+        <p className="font-semibold">회원당 하루 AI 요청 15회 · 탐색 약 3회분</p>
+        <p className="mt-1 text-muted-foreground">첫 질문은 AI를 호출하지 않아요. 추가 질문 4회와 최종 추천 1회가 차감되며, 한국 시간 자정에 초기화돼요. AI 요청 후 실패한 경우도 한도에 포함돼요.</p>
+        {usage.data && <p className="mt-2 font-semibold">오늘 남은 AI 요청: {Math.max(0, usage.data.dailyLimit - usage.data.used)}회 / {usage.data.dailyLimit}회</p>}
+        {exhausted && <p className="mt-2 text-destructive">오늘 한도를 모두 사용했어요. 기존 결과는 계속 볼 수 있으며, 내일 다시 탐색할 수 있어요.</p>}
+        {usage.isError && <div className="mt-2"><span role="alert">이용 한도를 확인하지 못했어요. </span><button type="button" className="underline" onClick={() => void usage.refetch()}>다시 확인하기</button></div>}
+      </div>
 
       {started && (
         <div className="mt-6 flex items-center gap-4" data-testid="status-progress">
@@ -225,7 +268,8 @@ export default function CareerExploration() {
               <ul className="mt-4 space-y-2.5 text-sm leading-relaxed text-accent-foreground/90 list-disc pl-5" data-testid="text-notice">
                 <li>입력한 답변은 추천 생성을 위해 외부 AI 서비스로 전송돼요.</li>
                 <li>이름, 연락처, 학교·학번, 주소 같은 개인정보는 적지 마세요.</li>
-                <li>위미는 대화를 서버에 저장하지 않으며, 이 브라우저 탭에 임시 보관해요. 외부 AI의 데이터 처리 정책은 별도로 적용돼요.</li>
+                <li>대화 원문은 서버에 영구 저장하지 않아요. 중복 호출 방지를 위해 AI 응답을 서버 메모리에 최대 10분간 임시 보관하고, 회원별 이용 횟수를 기록해요. 대화·결과는 이 브라우저 탭에 임시 보관돼요.</li>
+                <li>외부 AI의 데이터 처리 정책은 별도로 적용돼요.</li>
                 <li>검증된 적성검사가 아닌 탐색용 대화예요. 결과는 참고로만 봐주세요.</li>
               </ul>
               <label className="mt-6 flex items-start gap-3 cursor-pointer select-none rounded-2xl bg-background/70 border border-border p-4">
@@ -240,7 +284,7 @@ export default function CareerExploration() {
               </label>
               <Button
                 onClick={() => void begin()}
-                disabled={!acknowledged || pending}
+                disabled={!acknowledged || pending || unavailable}
                 className="mt-4 h-12 rounded-2xl text-base font-bold gap-2"
                 data-testid="button-begin"
               >
@@ -387,7 +431,7 @@ export default function CareerExploration() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); void send(draft); }
                 }}
-                disabled={pending}
+                disabled={pending || unavailable}
                 rows={4}
                 placeholder="떠오르는 대로 편하게 적어주세요. 개인정보는 빼고요."
                 aria-describedby="career-answer-hint"
@@ -400,12 +444,12 @@ export default function CareerExploration() {
                   {draft.length} / {MAX_LEN}
                 </span>
               </div>
-              {error && <ErrorBox message={error} onRetry={() => void send(lastAttempt ?? draft)} pending={pending} retryDisabled={!(lastAttempt ?? draft).trim()} />}
+              {error && <ErrorBox message={error} onRetry={() => void send(lastAttempt ?? draft)} pending={pending} retryDisabled={usage.isLoading || usage.isError || !(lastAttempt ?? draft).trim()} />}
               <div className="mt-3 flex flex-col-reverse sm:flex-row sm:justify-between gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={pending}
+                  disabled={pending || unavailable}
                   onClick={() => void send(UNSURE)}
                   className="rounded-xl"
                   data-testid="button-unsure"
@@ -414,7 +458,7 @@ export default function CareerExploration() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={pending || !draft.trim()}
+                  disabled={pending || unavailable || !draft.trim()}
                   className="rounded-xl gap-1.5 font-bold"
                   data-testid="button-send"
                 >

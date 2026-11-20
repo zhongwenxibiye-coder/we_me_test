@@ -8,6 +8,15 @@
 import * as zod from "zod";
 
 /**
+ * @summary Authenticated member daily AI request allowance
+ */
+export const GetCareerExplorationUsageResponse = zod.object({
+  dailyLimit: zod.number(),
+  used: zod.number(),
+  resetDay: zod.string(),
+});
+
+/**
  * @summary Adaptive career interview restricted to published learning jobs
  */
 export const exploreCareerBodyMessagesItemContentMax = 2000;

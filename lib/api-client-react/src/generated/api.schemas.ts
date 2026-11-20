@@ -5,6 +5,12 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface CareerAiUsage {
+  dailyLimit: number;
+  used: number;
+  resetDay: string;
+}
+
 export type CareerExplorationMessageRole =
   (typeof CareerExplorationMessageRole)[keyof typeof CareerExplorationMessageRole];
 
