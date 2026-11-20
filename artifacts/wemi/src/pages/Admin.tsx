@@ -42,6 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RichTextArea } from "@/components/RichTextArea";
 import { Mascot } from "@/components/Mascot";
 import { isStartupPostRecruiting } from "@/lib/startupPostStatus";
+import { useKoreanToday } from "@/hooks/useKoreanToday";
 
 const STORAGE_KEY = "wemi-admin-password";
 
@@ -684,6 +685,7 @@ const POST_FORM_DEFAULTS: PostFormData = { title: "", content: "", organizationN
 
 function StartupTab({ password }: { password: string }) {
   const queryClient = useQueryClient();
+  const todayInKorea = useKoreanToday();
   const ro = useMemo(() => ({ headers: { "x-admin-password": password } }), [password]);
 
   const [subTab, setSubTab] = useState<"apps" | "posts">("apps");
@@ -796,7 +798,7 @@ function StartupTab({ password }: { password: string }) {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground" data-testid="status-startup-post-form">
-                현재 표시: {isStartupPostRecruiting(postForm) ? "모집중" : "모집마감"} · 체크를 해제하면 즉시 모집마감으로 표시됩니다. 체크해도 신청 마감일이 지나면 자동으로 모집마감으로 표시됩니다 (마감일 당일까지 모집중). 마감일이 없으면 체크 상태만 적용됩니다. 다시 모집하려면 체크 후 마감일을 연장하세요.
+                현재 표시: {isStartupPostRecruiting(postForm, todayInKorea) ? "모집중" : "모집마감"} · 체크를 해제하면 즉시 모집마감으로 표시됩니다. 체크해도 신청 마감일이 지나면 자동으로 모집마감으로 표시됩니다 (마감일 당일까지 모집중). 마감일이 없으면 체크 상태만 적용됩니다. 다시 모집하려면 체크 후 마감일을 연장하세요.
               </p>
               <div className="flex gap-2">
                 <Button size="sm" className="rounded-full" onClick={handleSavePost} disabled={!postForm.title}>저장</Button>
@@ -809,7 +811,7 @@ function StartupTab({ password }: { password: string }) {
               ? <div className="rounded-3xl bg-card border border-card-border p-8 text-center text-muted-foreground">공고가 없습니다. 추가해주세요.</div>
               : <ul className="space-y-3">
                 {posts.map((p: StartupPost) => {
-                  const recruiting = isStartupPostRecruiting(p);
+                  const recruiting = isStartupPostRecruiting(p, todayInKorea);
                   return (
                     <li key={p.id} className="rounded-2xl bg-card border border-card-border px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
                       <div>

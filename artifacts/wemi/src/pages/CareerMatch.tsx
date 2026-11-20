@@ -16,6 +16,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import { useKoreanToday } from "@/hooks/useKoreanToday";
+
 const REGISTRATION_OPTIONS = [
   "예비창업자(사업자등록을 하지 않은 상태)",
   "사업자등록 완료(개인사업자)",
@@ -66,9 +68,10 @@ function SelectGroup({
 
 function StartupPostsList() {
   const [filter, setFilter] = useState<"all" | "open" | "closed">("all");
+  const todayInKorea = useKoreanToday();
   const { data: posts = [], isLoading, isError } = useListStartupPosts({ includeClosed: true });
   const filteredPosts = posts.filter((post) =>
-    filter === "all" || isStartupPostRecruiting(post) === (filter === "open")
+    filter === "all" || isStartupPostRecruiting(post, todayInKorea) === (filter === "open")
   ).sort(compareStartupPostsByDeadline);
 
   return (
@@ -119,7 +122,7 @@ function StartupPostsList() {
       ) : (
         <ul className="mt-6 space-y-4">
           {filteredPosts.map((post) => {
-            const recruiting = isStartupPostRecruiting(post);
+            const recruiting = isStartupPostRecruiting(post, todayInKorea);
             return (
               <li key={post.id} className="rounded-3xl bg-card border border-card-border overflow-hidden">
                 <div className="p-5">
