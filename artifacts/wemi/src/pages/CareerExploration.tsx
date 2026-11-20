@@ -185,7 +185,7 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
         <Mascot size={80} animate="bob" className="hidden sm:block shrink-0" />
       </motion.header>
       <div className="mt-5 rounded-2xl border border-border bg-card p-4 text-sm" aria-live="polite">
-        <p className="font-semibold">현재는 테스트 기능으로, 회원당 하루 1회 탐색만 가능합니다.</p>
+        <p className="font-semibold">현재는 테스트 기능으로, 회원당 하루 1회만 탐색 가능합니다.</p>
         <p className="mt-1 text-muted-foreground">일일 한도 초과시 탐색이 되지 않을 수 있습니다. </p>
         {usage.data && <p className="mt-2 font-semibold">{continuingToday && exhausted && !complete ? "오늘의 탐색을 이어서 진행 중이에요." : `오늘 남은 새 탐색: ${Math.max(0, usage.data.dailyLimit - usage.data.used)}회 / ${usage.data.dailyLimit}회`}</p>}
         {exhausted && <p className="mt-2 text-muted-foreground">새로운 탐색은 내일 가능해요. 진행 중인 대화는 시작한 브라우저에서 이어가고, 기존 결과는 계속 볼 수 있어요.</p>}
