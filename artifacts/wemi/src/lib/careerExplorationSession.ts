@@ -17,6 +17,7 @@ function isMessage(value: unknown): value is CareerExplorationMessage {
 function isResult(value: unknown): value is CareerExplorationResult {
   if (!value || typeof value !== "object") return false;
   const result = value as Record<string, unknown>;
+  if (typeof result.explorationDay !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(result.explorationDay)) return false;
   if (result.status !== "question" && result.status !== "complete") return false;
   if (typeof result.question !== "string" || typeof result.summary !== "string"
     || typeof result.answeredCount !== "number" || !Number.isInteger(result.answeredCount)

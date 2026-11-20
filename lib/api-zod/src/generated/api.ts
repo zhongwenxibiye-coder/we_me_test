@@ -14,16 +14,26 @@ export const GetCareerExplorationUsageResponse = zod.object({
   dailyLimit: zod.number(),
   used: zod.number(),
   resetDay: zod.string(),
+  inProgress: zod.boolean(),
+  serviceBudgetUsd: zod.number(),
+  serviceBudgetExhausted: zod.boolean(),
 });
 
 /**
  * @summary Adaptive career interview restricted to published learning jobs
  */
+export const exploreCareerBodyExplorationDayRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}$",
+);
 export const exploreCareerBodyMessagesItemContentMax = 2000;
 
 export const exploreCareerBodyMessagesMax = 14;
 
 export const ExploreCareerBody = zod.object({
+  explorationDay: zod
+    .string()
+    .regex(exploreCareerBodyExplorationDayRegExp)
+    .optional(),
   messages: zod
     .array(
       zod.object({
@@ -40,6 +50,7 @@ export const ExploreCareerBody = zod.object({
 export const exploreCareerResponseRecommendationsMax = 3;
 
 export const ExploreCareerResponse = zod.object({
+  explorationDay: zod.string(),
   status: zod.enum(["question", "complete"]),
   question: zod.string(),
   summary: zod.string(),

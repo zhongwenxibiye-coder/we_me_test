@@ -76,7 +76,10 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
     query: { queryKey: ["career-ai-usage", memberId], staleTime: 0, refetchOnWindowFocus: true, retry: false },
   });
   const exhausted = !!usage.data && usage.data.used >= usage.data.dailyLimit;
-  const unavailable = usage.isLoading || usage.isError || exhausted;
+  const continuingToday = !!result && result.explorationDay === usage.data?.resetDay && messages.length > 0;
+  const budgetExhausted = usage.data?.serviceBudgetExhausted ?? false;
+  const unavailable = usage.isLoading || usage.isError || budgetExhausted || (exhausted && !continuingToday);
+  const cannotRestart = exhausted && result?.explorationDay === usage.data?.resetDay;
   const explore = useExploreCareer({
     request: { headers: authorization },
     mutation: { retry: false, onSettled: () => { void usage.refetch(); } },
@@ -122,13 +125,13 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
 
   const send = async (text: string) => {
     const content = text.trim();
-    const retryLastResponse = exhausted && !!error && content === lastAttempt;
+    const retryLastResponse = (exhausted || budgetExhausted) && !!error && content === lastAttempt;
     if (!content || content.length > MAX_LEN || pending || (unavailable && !retryLastResponse)) return;
     setError(null);
     setLastAttempt(content);
     const userMsg: CareerExplorationMessage = { role: "user", content };
     try {
-      const res = await explore.mutateAsync({ data: { messages: [...messages, userMsg] } });
+      const res = await explore.mutateAsync({ data: { messages: [...messages, userMsg], explorationDay: result?.explorationDay } });
       if (res.status === "complete") {
         setMessages([...messages, userMsg]);
         setResult(res);
@@ -148,6 +151,7 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
   };
 
   const restart = () => {
+    if (cannotRestart) return;
     setMessages([]);
     setResult(null);
     setDraft("");
@@ -181,10 +185,11 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
         <Mascot size={80} animate="bob" className="hidden sm:block shrink-0" />
       </motion.header>
       <div className="mt-5 rounded-2xl border border-border bg-card p-4 text-sm" aria-live="polite">
-        <p className="font-semibold">회원당 하루 AI 요청 15회 · 탐색 약 3회분</p>
-        <p className="mt-1 text-muted-foreground">첫 질문은 AI를 호출하지 않아요. 추가 질문 4회와 최종 추천 1회가 차감되며, 한국 시간 자정에 초기화돼요. AI 요청 후 실패한 경우도 한도에 포함돼요.</p>
-        {usage.data && <p className="mt-2 font-semibold">오늘 남은 AI 요청: {Math.max(0, usage.data.dailyLimit - usage.data.used)}회 / {usage.data.dailyLimit}회</p>}
-        {exhausted && <p className="mt-2 text-destructive">오늘 한도를 모두 사용했어요. 기존 결과는 계속 볼 수 있으며, 내일 다시 탐색할 수 있어요.</p>}
+        <p className="font-semibold">회원당 하루 1회 탐색 · 서비스 전체 하루 AI 예산 $1</p>
+        <p className="mt-1 text-muted-foreground">첫 답변을 보내면 오늘의 탐색이 시작돼요. 같은 탐색의 후속 질문과 결과 확인은 이어서 할 수 있어요. 한국 시간 자정에 초기화되며, 전체 예산이 부족하면 다음 AI 요청은 중단돼요.</p>
+        {usage.data && <p className="mt-2 font-semibold">{continuingToday && exhausted && !complete ? "오늘의 탐색을 이어서 진행 중이에요." : `오늘 남은 새 탐색: ${Math.max(0, usage.data.dailyLimit - usage.data.used)}회 / ${usage.data.dailyLimit}회`}</p>}
+        {exhausted && <p className="mt-2 text-muted-foreground">새로운 탐색은 내일 가능해요. 진행 중인 대화는 시작한 브라우저에서 이어가고, 기존 결과는 계속 볼 수 있어요.</p>}
+        {budgetExhausted && <p className="mt-2 text-destructive">오늘의 서비스 전체 AI 예산이 소진됐어요. 내일 다시 이용해 주세요.</p>}
         {usage.isError && <div className="mt-2"><span role="alert">이용 한도를 확인하지 못했어요. </span><button type="button" className="underline" onClick={() => void usage.refetch()}>다시 확인하기</button></div>}
       </div>
 
@@ -219,7 +224,7 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
             variant="ghost"
             size="sm"
             onClick={requestRestart}
-            disabled={pending}
+            disabled={pending || cannotRestart}
             className="gap-1.5 text-muted-foreground shrink-0"
             data-testid="button-restart"
           >
@@ -268,7 +273,7 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
               <ul className="mt-4 space-y-2.5 text-sm leading-relaxed text-accent-foreground/90 list-disc pl-5" data-testid="text-notice">
                 <li>입력한 답변은 추천 생성을 위해 외부 AI 서비스로 전송돼요.</li>
                 <li>이름, 연락처, 학교·학번, 주소 같은 개인정보는 적지 마세요.</li>
-                <li>대화 원문은 서버에 영구 저장하지 않아요. 중복 호출 방지를 위해 AI 응답을 서버 메모리에 최대 10분간 임시 보관하고, 회원별 이용 횟수를 기록해요. 대화·결과는 이 브라우저 탭에 임시 보관돼요.</li>
+                <li>입력한 답변 원문은 서버에 저장하지 않아요. 하루 1회 제한과 중복 과금 방지를 위해 요청 식별값·이용량 및 AI 응답을 서버에 보관하며, 지난 날짜의 AI 응답은 다음 서비스 이용 시 정리해요. 전체 대화는 이 브라우저 탭에 임시 보관돼요.</li>
                 <li>외부 AI의 데이터 처리 정책은 별도로 적용돼요.</li>
                 <li>검증된 적성검사가 아닌 탐색용 대화예요. 결과는 참고로만 봐주세요.</li>
               </ul>
@@ -363,9 +368,9 @@ function MemberCareerExploration({ memberId }: { memberId: string }) {
               이 결과는 짧은 대화를 바탕으로 한 탐색용 제안이며, 검증된 적성·진로 검사를 대신하지 않아요.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button variant="outline" onClick={requestRestart} className="gap-1.5 rounded-xl" data-testid="button-restart-result">
+              <Button variant="outline" disabled={cannotRestart} onClick={requestRestart} className="gap-1.5 rounded-xl" data-testid="button-restart-result">
                 <RotateCcw size={14} />
-                새로 탐색하기
+                {cannotRestart ? "새 탐색은 내일 가능해요" : "새로 탐색하기"}
               </Button>
               <Link href="/jobs" className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground" data-testid="link-all-jobs">
                 전체 직무 둘러보기

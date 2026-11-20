@@ -10,4 +10,7 @@ export interface CareerAiUsage {
   dailyLimit: number;
   used: number;
   resetDay: string;
+  inProgress: boolean;
+  serviceBudgetUsd: number;
+  serviceBudgetExhausted: boolean;
 }

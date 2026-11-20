@@ -9,6 +9,7 @@ import type { CareerExplorationResultStatus } from "./careerExplorationResultSta
 import type { CareerRecommendation } from "./careerRecommendation";
 
 export interface CareerExplorationResult {
+  explorationDay: string;
   status: CareerExplorationResultStatus;
   question: string;
   summary: string;

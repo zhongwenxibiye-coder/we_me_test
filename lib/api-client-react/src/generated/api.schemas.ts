@@ -9,6 +9,9 @@ export interface CareerAiUsage {
   dailyLimit: number;
   used: number;
   resetDay: string;
+  inProgress: boolean;
+  serviceBudgetUsd: number;
+  serviceBudgetExhausted: boolean;
 }
 
 export type CareerExplorationMessageRole =
@@ -29,6 +32,8 @@ export interface CareerExplorationMessage {
 }
 
 export interface CareerExplorationInput {
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  explorationDay?: string;
   /** @maxItems 14 */
   messages: CareerExplorationMessage[];
 }
@@ -51,6 +56,7 @@ export const CareerExplorationResultStatus = {
 } as const;
 
 export interface CareerExplorationResult {
+  explorationDay: string;
   status: CareerExplorationResultStatus;
   question: string;
   summary: string;

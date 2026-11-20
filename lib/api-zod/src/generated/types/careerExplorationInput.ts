@@ -8,6 +8,8 @@
 import type { CareerExplorationMessage } from "./careerExplorationMessage";
 
 export interface CareerExplorationInput {
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  explorationDay?: string;
   /** @maxItems 14 */
   messages: CareerExplorationMessage[];
 }

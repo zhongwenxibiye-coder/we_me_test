@@ -4,12 +4,12 @@ import { parseCareerSession } from "./careerExplorationSession.ts";
 
 const question = {
   messages: [{ role: "assistant", content: "어떤 활동이 즐거웠나요?" }],
-  result: { status: "question", question: "어떤 활동이 즐거웠나요?", summary: "", answeredCount: 0, recommendations: [] },
+  result: { status: "question", question: "어떤 활동이 즐거웠나요?", summary: "", answeredCount: 0, recommendations: [], explorationDay: "2026-11-21" },
 };
 const complete = {
   messages: Array.from({ length: 10 }, (_, index) => ({ role: index % 2 === 0 ? "assistant" : "user", content: "답변" })),
   result: {
-    status: "complete", question: "", summary: "탐색 요약", answeredCount: 5,
+    status: "complete", question: "", summary: "탐색 요약", answeredCount: 5, explorationDay: "2026-11-21",
     recommendations: [1, 2, 3].map((jobId) => ({ jobId, title: "직무", category: "분야", reason: "근거", nextStep: "학습", href: `/jobs/${jobId}` })),
   },
 };
