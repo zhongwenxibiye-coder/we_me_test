@@ -12,6 +12,7 @@ import creativeSubmissionsRouter from "./creative-submissions";
 import humanitiesRouter from "./humanities";
 import usersRouter from "./users";
 import careerVideosRouter from "./career-videos";
+import careerExplorationRouter from "./career-exploration";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(creativeSubmissionsRouter);
 router.use(humanitiesRouter);
 router.use(usersRouter);
 router.use(careerVideosRouter);
+router.use(careerExplorationRouter);
 
 export default router;

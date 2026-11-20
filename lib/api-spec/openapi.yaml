@@ -22,6 +22,34 @@ tags:
   - name: humanities-articles
   - name: career-videos
 paths:
+  /openai/career-exploration:
+    post:
+      operationId: exploreCareer
+      tags: [job-listings]
+      summary: Adaptive career interview restricted to published learning jobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CareerExplorationInput"
+      responses:
+        "200":
+          description: Next question or three validated learning recommendations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerExplorationResult"
+        "400":
+          description: Invalid interview history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          description: Too many requests
+        "503":
+          description: AI or learning catalog temporarily unavailable
   /healthz:
     get:
       operationId: healthCheck
@@ -1487,6 +1515,60 @@ components:
             $ref: "#/components/schemas/ApiError"
 
   schemas:
+    CareerExplorationMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
+    CareerExplorationInput:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          maxItems: 14
+          items:
+            $ref: "#/components/schemas/CareerExplorationMessage"
+    CareerRecommendation:
+      type: object
+      required: [jobId, title, category, reason, nextStep, href]
+      properties:
+        jobId:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+        reason:
+          type: string
+        nextStep:
+          type: string
+        href:
+          type: string
+    CareerExplorationResult:
+      type: object
+      required: [status, question, summary, answeredCount, recommendations]
+      properties:
+        status:
+          type: string
+          enum: [question, complete]
+        question:
+          type: string
+        summary:
+          type: string
+        answeredCount:
+          type: integer
+        recommendations:
+          type: array
+          maxItems: 3
+          items:
+            $ref: "#/components/schemas/CareerRecommendation"
     HealthStatus:
       type: object
       properties:

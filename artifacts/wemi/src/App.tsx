@@ -9,6 +9,7 @@ import { initSupabase } from "@/lib/supabase";
 import Landing from "@/pages/Landing";
 import Jobs from "@/pages/Jobs";
 import JobDetail from "@/pages/JobDetail";
+import CareerExploration from "@/pages/CareerExploration";
 import Mentors from "@/pages/Mentors";
 import MentorDetail from "@/pages/MentorDetail";
 import ArticleDetail from "@/pages/ArticleDetail";
@@ -54,6 +55,7 @@ function Router() {
         <Route path="/mypage" component={MyPage} />
         <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/:id" component={JobDetail} />
+        <Route path="/career-exploration" component={CareerExploration} />
         <Route path="/mentors" component={Mentors} />
         <Route path="/mentors/:id/articles/:articleId" component={ArticleDetail} />
         <Route path="/mentors/:id/apply" component={MentorApply} />

@@ -8,6 +8,48 @@
 import * as zod from "zod";
 
 /**
+ * @summary Adaptive career interview restricted to published learning jobs
+ */
+export const exploreCareerBodyMessagesItemContentMax = 2000;
+
+export const exploreCareerBodyMessagesMax = 14;
+
+export const ExploreCareerBody = zod.object({
+  messages: zod
+    .array(
+      zod.object({
+        role: zod.enum(["user", "assistant"]),
+        content: zod
+          .string()
+          .min(1)
+          .max(exploreCareerBodyMessagesItemContentMax),
+      }),
+    )
+    .max(exploreCareerBodyMessagesMax),
+});
+
+export const exploreCareerResponseRecommendationsMax = 3;
+
+export const ExploreCareerResponse = zod.object({
+  status: zod.enum(["question", "complete"]),
+  question: zod.string(),
+  summary: zod.string(),
+  answeredCount: zod.number(),
+  recommendations: zod
+    .array(
+      zod.object({
+        jobId: zod.number(),
+        title: zod.string(),
+        category: zod.string(),
+        reason: zod.string(),
+        nextStep: zod.string(),
+        href: zod.string(),
+      }),
+    )
+    .max(exploreCareerResponseRecommendationsMax),
+});
+
+/**
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({

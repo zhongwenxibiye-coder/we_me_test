@@ -17,6 +17,9 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ApiError,
+  CareerExplorationInput,
+  CareerExplorationResult,
   CareerVideo,
   CareerVideoInput,
   CreateMentorApplicationBody,
@@ -67,6 +70,92 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Adaptive career interview restricted to published learning jobs
+ */
+export const getExploreCareerUrl = () => {
+  return `/api/openai/career-exploration`;
+};
+
+export const exploreCareer = async (
+  careerExplorationInput: CareerExplorationInput,
+  options?: RequestInit,
+): Promise<CareerExplorationResult> => {
+  return customFetch<CareerExplorationResult>(getExploreCareerUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(careerExplorationInput),
+  });
+};
+
+export const getExploreCareerMutationOptions = <
+  TError = ErrorType<ApiError | void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof exploreCareer>>,
+    TError,
+    { data: BodyType<CareerExplorationInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof exploreCareer>>,
+  TError,
+  { data: BodyType<CareerExplorationInput> },
+  TContext
+> => {
+  const mutationKey = ["exploreCareer"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof exploreCareer>>,
+    { data: BodyType<CareerExplorationInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return exploreCareer(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ExploreCareerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof exploreCareer>>
+>;
+export type ExploreCareerMutationBody = BodyType<CareerExplorationInput>;
+export type ExploreCareerMutationError = ErrorType<ApiError | void>;
+
+/**
+ * @summary Adaptive career interview restricted to published learning jobs
+ */
+export const useExploreCareer = <
+  TError = ErrorType<ApiError | void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof exploreCareer>>,
+    TError,
+    { data: BodyType<CareerExplorationInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof exploreCareer>>,
+  TError,
+  { data: BodyType<CareerExplorationInput> },
+  TContext
+> => {
+  return useMutation(getExploreCareerMutationOptions(options));
+};
 
 /**
  * @summary Health check

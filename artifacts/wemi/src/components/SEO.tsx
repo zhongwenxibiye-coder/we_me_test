@@ -140,6 +140,13 @@ function routeSeo(pathname: string): RouteSeo {
         "인문계열 전공자의 취업과 진로를 함께 고민하는 위미를 소개합니다. 위미의 가치와 주요 기능을 확인해 보세요.",
     };
   }
+  if (path === "/career-exploration") {
+    return {
+      title: "AI 직무 탐색 | 위미",
+      description:
+        "다섯 가지 질문에 답하며 전공 밖의 직무 가능성을 탐색해 보세요. 위미의 직무 학습 자료와 연결된 3가지 추천을 받아볼 수 있습니다.",
+    };
+  }
   if (path === "/jobs") {
     return {
       title: "인문계열 직무 학습 | 위미",

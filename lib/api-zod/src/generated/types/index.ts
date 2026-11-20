@@ -7,6 +7,12 @@
  */
 
 export * from "./apiError";
+export * from "./careerExplorationInput";
+export * from "./careerExplorationMessage";
+export * from "./careerExplorationMessageRole";
+export * from "./careerExplorationResult";
+export * from "./careerExplorationResultStatus";
+export * from "./careerRecommendation";
 export * from "./careerVideo";
 export * from "./careerVideoInput";
 export * from "./createMentorApplicationBody";

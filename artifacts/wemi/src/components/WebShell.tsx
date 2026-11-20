@@ -30,6 +30,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/jobs", label: "직무 학습" },
       { href: "/mentors", label: "졸업생 멘토링" },
+      { href: "/career-exploration", label: "AI 직무 탐색" },
     ],
   },
   {

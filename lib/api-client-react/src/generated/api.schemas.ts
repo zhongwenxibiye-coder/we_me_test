@@ -5,6 +5,54 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type CareerExplorationMessageRole =
+  (typeof CareerExplorationMessageRole)[keyof typeof CareerExplorationMessageRole];
+
+export const CareerExplorationMessageRole = {
+  user: "user",
+  assistant: "assistant",
+} as const;
+
+export interface CareerExplorationMessage {
+  role: CareerExplorationMessageRole;
+  /**
+   * @minLength 1
+   * @maxLength 2000
+   */
+  content: string;
+}
+
+export interface CareerExplorationInput {
+  /** @maxItems 14 */
+  messages: CareerExplorationMessage[];
+}
+
+export interface CareerRecommendation {
+  jobId: number;
+  title: string;
+  category: string;
+  reason: string;
+  nextStep: string;
+  href: string;
+}
+
+export type CareerExplorationResultStatus =
+  (typeof CareerExplorationResultStatus)[keyof typeof CareerExplorationResultStatus];
+
+export const CareerExplorationResultStatus = {
+  question: "question",
+  complete: "complete",
+} as const;
+
+export interface CareerExplorationResult {
+  status: CareerExplorationResultStatus;
+  question: string;
+  summary: string;
+  answeredCount: number;
+  /** @maxItems 3 */
+  recommendations: CareerRecommendation[];
+}
+
 export interface HealthStatus {
   status: string;
 }
