@@ -14,3 +14,17 @@ mtime_ms = 1795434641484
 storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:f7cfa8ac-8d03-4b0a-a882-73eabbb7f79b/12a6961a-e9e9-440d-a578-bc4d4a46e9b3/8adf1ec4-362d-4c0e-b519-84fc077b8d4a"
 storage_version_token = "1795434664546643"
 content_type = "image/png"
+
+[[outputs]]
+id = "W0wT6-zFMPyU4M1cpfHSW"
+uri = "file://attached_assets/generated_images/wemi-career-encyclopedia-original-character.png"
+type = "image"
+title = "위미 직무 도감 — 원본 캐릭터 적용"
+description = "제공해 주신 위미 캐릭터로 로고와 상단 캐릭터를 교체했습니다. 화면 구성과 문구는 유지했으며 웹사이트는 수정하지 않았습니다."
+logical_id = "f1418fef-2f2e-4d2c-9a08-90484b829744"
+content_hash = "sha256:9e2aa885cf495ad809514e922bc7c6b210e7d9aaadcead03e1648471d5d1dcf5"
+size = 973431
+mtime_ms = 1795434841960
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:f7cfa8ac-8d03-4b0a-a882-73eabbb7f79b/f1418fef-2f2e-4d2c-9a08-90484b829744/7bd10c23-0079-4598-ac4b-8bab8b7aeb82"
+storage_version_token = "1795434876434096"
+content_type = "image/png"

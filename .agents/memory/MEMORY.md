@@ -4,3 +4,4 @@
 - [사업화 지원금](startup-grant.md) — 위미 정부지원금 200만원 확보, 비목 간 금액한도 없음.
 - [멘토의 서비스 방향 피드백](mentor-positioning.md) — 전공에 한정되지 않는 직무 탐색과 멘토링을 핵심 강점으로 본 의견.
 - [pnpm peer relinking](pnpm-peer-relinking.md) — filtered installs can leave Drizzle workspace links inconsistent; relink from the lockfile before changing types.
+- [위미 캐릭터 원본 사용](wemi-character.md) — 참고 이미지에도 사용자가 제공한 위미 캐릭터를 사용하고 다른 옥수수 캐릭터로 대체하지 않는다.
