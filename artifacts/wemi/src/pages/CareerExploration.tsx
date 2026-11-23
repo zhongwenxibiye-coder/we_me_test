@@ -48,7 +48,7 @@ export default function CareerExploration() {
       <h1 className="text-3xl font-extrabold">AI 직무 탐색</h1>
       <div className="mt-6 rounded-3xl border bg-card p-7">
         <h2 className="text-xl font-bold">회원 전용 기능이에요</h2>
-        <p className="mt-3 text-muted-foreground leading-relaxed">회원가입과 이메일 인증 후 로그인하면 AI와 대화하며 나에게 맞는 직무 3개를 탐색할 수 있어요.</p>
+        <p className="mt-3 text-muted-foreground leading-relaxed">로그인하면 AI와 대화하며 나에게 맞는 직무 3개를 탐색할 수 있어요.</p>
         <p className="mt-3 text-sm text-muted-foreground">무분별한 사용을 막기 위해 회원별 일일 이용 한도가 적용돼요.</p>
         <div className="mt-6 flex gap-3">
           <Link href="/login?next=/career-exploration"><Button>로그인하고 시작하기</Button></Link>
