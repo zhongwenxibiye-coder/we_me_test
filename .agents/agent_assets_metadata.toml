@@ -1,3 +1,16 @@
 uploads = []
 generated = []
-outputs = []
+
+[[outputs]]
+id = "gsCPWttJCfUwKQUnaV1xp"
+uri = "file://attached_assets/generated_images/wemi-career-encyclopedia-reference.png"
+type = "image"
+title = "위미 직무 도감 — 참고용 화면 이미지"
+description = "4개 분야의 직무 32개를 펼쳐 보여주는 정적 디자인 시안입니다. 위미 웹사이트에는 반영하지 않았습니다."
+logical_id = "12a6961a-e9e9-440d-a578-bc4d4a46e9b3"
+content_hash = "sha256:41b5c6ec0535f5159a78b90caaf351dd9b8612512d2c5866a9b357735128f793"
+size = 1031473
+mtime_ms = 1795434641484
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:f7cfa8ac-8d03-4b0a-a882-73eabbb7f79b/12a6961a-e9e9-440d-a578-bc4d4a46e9b3/8adf1ec4-362d-4c0e-b519-84fc077b8d4a"
+storage_version_token = "1795434664546643"
+content_type = "image/png"
